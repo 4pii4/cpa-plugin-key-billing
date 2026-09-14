@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.3.11
+
+### Backend
+
+- Added built-in fallback prices for 23 CPA model aliases, including cache and long-context tiers, while preserving custom-price precedence.
+- Updated the billing integration harness for portable release-archive extraction.
+
+### Frontend
+
+- Translated the management UI, runtime messages, documentation, installers, and supporting scripts to English.
+- Replaced the legacy Chinese interface screenshot with an English model-pricing overview.
+
 ## v1.3.10
 
 ### Upgrade notes
