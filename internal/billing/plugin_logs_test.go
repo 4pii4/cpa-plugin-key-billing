@@ -61,12 +61,12 @@ func TestPluginLogsKeepTheRetentionWindow(t *testing.T) {
 		t.Fatalf("ClearPluginLogs error = %v", errClear)
 	}
 	store.now = func() time.Time { return now.Add(-PluginLogRetention - time.Hour) }
-	store.AddPluginLog(PluginLogInfo, "过期事件")
+	store.AddPluginLog(PluginLogInfo, "Expiration event")
 	store.now = func() time.Time { return now }
-	store.AddPluginLog(PluginLogInfo, "事件")
+	store.AddPluginLog(PluginLogInfo, "Event")
 
 	events := mustPluginLogs(t, store)
-	if len(events) != 1 || events[0].Message != "事件" {
+	if len(events) != 1 || events[0].Message != "Event" {
 		t.Fatalf("events = %+v, want only the one inside the window", events)
 	}
 
@@ -87,7 +87,7 @@ func TestUnwritableDatabaseIsReportedOnceAndOnRecovery(t *testing.T) {
 	}
 	reported := 0
 	for _, event := range mustPluginLogs(t, store) {
-		if event.Level == PluginLogError && strings.Contains(event.Message, "保存计费数据失败") {
+		if event.Level == PluginLogError && strings.Contains(event.Message, "Failed to save billing data") {
 			reported++
 		}
 	}
@@ -97,7 +97,7 @@ func TestUnwritableDatabaseIsReportedOnceAndOnRecovery(t *testing.T) {
 
 	repo.fail = nil
 	store.ReplaceAll(func(state *State) { state.Keys["scope-a"].Label = "Recovered" })
-	if events := mustPluginLogs(t, store); events[0].Message != "计费数据库写入已恢复" {
+	if events := mustPluginLogs(t, store); events[0].Message != "Billing database write resumed" {
 		t.Fatalf("events = %+v, want the recovery reported", events[0])
 	}
 }

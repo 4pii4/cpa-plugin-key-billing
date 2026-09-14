@@ -23,14 +23,14 @@ ON CONFLICT(scope) DO UPDATE SET
 
 func saveKey(tx *sql.Tx, scope string, key *billing.KeyState) error {
 	if key == nil {
-		return fmt.Errorf("API Key 记录不能为空")
+		return fmt.Errorf("API key record cannot be empty")
 	}
 	if strings.TrimSpace(scope) == "" || strings.TrimSpace(key.Preview) == "" {
-		return fmt.Errorf("API Key 的标识和掩码不能为空")
+		return fmt.Errorf("API key scope and preview cannot be empty")
 	}
 	bindings, errJSON := json.Marshal(key.RouteBindings)
 	if errJSON != nil {
-		return fmt.Errorf("保存 API Key %s 的路由绑定：%w", scope, errJSON)
+		return fmt.Errorf("encode routing bindings for API key %s: %w", scope, errJSON)
 	}
 	cycles := key.Cycles
 	if cycles == nil {
@@ -44,7 +44,7 @@ func saveKey(tx *sql.Tx, scope string, key *billing.KeyState) error {
 		scope, key.Preview, key.Label, key.InConfig, nanos(key.DeletedAt), key.PlanID, key.ConcurrencyLimit,
 		string(rawCycles), string(bindings))
 	if errKey != nil {
-		return fmt.Errorf("保存 API Key %s：%w", scope, errKey)
+		return fmt.Errorf("save API key %s: %w", scope, errKey)
 	}
 	return nil
 }
@@ -53,14 +53,14 @@ func (d *DB) loadKeys(state *billing.State) error {
 	// Older traffic-created keys have no recoverable mask. Keep their identity
 	// and bindings until usage or a key-list sync supplies the real preview.
 	if _, err := d.db.Exec("UPDATE api_keys SET preview = ? WHERE trim(preview) = ''", billing.UnknownKeyPreview); err != nil {
-		return fmt.Errorf("补齐 API Key 显示名称：%w", err)
+		return fmt.Errorf("populate API-key display names: %w", err)
 	}
 	rows, errQuery := d.db.Query(`
 		SELECT scope, preview, label, in_config, deleted_at, plan_id, concurrency_limit,
 			cycles_json, route_bindings_json
 		FROM api_keys`)
 	if errQuery != nil {
-		return fmt.Errorf("读取 API Key 列表：%w", errQuery)
+		return fmt.Errorf("read API-key list: %w", errQuery)
 	}
 	defer rows.Close()
 	for rows.Next() {
@@ -73,34 +73,34 @@ func (d *DB) loadKeys(state *billing.State) error {
 		)
 		if errScan := rows.Scan(&scope, &key.Preview, &key.Label, &key.InConfig, &deletedAt, &key.PlanID, &key.ConcurrencyLimit,
 			&cyclesJSON, &bindingsJSON); errScan != nil {
-			return fmt.Errorf("读取 API Key 列表：%w", errScan)
+			return fmt.Errorf("read API-key list: %w", errScan)
 		}
 		if strings.TrimSpace(scope) == "" || strings.TrimSpace(key.Preview) == "" {
-			return fmt.Errorf("API Key 的标识和掩码不能为空")
+			return fmt.Errorf("API key scope and preview cannot be empty")
 		}
 		key.DeletedAt = timeAt(deletedAt)
 		if err := json.Unmarshal([]byte(cyclesJSON), &key.Cycles); err != nil {
-			return fmt.Errorf("读取额度周期：%w", err)
+			return fmt.Errorf("read quota cycle: %w", err)
 		}
 		if key.Cycles == nil {
-			return fmt.Errorf("额度周期必须为 JSON 对象")
+			return fmt.Errorf("quota-cycle data must be a JSON object")
 		}
 		plan, _ := state.FindPlan(key.PlanID)
 		if err := key.ValidateCycles(plan); err != nil {
 			return err
 		}
 		if errDecode := json.Unmarshal([]byte(bindingsJSON), &key.RouteBindings); errDecode != nil {
-			return fmt.Errorf("读取 API Key %s 的路由绑定：%w", scope, errDecode)
+			return fmt.Errorf("decode routing bindings for API key %s: %w", scope, errDecode)
 		}
 		normalizedBindings, errBindings := billing.NormalizeRouteBindings(key.RouteBindings)
 		if errBindings != nil {
-			return fmt.Errorf("校验 API Key %s 的路由绑定：%w", scope, errBindings)
+			return fmt.Errorf("validate routing bindings for API key %s: %w", scope, errBindings)
 		}
 		key.RouteBindings = normalizedBindings
 		state.Keys[scope] = &key
 	}
 	if errRows := rows.Err(); errRows != nil {
-		return fmt.Errorf("读取 API Key 列表：%w", errRows)
+		return fmt.Errorf("read API-key list: %w", errRows)
 	}
 	return nil
 }

@@ -11,7 +11,7 @@ import (
 
 func TestConfigureLoadsTheDocumentBehindTheNewPath(t *testing.T) {
 	first := &memoryRepository{state: NewState()}
-	first.state.Plans = []Plan{{ID: "monthly-20", Windows: []QuotaWindow{{ID: "default", Name: "额度", AmountUSD: 20, PeriodSeconds: 2592000}}}}
+	first.state.Plans = []Plan{{ID: "monthly-20", Windows: []QuotaWindow{{ID: "default", Name: "Limit", AmountUSD: 20, PeriodSeconds: 2592000}}}}
 	second := &memoryRepository{state: NewState()}
 
 	opened := 0
@@ -90,7 +90,7 @@ func TestConfigureKeepsTheLiveDocumentWhenTheNewPathFails(t *testing.T) {
 // only beside it. A reconfigure has the incoming database to record that in.
 func TestReconfigureReportsADatabaseThatFailsToClose(t *testing.T) {
 	repos := []Repository{
-		&memoryRepository{state: NewState(), closeFail: errors.New("磁盘已满")},
+		&memoryRepository{state: NewState(), closeFail: errors.New("The disk is full.")},
 		&memoryRepository{state: NewState()},
 	}
 	store := NewStore(func(string) (Repository, error) {
@@ -108,7 +108,7 @@ func TestReconfigureReportsADatabaseThatFailsToClose(t *testing.T) {
 	events := mustPluginLogs(t, store)
 	reported := false
 	for _, event := range events {
-		if event.Level == PluginLogError && strings.Contains(event.Message, "磁盘已满") {
+		if event.Level == PluginLogError && strings.Contains(event.Message, "The disk is full.") {
 			reported = true
 		}
 	}
@@ -122,8 +122,8 @@ func TestRecoveredWriteIncludesPendingRequestEvents(t *testing.T) {
 	store, repo := newAccountStoreWithRepository(t, now)
 	store.ReplaceAll(func(state *State) {
 		state.Plans = []Plan{{ID: "p", Windows: []QuotaWindow{
-			{ID: "short", Name: "短时", AmountUSD: 5, PeriodSeconds: 3600},
-			{ID: "long", Name: "预算", AmountUSD: 10, PeriodSeconds: 86400},
+			{ID: "short", Name: "for a short time.", AmountUSD: 5, PeriodSeconds: 3600},
+			{ID: "long", Name: "Budget", AmountUSD: 10, PeriodSeconds: 86400},
 		}}}
 		state.Keys["scope-a"] = &KeyState{PlanID: "p"}
 	})
@@ -196,7 +196,7 @@ func TestConfigurationWriteFailureKeepsState(t *testing.T) {
 			now := time.Now().UTC().Truncate(time.Second)
 			store.now = func() time.Time { return now }
 			store.ReplaceAll(func(state *State) {
-				window := QuotaWindow{ID: "default", Name: "额度", AmountUSD: 10, PeriodSeconds: 3600, CycleAnchorAt: now.Add(time.Hour)}
+				window := QuotaWindow{ID: "default", Name: "Limit", AmountUSD: 10, PeriodSeconds: 3600, CycleAnchorAt: now.Add(time.Hour)}
 				state.Plans = []Plan{{ID: "p", Windows: []QuotaWindow{window}}}
 				cycle := window.newCycle("p", now)
 				cycle.SpentUSD = 5

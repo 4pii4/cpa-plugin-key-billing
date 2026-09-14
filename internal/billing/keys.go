@@ -115,16 +115,16 @@ func (s *Store) BindKey(scope, planID string) error {
 	scope = normalizeScope(scope)
 	planID = strings.TrimSpace(planID)
 	if scope == "" || planID == "" {
-		return invalidf("API Key 标识和订阅计划 ID 不能为空")
+		return invalidf("API key scope and subscription plan ID cannot be empty")
 	}
 	_, err := editConfiguration(s, func(state *State) (struct{}, Changes, error) {
 		plan, exists := state.FindPlan(planID)
 		if !exists {
-			return struct{}{}, Changes{}, notFoundf("订阅计划 %q 不存在", planID)
+			return struct{}{}, Changes{}, notFoundf("Subscription plan %q does not exist", planID)
 		}
 		key := state.liveKey(scope)
 		if key == nil {
-			return struct{}{}, Changes{}, notFoundf("API Key %q 不存在", scope)
+			return struct{}{}, Changes{}, notFoundf("API key %q does not exist", scope)
 		}
 		if key.PlanID == plan.ID {
 			return struct{}{}, Changes{}, nil
@@ -139,7 +139,7 @@ func (s *Store) BindKey(scope, planID string) error {
 func (s *Store) UnbindKey(scope string) error {
 	scope = normalizeScope(scope)
 	if scope == "" {
-		return invalidf("API Key 标识不能为空")
+		return invalidf("API key scope cannot be empty")
 	}
 	_, err := editConfiguration(s, func(state *State) (struct{}, Changes, error) {
 		key := state.liveKey(scope)
@@ -167,14 +167,14 @@ func (s *Store) ResetQuota(req ResetRequest) (ResetResult, error) {
 	req.Scopes = normalizeScopes(req.Scopes)
 	if req.Mode == "global" {
 		if len(req.Scopes) != 0 {
-			return ResetResult{}, invalidf("全员重置不接受指定 Key")
+			return ResetResult{}, invalidf("A global reset cannot specify API keys")
 		}
 	} else if req.Mode == "all" {
 		if len(req.Scopes) == 0 {
-			return ResetResult{}, invalidf("请选择需要重置的 API Key")
+			return ResetResult{}, invalidf("Select at least one API key to reset")
 		}
 	} else {
-		return ResetResult{}, invalidf("额度重置方式无效")
+		return ResetResult{}, invalidf("Invalid quota reset mode")
 	}
 	return editConfiguration(s, func(state *State) (ResetResult, Changes, error) {
 		scopes := req.Scopes
@@ -188,7 +188,7 @@ func (s *Store) ResetQuota(req ResetRequest) (ResetResult, error) {
 		for _, scope := range scopes {
 			key := state.liveKey(scope)
 			if key == nil || key.PlanID == "" {
-				return ResetResult{}, Changes{}, invalidf("API Key 不存在或未绑定计划")
+				return ResetResult{}, Changes{}, invalidf("API key does not exist or has no subscription plan")
 			}
 		}
 		result := ResetResult{}
@@ -210,14 +210,14 @@ func (s *Store) ResetQuota(req ResetRequest) (ResetResult, error) {
 func (s *Store) SetLabel(scope, label string) error {
 	scope = normalizeScope(scope)
 	if scope == "" {
-		return invalidf("API Key 标识不能为空")
+		return invalidf("API key scope cannot be empty")
 	}
 	label = strings.TrimSpace(label)
 
 	_, err := editConfiguration(s, func(state *State) (struct{}, Changes, error) {
 		key := state.Keys[scope]
 		if key == nil {
-			return struct{}{}, Changes{}, notFoundf("API Key %q 不存在", scope)
+			return struct{}{}, Changes{}, notFoundf("API key %q does not exist", scope)
 		}
 		key.Label = label
 		return struct{}{}, Changes{Keys: []string{scope}}, nil
@@ -277,7 +277,7 @@ func (s *Store) SyncKeys(keys []string, allowEmpty bool) (SyncResult, error) {
 		scopes[scope] = PreviewKey(key)
 	}
 	if len(scopes) == 0 && !allowEmpty {
-		return SyncResult{}, invalidf("API Key 列表为空；如需清空，请传入 allow_empty")
+		return SyncResult{}, invalidf("API key list is empty; pass allow_empty to clear it")
 	}
 
 	now := s.Now()

@@ -55,7 +55,7 @@ func (a *App) endAdmission(requestID string, admission *requestAdmission) {
 func (a *App) interceptBeforeAuth(raw []byte) ([]byte, error) {
 	var req RequestInterceptRequest
 	if errUnmarshal := json.Unmarshal(raw, &req); errUnmarshal != nil {
-		return nil, fmt.Errorf("解析请求拦截参数：%w", errUnmarshal)
+		return nil, fmt.Errorf("parse pre-auth request-intercept parameters: %w", errUnmarshal)
 	}
 	if a == nil || a.store == nil {
 		return OKEnvelope(RequestInterceptResponse{})
@@ -72,7 +72,7 @@ func (a *App) interceptBeforeAuth(raw []byte) ([]byte, error) {
 	scope := metadataString(req.Metadata, MetadataCallerScope)
 	endpoint := metadataString(req.Metadata, MetadataRequestPath)
 
-	// Reject disallowed models before quota checks can open a subscription period.
+	// Deny disallowed models before quota checks can open a subscription period.
 	if !helper {
 		routing := a.store.ResolveRouting(scope, req.Model, req.RequestedModel)
 		a.beginRouteLog(req.RequestID, scope, routing)
@@ -86,10 +86,10 @@ func (a *App) interceptBeforeAuth(raw []byte) ([]byte, error) {
 
 	price, model, priceErr := a.store.ResolveModelPrice(req.Model, req.RequestedModel, true)
 	if priceErr != nil {
-		return OKEnvelope(priceRefusal(req.SourceFormat, "price_storage_error", "读取模型价格失败，请稍后重试"))
+		return OKEnvelope(priceRefusal(req.SourceFormat, "price_storage_error", "Failed to read model price, please try again later"))
 	}
 	if price.Source == billing.PriceSourceNone {
-		return OKEnvelope(priceRefusal(req.SourceFormat, "model_price_error", fmt.Sprintf("模型 %s 尚未定价", model)))
+		return OKEnvelope(priceRefusal(req.SourceFormat, "model_price_error", fmt.Sprintf("Model %s is not priced", model)))
 	}
 	if helper {
 		// Nested plugin helpers do not consume another client admission slot, but
@@ -105,7 +105,7 @@ func (a *App) interceptBeforeAuth(raw []byte) ([]byte, error) {
 	a.admissionsMu.Lock()
 	defer a.admissionsMu.Unlock()
 	if admission != nil && admission.completed {
-		return OKEnvelope(priceRefusal(req.SourceFormat, "request_completed", "请求已结束"))
+		return OKEnvelope(priceRefusal(req.SourceFormat, "request_completed", "Request closed"))
 	}
 	slot := billing.SlotDecision{Allowed: true}
 	admitted := false
@@ -139,7 +139,7 @@ func (a *App) interceptBeforeAuth(raw []byte) ([]byte, error) {
 func (a *App) interceptAfterAuth(raw []byte) ([]byte, error) {
 	var req RequestInterceptRequest
 	if errUnmarshal := json.Unmarshal(raw, &req); errUnmarshal != nil {
-		return nil, fmt.Errorf("解析凭证选择后请求拦截参数：%w", errUnmarshal)
+		return nil, fmt.Errorf("parse post-auth request-intercept parameters: %w", errUnmarshal)
 	}
 	if a != nil {
 		a.observeRouteCredential(
@@ -154,7 +154,7 @@ func (a *App) interceptAfterAuth(raw []byte) ([]byte, error) {
 func (a *App) completeRequest(raw []byte) ([]byte, error) {
 	var completion RequestCompletion
 	if errUnmarshal := json.Unmarshal(raw, &completion); errUnmarshal != nil {
-		return nil, fmt.Errorf("解析请求完成事件：%w", errUnmarshal)
+		return nil, fmt.Errorf("parse request-completion event: %w", errUnmarshal)
 	}
 	if a != nil && a.store != nil {
 		func() {
@@ -177,7 +177,7 @@ func routingConfigurationResponse(sourceFormat, message string) RequestIntercept
 func (a *App) handleUsage(raw []byte) ([]byte, error) {
 	var record UsageRecord
 	if errUnmarshal := json.Unmarshal(raw, &record); errUnmarshal != nil {
-		return nil, fmt.Errorf("解析用量记录：%w", errUnmarshal)
+		return nil, fmt.Errorf("parse usage record: %w", errUnmarshal)
 	}
 	if a == nil || a.store == nil || !a.store.Enabled() {
 		return OKEnvelope(struct{}{})

@@ -30,7 +30,7 @@ func TestPriceAdmissionAndDeleteWithoutInventory(t *testing.T) {
 		if err := json.Unmarshal(result.ResponseBody, &payload); err != nil {
 			t.Fatal(err)
 		}
-		if !result.Terminate || result.StatusCode != 503 || payload.Error.Type != "cpa_key_billing_error" || payload.Error.Code != "model_price_error" || payload.Error.Message != "模型 unpriced-dummy 尚未定价" {
+		if !result.Terminate || result.StatusCode != 503 || payload.Error.Type != "cpa_key_billing_error" || payload.Error.Code != "model_price_error" || payload.Error.Message != "Model unpriced-dummy is not priced" {
 			t.Fatal(format, result, payload)
 		}
 	}

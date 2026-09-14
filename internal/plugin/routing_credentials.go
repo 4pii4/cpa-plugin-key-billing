@@ -45,7 +45,7 @@ func safeCredentialName(raw, account, provider, ref string) string {
 		if len(short) > 8 {
 			short = short[:8]
 		}
-		name = strings.TrimSpace(provider) + " 上游凭证 " + short
+		name = strings.TrimSpace(provider) + " upstream credential " + short
 	}
 	if len([]byte(name)) > 160 {
 		name = string([]byte(name)[:160])
@@ -58,7 +58,7 @@ func credentialDisplayName(file hostAuthFile, source, provider, ref string) stri
 		// Authentication-file identity comes only from CPA's explicit email.
 		email := cleanText(file.Email)
 		if email == "" {
-			return "未提供邮箱"
+			return "No email provided"
 		}
 		return email
 	}
@@ -175,9 +175,9 @@ func (a *App) observeCandidates(candidates []SchedulerAuthCandidate) {
 			continue
 		}
 		provider := strings.ToLower(strings.TrimSpace(candidate.Provider))
-		name := "配置凭证 " + shortCredentialRef(ref)
+		name := "Configured credential " + shortCredentialRef(ref)
 		if source == billing.CredentialSourceAuthFiles {
-			name = "未提供邮箱"
+			name = "No email provided"
 		}
 		if existing, ok := a.credentials[ref]; ok && existing.DisplayName != "" {
 			name = existing.DisplayName
@@ -222,7 +222,7 @@ func (a *App) syncConfiguredCredentials(req ManagementRequest) ManagementRespons
 		return errorResponse(errDecode)
 	}
 	if len(body.Credentials) > 4096 {
-		return JSONError(http.StatusBadRequest, "invalid", "配置凭证数量超限")
+		return JSONError(http.StatusBadRequest, "invalid", "Too many configured credentials")
 	}
 
 	next := make(map[string]billing.ConfigCredential, len(body.Credentials))
@@ -230,10 +230,10 @@ func (a *App) syncConfiguredCredentials(req ManagementRequest) ManagementRespons
 		ref := strings.ToLower(strings.TrimSpace(item.Ref))
 		provider := strings.ToLower(strings.TrimSpace(item.Provider))
 		if !billing.ValidCredentialFingerprint(ref) || provider == "" || len(provider) > 160 || cleanText(provider) != provider {
-			return JSONError(http.StatusBadRequest, "invalid", "配置凭证标识无效")
+			return JSONError(http.StatusBadRequest, "invalid", "Invalid configured-credential identifier")
 		}
 		preview := cleanText(item.DisplayName)
-		if preview == "未配置 API Key" {
+		if preview == "API Key not configured" {
 			preview = ""
 		}
 		next[ref] = billing.ConfigCredential{
@@ -269,7 +269,7 @@ func (a *App) replaceSyncedCredentials(previous, next map[string]billing.ConfigC
 	for ref, item := range next {
 		name := item.KeyPreview
 		if name == "" {
-			name = "未配置 API Key"
+			name = "API Key not configured"
 		}
 		status := "active"
 		if item.Disabled {

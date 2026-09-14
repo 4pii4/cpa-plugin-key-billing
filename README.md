@@ -1,26 +1,27 @@
 <div align="center">
   <h1>CPA Key Billing</h1>
-  <p><strong><a href="https://github.com/router-for-me/CLIProxyAPI">CLIProxyAPI</a> 下游 API Key 计费与订阅额度插件。</strong></p>
+  <p><strong>API-key billing and subscription quota plugin for <a href="https://github.com/router-for-me/CLIProxyAPI">CLIProxyAPI</a>.</strong></p>
   <p>
-    <a href="https://github.com/haowang02/cpa-plugin-key-billing/releases/latest"><img src="https://img.shields.io/github/v/release/haowang02/cpa-plugin-key-billing?label=release" alt="Latest release"></a>
-    <a href="https://github.com/haowang02/cpa-plugin-key-billing/actions/workflows/check.yml"><img src="https://github.com/haowang02/cpa-plugin-key-billing/actions/workflows/check.yml/badge.svg" alt="CI status"></a>
+    <a href="https://github.com/4pii4/cpa-plugin-key-billing/releases/latest"><img src="https://img.shields.io/github/v/release/4pii4/cpa-plugin-key-billing?label=release" alt="Latest release"></a>
+    <a href="https://github.com/4pii4/cpa-plugin-key-billing/actions/workflows/check.yml"><img src="https://github.com/4pii4/cpa-plugin-key-billing/actions/workflows/check.yml/badge.svg" alt="CI status"></a>
     <img src="https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-blue" alt="Platforms: Windows, macOS, and Linux">
     <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License"></a>
   </p>
 </div>
-<img src="images/example.png" alt="cpa-plugin-key-billing example" width="100%" />
+<img src="images/example.svg" alt="CPA Key Billing model-pricing interface" width="100%" />
 
-## 功能特性
+## Features
 
-- 支持金额、Token、请求三种额度，可按 API Key 独立计时或按订阅计划统一周期重置
-- 支持按输入 Token 阈值切换长上下文**阶梯计价**
-- 支持按 API Key 设置**最大并发请求数**
-- 支持为每个 API Key 绑定**路由规则**，限制模型访问范围和上游凭证
-- 可从 [models.dev](https://models.dev/) 获取模型参考价
+- Enforces spend, token, and request quotas with either per-key periods or synchronized subscription-plan resets
+- Supports long-context **tiered pricing** based on an input-token threshold
+- Sets a **maximum concurrent request count** for each API key
+- Binds **routing rules** to each API key to restrict model access and upstream credentials
+- Retrieves reference model prices from [models.dev](https://models.dev/)
+- Ships fallback prices for common CPA model aliases so fresh installations can bill them immediately
 
-## 工作原理
+## How it works
 
-插件会在请求到达上游前检查订阅额度、并发和路由。上游调用结束后，CLIProxyAPI 通过 `usage.handle` 提供用量。插件据此记录请求事件、计算费用并更新周期消费额。
+Before a request reaches an upstream provider, the plugin checks its subscription quota, concurrency limit, and routing policy. After the upstream call finishes, CLIProxyAPI supplies usage through `usage.handle`. The plugin records the request event, calculates its cost, and updates consumption for the active quota period.
 
 ```mermaid
 ---
@@ -34,40 +35,40 @@ config:
     padding: 3
 ---
 flowchart TB
-    A[下游请求] --> B["request.intercept_before<br/>模型 · 并发 · 额度"]
-    B -- 拒绝 --> R[返回 HTTP 403 / 429]
-    B -- 通过并占用并发槽 --> C["scheduler.pick<br/>选择路由允许的上游凭证"]
-    C -- 无可用凭证 --> S[返回 HTTP 503]
-    C -- 成功 --> D[CLIProxyAPI 调用上游模型]
-    D --> E["request.complete<br/>释放并发槽位"]
-    D --> F["usage.handle<br/>记录请求事件与用量"]
-    F --> G["归一化 Token 并计费<br/>更新周期消费额"]
+    A[Downstream request] --> B["request.intercept_before<br/>model · concurrency · quota"]
+    B -- Rejected --> R[Return HTTP 403 / 429]
+    B -- Admitted and slot acquired --> C["scheduler.pick<br/>select a route-permitted credential"]
+    C -- No eligible credential --> S[Return HTTP 503]
+    C -- Selected --> D[CLIProxyAPI calls upstream model]
+    D --> E["request.complete<br/>release concurrency slot"]
+    D --> F["usage.handle<br/>record request event and usage"]
+    F --> G["normalize tokens and bill<br/>update period consumption"]
 ```
 
-性能方面，插件以同步 RPC 方法接入 CLIProxyAPI 的请求链路。请求准入与凭证调度仅执行本地状态查询和规则计算，不进行网络 I/O，也不复制或解析上游响应；用量记录与计费则在上游调用结束后通过 `usage.handle` 完成。插件不创建后台协程、定时器或异步刷新任务，整体资源占用较少；请求链路上的额外开销仅来自轻量的本地判断，对请求延迟几乎没有影响。
+The plugin integrates with CLIProxyAPI's request path through synchronous RPC methods. Admission and credential scheduling perform only local state lookups and rule evaluation: they do no network I/O and never copy or parse upstream responses. Usage recording and billing happen through `usage.handle` after the upstream call. The plugin creates no background goroutines, timers, or asynchronous refresh jobs, so its resource footprint is small and its request-path overhead is limited to lightweight local checks.
 
-## 环境要求
+## Requirements
 
-- CLIProxyAPI `7.2.143` 或更高版本，建议使用最新版本
-- 使用支持插件的 CLIProxyAPI 构建，不要使用 no-plugin 版本
+- CLIProxyAPI `7.2.143` or newer; the latest release is recommended
+- A plugin-enabled CLIProxyAPI build, not a `no-plugin` build
 
-## 安装
+## Installation
 
-在 CLIProxyAPI 根目录运行。macOS 和 Linux 使用：
+Run the installer from the CLIProxyAPI root directory. On macOS and Linux:
 
 ```sh
-curl -LsSf https://raw.githubusercontent.com/haowang02/cpa-plugin-key-billing/main/install.sh | sh
+curl -LsSf https://raw.githubusercontent.com/4pii4/cpa-plugin-key-billing/main/install.sh | sh
 ```
 
-Windows 请先停止 CLIProxyAPI，再在 PowerShell 中运行：
+On Windows, stop CLIProxyAPI first, then run this command in PowerShell:
 
 ```powershell
-irm https://raw.githubusercontent.com/haowang02/cpa-plugin-key-billing/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/4pii4/cpa-plugin-key-billing/main/install.ps1 | iex
 ```
 
-安装脚本会将插件安装到当前目录的 `plugins/`。安装或升级完成后需要重启 CLIProxyAPI。
+The installer places the plugin in the current directory's `plugins/` folder. Restart CLIProxyAPI after installing or upgrading.
 
-也可以从 [Releases](../../releases/latest) 下载对应平台的发布包，解压后将动态库放入 CLIProxyAPI 的 `plugins/` 目录：
+Alternatively, download the package for your platform from [Releases](../../releases/latest), extract it, and place the dynamic library in CLIProxyAPI's `plugins/` directory:
 
 ```text
 plugins/cpa-key-billing.so       # Linux
@@ -75,9 +76,9 @@ plugins/cpa-key-billing.dylib    # macOS
 plugins/cpa-key-billing.dll      # Windows
 ```
 
-## 配置
+## Configuration
 
-在 CLIProxyAPI 配置文件中加入：
+Add the following to the CLIProxyAPI configuration file:
 
 ```yaml
 plugins:
@@ -86,47 +87,79 @@ plugins:
   configs:
     cpa-key-billing:
       enabled: true
-      debug: false # 是否记录 debug 日志，例如路由日志、匹配参考价日志
-      codex_fast_mode_billing: false # 开启后，Codex 的 priority 请求按 2.5 倍计费
+      debug: false # Log debug details such as routing and reference-price matches
+      codex_fast_mode_billing: false # Bill Codex priority requests at 2.5x when enabled
       state_file: "plugins/cpa-key-billing-state-v1.db"
 ```
 
-`codex_fast_mode_billing` 开启后，请求 Codex 上游时在请求中指定 `service_tier=priority`，按普通费用的 **2.5 倍**结算。
+When `codex_fast_mode_billing` is enabled, Codex upstream requests containing `service_tier=priority` are billed at **2.5 times** the standard cost.
 
 > [!WARNING]
-> 升级前请备份数据文件。
+> Back up the data file before upgrading.
 >
-> - v1.0.0 至最新版本的数据库文件支持自动迁移。
-> - v0.8.4 及更早版本的 JSON 或 SQLite 数据文件不支持迁移，请将 `state_file` 指向新文件。
+> - Database files from v1.0.0 through the latest version are migrated automatically.
+> - JSON or SQLite data files from v0.8.4 and earlier cannot be migrated. Point `state_file` to a new file instead.
 
-重启 CLIProxyAPI 后，在管理中心打开「API Key 计费」。确认模型定价后，创建订阅计划并绑定需要限制的 API Key。
+After restarting CLIProxyAPI, open **API Key Billing** in the management center. Review the model prices, create a subscription plan, and bind the API keys that should be limited.
 
-## 页面访问
+## Accessing the UI
 
-管理员可以从 CLIProxyAPI 管理中心的「API Key 计费」菜单进入，也可以直接打开：
-
-```text
-http(s)://<CLIProxyAPI 地址>/v0/resource/plugins/cpa-key-billing/ui
-```
-
-普通用户使用自己的 API Key 查询订阅额度和用量时，直接打开：
+Administrators can open **API Key Billing** from the CLIProxyAPI management center or use this URL directly:
 
 ```text
-http(s)://<CLIProxyAPI 地址>/v0/resource/plugins/cpa-key-billing/ui#account
+http(s)://<CLIProxyAPI-address>/v0/resource/plugins/cpa-key-billing/ui
 ```
 
-## 计费与订阅规则
+Users can view their own subscription quota and usage with their API key at:
 
-- 未绑定订阅计划的 API Key 只统计用量，不限制额度。
-- 订阅计划可设置多个自定义额度窗口，每个窗口可单独或组合限制金额、Token、请求数。
-- 每个 API Key 独立记账。独立周期从首次放行开始；统一周期可为各窗口指定下次开始时间，所有绑定 Key 按固定时间重置。
-- 手动重置额度时，统一周期的重置时间保持不变；独立周期在下一次放行时重新开始。
-- 自定义价优先于 models.dev 参考价，两者都没有时拒绝新请求。
-- 请求事件保留最近 365 天。
+```text
+http(s)://<CLIProxyAPI-address>/v0/resource/plugins/cpa-key-billing/ui#account
+```
 
-## 路由规则
+## Billing and subscription rules
 
-在 API Key 页面绑定路由规则，也可直接选择模型、整类凭证或单个凭证。点击模型或凭证的选框，可在未选择、白名单（勾号）、黑名单（叉号）之间切换。整类凭证包含该类别后续新增的凭证，也可用黑名单排除其中的单个凭证。模型与凭证分别合并所有绑定规则和直接选择：白名单取并集，黑名单取并集，黑名单优先。白名单为空时允许全部，再排除黑名单。
+- An API key without a subscription plan is metered but has no quota limit.
+- A subscription plan can contain multiple custom quota windows. Each window can limit spend, tokens, requests, or any combination of the three.
+- Each API key is billed independently. An independent period starts on the key's first admitted request. A synchronized period gives each window a fixed next-start time and resets all bound keys on that schedule.
+- A manual reset keeps synchronized reset times unchanged. An independent period starts again on its next admitted request.
+- Price precedence is custom, built-in, then models.dev reference. A request is rejected if no price is available.
+- Request events are retained for 365 days.
+
+### Built-in model prices
+
+The plugin includes fallback prices for the CPA identifiers shown below. Rates are USD per million tokens and were verified on September 14, 2026. Custom prices override these defaults. Google advertises the `gemini-3.6-flash-high`, `gemini-3.7-flash-high`, and `gemini-3.8-flash-high` rates through December 31, 2026; recheck them before 2027.
+
+| Model | Input | Output | Cache read | Cache write | Long context |
+| --- | ---: | ---: | ---: | ---: | --- |
+| `claude-opus-4-6-thinking` | $5 | $25 | $0.50 | $6.25 | — |
+| `claude-sonnet-4-6` | $3 | $15 | $0.30 | $3.75 | — |
+| `codex-auto-review` | $2.50 | $15 | $0.25 | input rate | >272K: $5 / $22.50 / $0.50 |
+| `gemini-3-flash` | $0.50 | $3 | $0.05 | input rate | — |
+| `gemini-3.1-flash-image` | $0.50 | $60 | input rate | input rate | — |
+| `gemini-3.1-flash-lite` | $0.25 | $1.50 | $0.025 | input rate | — |
+| `gemini-3.1-pro-low` | $2 | $12 | $0.20 | input rate | >200K: $4 / $18 / $0.40 |
+| `gemini-3.6-flash-high` | $0.75 | $3.75 | $0.075 | input rate | — |
+| `gemini-3.7-flash-high` | $0.75 | $3.75 | $0.075 | input rate | — |
+| `gemini-3.8-flash-high` | $0.75 | $3.75 | $0.075 | input rate | — |
+| `gemini-pro-agent` | $2 | $12 | $0.20 | $0.375 | — |
+| `gpt-5.3-codex-spark` | $1.75 | $14 | $0.175 | input rate | — |
+| `gpt-5.5` | $5 | $30 | $0.50 | input rate | >272K: $10 / $45 / $1 |
+| `gpt-5.6-luna` | $0.20 | $1.20 | $0.02 | $0.25 | >272K: 2x input/cache, 1.5x output |
+| `gpt-5.6-sol` | $4 | $20 | $0.40 | $5 | >272K: 2x input/cache, 1.5x output |
+| `gpt-5.6-terra` | $2 | $12 | $0.20 | $2.50 | >272K: 2x input/cache, 1.5x output |
+| `gpt-6-astra` | $10 | $50 | $1 | $12.50 | >272K: 2x input/cache, 1.5x output |
+| `gpt-image-1.5` | $5 | $32 | $1.25 | input rate | — |
+| `gpt-image-2` | $2.50 | $15 | $0.625 | input rate | — |
+| `gpt-image-2.5` | $5 | $30 | $1.25 | input rate | — |
+| `gpt-image-2.5-flare` | $5 | $30 | $1.25 | input rate | — |
+| `gpt-image-2.5-sunburst` | $5 | $30 | $1.25 | input rate | — |
+| `gpt-oss-120b-medium` | $0.15 | $0.60 | input rate | input rate | — |
+
+Sources: [Anthropic pricing](https://platform.claude.com/docs/en/about-claude/pricing), [Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing), and [OpenAI API pricing](https://developers.openai.com/api/docs/pricing). For image models, the generic input and cache fields use text-token rates while output uses the image-token rate. `gemini-pro-agent` and `gpt-oss-120b-medium` are CPA route aliases rather than vendor API model IDs; their supplied route rates are documented in code.
+
+## Routing rules
+
+Bind routing rules on the API Key page, or select models, entire credential categories, and individual credentials directly. Click a model or credential checkbox to cycle between unselected, allowlisted (check mark), and denylisted (cross). A credential category also covers credentials added to that category later; individual credentials can still be excluded by the denylist. Model and credential permissions independently merge every bound rule with direct selections: allowlists are unioned, denylists are unioned, and deny always wins. An empty allowlist permits everything except denylisted entries.
 
 ```mermaid
 ---
@@ -140,27 +173,27 @@ config:
     padding: 3
 ---
 flowchart TB
-    A["全部绑定路由<br/>＋ Key 直接选择"] --> M["模型黑白名单分别取并集<br/>白名单为空则不限，再排除黑名单"]
-    A --> C["凭证黑白名单分别取并集<br/>整类凭证 ＋ 单个凭证<br/>白名单为空则不限，再排除黑名单"]
-    M --> D{请求模型是否允许？}
-    D -- 否 --> R[返回 HTTP 403]
-    D -- 是 --> P["在 CPA 可用候选中<br/>按凭证权限选择上游"]
+    A["All bound routes<br/>plus direct key selections"] --> M["Union model allowlists and denylists<br/>an empty allowlist is unrestricted, then deny"]
+    A --> C["Union credential allowlists and denylists<br/>categories plus individual credentials<br/>an empty allowlist is unrestricted, then deny"]
+    M --> D{Is the requested model allowed?}
+    D -- No --> R[Return HTTP 403]
+    D -- Yes --> P["Select an upstream from eligible CPA candidates<br/>according to credential permissions"]
     C --> P
-    P -- 有可用凭证 --> U[调用上游]
-    P -- 无可用凭证 --> S[返回 HTTP 503]
+    P -- Eligible credential --> U[Call upstream]
+    P -- Unavailable --> S[Return HTTP 503]
 ```
 
-## 拦截请求的响应
+## Intercepted-request responses
 
-| 场景 | 状态码 | `type` | `code` |
+| Scenario | Status | `type` | `code` |
 | --- | --- | --- | --- |
-| API Key 并发已满 | `429` | `rate_limit_error` | `rate_limit_exceeded` |
-| 订阅额度用尽 | `429` | `rate_limit_error` | `rate_limit_exceeded` |
-| 模型无权访问 | `403` | `permission_error` | `insufficient_quota` |
-| 没有符合规则且可用的凭证 | `503` | `server_error` | `internal_server_error` |
-| 已绑定的路由规则不存在或损坏 | `503` | `server_error` | `routing_configuration_error` |
-| 模型未定价 | `503` | `cpa_key_billing_error` | `model_price_error` |
+| API key concurrency limit reached | `429` | `rate_limit_error` | `rate_limit_exceeded` |
+| Subscription quota exhausted | `429` | `rate_limit_error` | `rate_limit_exceeded` |
+| Model access denied | `403` | `permission_error` | `insufficient_quota` |
+| No eligible, available credential | `503` | `server_error` | `internal_server_error` |
+| A bound routing rule is missing or corrupt | `503` | `server_error` | `routing_configuration_error` |
+| Model has no price | `503` | `cpa_key_billing_error` | `model_price_error` |
 
-## 致谢
+## Acknowledgements
 
-- [LINUX DO](https://linux.do/) - 新的理想型社区
+- [LINUX DO](https://linux.do/) — a community for developers and technology enthusiasts

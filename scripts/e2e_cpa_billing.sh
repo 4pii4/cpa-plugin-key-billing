@@ -2,14 +2,14 @@
 
 set -euo pipefail
 
-# Usage: e2e_cpa_billing.sh [目标 ...]
+# Usage: e2e_cpa_billing.sh [target ...]
 #
 # Each argument names one CLIProxyAPI to test, and they are tested in turn:
 #
-#	不传参数            GitHub 上的最新发布版
-#	7.2.136             GitHub 上的该发布版
-#	../CLIProxyAPI      代码目录，现场构建
-#	../cli-proxy-api    可执行文件，直接使用
+#	(no arguments)      latest GitHub release
+#	7.2.136             specified GitHub release
+#	../CLIProxyAPI      source directory; build locally
+#	../cli-proxy-api    executable; use directly
 readonly github_repo="router-for-me/CLIProxyAPI"
 # The upstream is scripts/dummy_provider.py: it answers all four protocols this
 # suite routes to, so model requests need no real credentials and return fixed
@@ -28,7 +28,7 @@ fi
 
 for command_name in curl jq tar go python3; do
   if ! command -v "$command_name" >/dev/null 2>&1; then
-    echo "缺少命令：$command_name" >&2
+    echo "Missing command: $command_name" >&2
     exit 1
   fi
 done
@@ -36,13 +36,13 @@ done
 case "$(uname -s)" in
   Darwin) platform="darwin"; plugin_extension="dylib" ;;
   Linux) platform="linux"; plugin_extension="so" ;;
-  *) echo "仅支持 macOS 和 Linux。" >&2; exit 1 ;;
+  *) echo "Only macOS and Linux are supported." >&2; exit 1 ;;
 esac
 
 case "$(uname -m)" in
   arm64|aarch64) architecture="aarch64" ;;
   x86_64|amd64) architecture="amd64" ;;
-  *) echo "不支持当前处理器架构：$(uname -m)" >&2; exit 1 ;;
+  *) echo "Unsupported processor architecture: $(uname -m)" >&2; exit 1 ;;
 esac
 
 script_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
@@ -66,7 +66,7 @@ cleanup() {
   fi
   find "$run_dir" -type f -name config.yaml -delete 2>/dev/null || true
   if [[ "${CPA_E2E_KEEP:-0}" == "1" ]]; then
-    echo "测试文件保留在：$run_dir"
+    echo "Test files retained in: $run_dir"
   else
     rm -rf "$run_dir"
   fi
@@ -88,7 +88,7 @@ log_ok() {
 
 mkdir -p "$cache_dir" "$run_dir/plugin"
 plugin_path="$run_dir/plugin/cpa-key-billing.$plugin_extension"
-log_stage "构建计费插件"
+log_stage "Building the billing plugin"
 (
   cd "$repo_dir"
   GOCACHE="$cache_dir/go-build" CGO_ENABLED=1 \
@@ -136,7 +136,7 @@ download_host() {
   local expected actual
 
   if [[ ! -s "$archive" ]]; then
-    log_step "下载 CLIProxyAPI v${version}" >&2
+    log_step "Downloading CLIProxyAPI v${version}" >&2
     curl -fL --retry 3 --output "$archive.part" "$release_url/$asset"
     mv "$archive.part" "$archive"
   fi
@@ -147,7 +147,7 @@ download_host() {
   expected="$(awk -v name="$asset" '$2 == name || $2 == "*" name {print $1; exit}' "$checksums")"
   actual="$(checksum_file "$archive")"
   if [[ -z "$expected" || "$actual" != "$expected" ]]; then
-    echo "CLIProxyAPI v$version 校验和不匹配。" >&2
+    echo "CLIProxyAPI v$version checksum mismatch." >&2
     exit 1
   fi
   printf '%s' "$archive"
@@ -164,9 +164,9 @@ resolve_host() {
   local version archive
 
   if [[ -d "$target" ]]; then
-    host_label="${target}（源码构建）"
+    host_label="${target} (source build)"
     host_binary="$host_dir/cli-proxy-api"
-    log_step "从源码构建 CLIProxyAPI：${target}"
+    log_step "Building CLIProxyAPI from source: ${target}"
     (
       cd "$target"
       GOCACHE="$cache_dir/go-build" go build -o "$host_binary" ./cmd/server
@@ -180,7 +180,7 @@ resolve_host() {
   fi
   version="$(resolve_version "$target")"
   archive="$(download_host "$version")"
-  tar -xzf "$archive" -C "$host_dir"
+  tar --no-same-owner -xzf "$archive" -C "$host_dir"
   host_label="v$version"
   host_binary="$(find "$host_dir" -type f -name 'cli-proxy-api' -perm -111 | head -n 1)"
 }
@@ -199,14 +199,14 @@ start_upstream() {
       return
     fi
     if ! kill -0 "$upstream_pid" >/dev/null 2>&1; then
-      echo "dummy provider 启动失败：" >&2
+      echo "Dummy provider failed to start:" >&2
       cat "$log_file" >&2 || true
       return 1
     fi
     attempts=$((attempts + 1))
     sleep 0.1
   done
-  echo "等待 dummy provider 启动超时。" >&2
+  echo "Timeout waiting for dummy provider to start." >&2
   return 1
 }
 
@@ -215,7 +215,7 @@ wait_for_server() {
   local attempts=0
   while (( attempts < 120 )); do
     if ! kill -0 "$active_pid" >/dev/null 2>&1; then
-      echo "CLIProxyAPI 启动失败。" >&2
+      echo "CLIProxyAPI failed to start." >&2
       return 1
     fi
     if curl -fsS --max-time 1 "http://127.0.0.1:$port/healthz" >/dev/null 2>&1; then
@@ -227,7 +227,7 @@ wait_for_server() {
     attempts=$((attempts + 1))
     sleep 0.5
   done
-  echo "等待 CLIProxyAPI 启动超时。" >&2
+  echo "Timeout waiting for CLIProxyAPI to start." >&2
   return 1
 }
 
@@ -328,17 +328,17 @@ api_call() {
     --output "$output" \
     --write-out '%{http_code}' \
     "http://127.0.0.1:$port$path")"; then
-    echo "请求失败：$name" >&2
+    echo "Request failed: $name" >&2
     return 1
   fi
   if [[ "$http_status" != 2* ]]; then
     error_message="$(jq -r '.error.message // .message // empty' "$output" 2>/dev/null || true)"
-    echo "请求失败：${name}（HTTP ${http_status}${error_message:+，${error_message}}）" >&2
+    echo "Request failed: ${name} (HTTP ${http_status}${error_message:+, ${error_message}})" >&2
     return 1
   fi
   if jq -e '(.type? == "error") or (.error? != null)' "$output" >/dev/null 2>&1 ||
     grep -Eq '^data:.*"type"[[:space:]]*:[[:space:]]*"error"' "$output"; then
-    echo "上游返回错误：$name" >&2
+    echo "Upstream returned an error: $name" >&2
     return 1
   fi
 }
@@ -436,7 +436,7 @@ wait_for_event_count() {
 
   while (( attempt < 50 )); do
     if ! management_call GET "$port" "/v0/management/plugins/cpa-key-billing/events?limit=100" >"$request_events_file"; then
-      echo "读取请求事件失败。" >&2
+      echo "Failed to read request events." >&2
       return 1
     fi
     actual_count="$(jq -er '.entries | length' "$request_events_file")"
@@ -449,7 +449,7 @@ wait_for_event_count() {
     attempt=$((attempt + 1))
     sleep 0.1
   done
-  echo "请求事件数量为 ${actual_count}，预期 ${expected_count}。" >&2
+  echo "Request-event count is ${actual_count}; expected ${expected_count}." >&2
   return 1
 }
 
@@ -474,7 +474,7 @@ assert_billing_entry() {
   esac
   entry_file="${request_events_file%.json}-entry.json"
   if ! wait_for_event_count "$port" "$expected_count" "$request_events_file"; then
-    echo "用例：${client} → ${upstream}。" >&2
+    echo "Test case: ${client} → ${upstream}." >&2
     return 1
   fi
   jq -e '.entries[0]' "$request_events_file" >"$entry_file"
@@ -492,7 +492,7 @@ assert_billing_entry() {
       .price_source == "custom" and
       (.cost.total_usd > 0)
     ' "$entry_file" >/dev/null; then
-    echo "${client} → ${upstream} 的模型、来源、usage 或定价不正确。" >&2
+    echo "${client} → ${upstream}: incorrect model, source, usage, or pricing." >&2
     return 1
   fi
 
@@ -510,7 +510,7 @@ assert_billing_entry() {
     "$billed_cache_read" != "$expected_cache_read_tokens" ||
     "$billed_cache_write" != "$expected_cache_write" ||
     "$billed_output" != "$expected_output_tokens" ]]; then
-    echo "${client} → ${upstream} 的计费 usage 桶不符合上游响应。" >&2
+    echo "${client} → ${upstream}: billing usage buckets do not match the upstream response." >&2
     return 1
   fi
   # Cross-protocol translators may merge cache buckets in the client-facing
@@ -524,7 +524,7 @@ assert_billing_entry() {
   IFS=$'\t' read -r input output <<<"$usage"
   billed_input=$((billed_uncached + billed_cache_read + billed_cache_write))
   if [[ "$input" != "$billed_input" || "$output" != "$billed_output" ]]; then
-    echo "${client} 直通响应与计费 usage 不一致。" >&2
+    echo "${client}: passthrough response and billed usage do not match." >&2
     return 1
   fi
 }
@@ -553,13 +553,13 @@ assert_route_model_policy() {
   scope="$(jq -er 'first(.keys[] | select(.in_config) | .scope)' "$runtime_dir/access.json")"
   if ! jq -e --arg scope "$scope" 'first(.keys[] | select(.scope == $scope)) | all(.route_bindings[]; length == 0)' \
     "$runtime_dir/access.json" >/dev/null; then
-    echo "未绑定路由的 API Key 仍然受到限制。" >&2
+    echo "An API key without routing bindings is still restricted." >&2
     return 1
   fi
 
   management_call POST "$port" "/v0/management/plugins/cpa-key-billing/routes" \
     -H "Content-Type: application/json" \
-    --data '{"name":"e2e-限定路由","rule":{"models":["codex/gpt-5.6-sol"],"credential_ids":[],"credential_providers":[]}}' \
+    --data '{"name":"e2e-restricted-route","rule":{"models":["codex/gpt-5.6-sol"],"credential_ids":[],"credential_providers":[]}}' \
 	>"$runtime_dir/route.json"
   route="$(jq -er '.route.id' "$runtime_dir/route.json")"
   management_call PUT "$port" "/v0/management/plugins/cpa-key-billing/keys/routes" \
@@ -578,20 +578,20 @@ assert_route_model_policy() {
       --write-out '%{http_code}' \
       "http://127.0.0.1:$port/v1/chat/completions")"
     if [[ "$http_status" != "403" ]]; then
-      echo "无权使用的模型 ${requested} 返回 HTTP ${http_status}，预期 403。" >&2
+      echo "Disallowed model ${requested} returned HTTP ${http_status}; expected 403." >&2
       return 1
     fi
     if ! jq -e --arg model "gpt-5.6-sol" '
         .error.type == "permission_error" and .error.code == "insufficient_quota"
         and (.error.message | contains("\"" + $model + "\""))' "$response_file" >/dev/null; then
-      echo "模型拦截 ${requested} 的错误内容不正确：$(jq -c '.' "$response_file")" >&2
+      echo "Model block for ${requested} returned an incorrect error: $(jq -c '.' "$response_file")" >&2
       return 1
     fi
   done
 
   management_call GET "$port" "/v0/management/plugins/cpa-key-billing/events?limit=100" >"$request_events_file"
   if [[ "$(jq -er '.entries | length' "$request_events_file")" != "$expected_count" ]]; then
-    echo "被拦截的请求进入了请求事件。" >&2
+    echo "A blocked request was recorded as a request event." >&2
     return 1
   fi
   management_call GET "$port" "/v0/management/plugins/cpa-key-billing/plugin-logs?level=debug" >"$plugin_logs_file"
@@ -601,7 +601,7 @@ assert_route_model_policy() {
         | (.message | gsub("&#34;"; "\"") | ltrimstr("route ") | fromjson)
         | select(.model == $model and .model_result == "deny" and .credential_result == "not_reached")]
       | length == 3' "$plugin_logs_file" >/dev/null; then
-    echo "插件日志缺少合并后的模型路由记录：$(jq -c '.entries' "$plugin_logs_file")" >&2
+    echo "Plugin log is missing the merged model-routing record: $(jq -c '.entries' "$plugin_logs_file")" >&2
     return 1
   fi
 
@@ -614,7 +614,7 @@ assert_route_model_policy() {
   management_call DELETE "$port" "/v0/management/plugins/cpa-key-billing/routes?id=$route" >/dev/null
 
   body="$(request_body chat "gpt-5.6-sol" false "Reply with exactly OK.")"
-  api_call "$port" "模型拦截解除后：OpenAI Chat → OpenAI Chat 非流式" \
+  api_call "$port" "Model unblocked: OpenAI Chat → OpenAI Chat non-streaming" \
     "/v1/chat/completions" "$body" chat "$runtime_dir/responses/model-restored.json"
   assert_billing_entry "$port" "$((expected_count + 1))" chat chat \
     "gpt-5.6-sol" "gpt-5.6-sol" "$runtime_dir/model-restored-request-events.json" \
@@ -634,14 +634,14 @@ assert_route_blacklist_policy() {
   denied_ref="$(jq -er 'first(.credentials[] | select(.provider == "openai-compatible-route-denied-e2e")).ref' "$runtime_dir/blacklist-credentials.json")"
   management_call POST "$port" "/v0/management/plugins/cpa-key-billing/routes" \
     -H "Content-Type: application/json" \
-    --data "$(jq -nc --arg scope "$scope" '{name:"e2e-黑名单",scopes:[$scope],rule:{denied_credential_providers:[{source:"ai-providers",provider:"openai-compatible-route-denied-e2e"}]}}')" \
+    --data "$(jq -nc --arg scope "$scope" '{name:"e2e-blacklist",scopes:[$scope],rule:{denied_credential_providers:[{source:"ai-providers",provider:"openai-compatible-route-denied-e2e"}]}}')" \
     >"$runtime_dir/blacklist-route.json"
   route="$(jq -er '.route.id' "$runtime_dir/blacklist-route.json")"
   body="$(request_body chat "e2e-credential-route" false "Reply with exactly OK.")"
-  api_call "$port" "纯黑名单：排除 blocked 类别" "/v1/chat/completions" "$body" chat "$runtime_dir/responses/blacklist-provider.json"
+  api_call "$port" "Denylist only: exclude blocked provider" "/v1/chat/completions" "$body" chat "$runtime_dir/responses/blacklist-provider.json"
   wait_for_event_count "$port" "$((expected_count + 1))" "$events_file"
   if ! jq -e '.entries[0].provider == "openai-compatible-route-allowed-e2e" and .entries[0].failed == false' "$events_file" >/dev/null; then
-    echo "纯类别黑名单未限制候选集。" >&2
+    echo "Provider denylist did not restrict the candidate set." >&2
     return 1
   fi
 
@@ -651,10 +651,10 @@ assert_route_blacklist_policy() {
   management_call PUT "$port" "/v0/management/plugins/cpa-key-billing/keys/routes" \
     -H "Content-Type: application/json" \
     --data "$(jq -nc --arg scope "$scope" --arg route "$route" --arg ref "$denied_ref" '{scope:$scope,bindings:{route_ids:[$route],credential_ids:[$ref]}}')" >/dev/null
-  api_call "$port" "整类白名单：指定凭证黑名单优先于 Key 直接白名单" "/v1/chat/completions" "$body" chat "$runtime_dir/responses/blacklist-exact.json"
+  api_call "$port" "Provider allowlist: explicit credential denylist takes precedence" "/v1/chat/completions" "$body" chat "$runtime_dir/responses/blacklist-exact.json"
   wait_for_event_count "$port" "$((expected_count + 2))" "$events_file"
   if ! jq -e '.entries[0].provider == "openai-compatible-route-allowed-e2e" and .entries[0].failed == false' "$events_file" >/dev/null; then
-    echo "指定凭证黑名单被白名单覆盖。" >&2
+    echo "The explicit credential denylist was overridden by the allowlist." >&2
     return 1
   fi
 
@@ -662,8 +662,8 @@ assert_route_blacklist_policy() {
     -H "Content-Type: application/json" \
     --data "$(jq -nc --arg id "$route" '{id:$id,rule:{denied_credential_providers:[{source:"ai-providers",provider:"openai-compatible-route-allowed-e2e"},{source:"ai-providers",provider:"openai-compatible-route-denied-e2e"}]}}')" >/dev/null
   http_status="$(curl -sS --max-time 30 -H "Content-Type: application/json" -H "Authorization: Bearer e2e-downstream-key" --data "$body" --output "$response_file" --write-out '%{http_code}' "http://127.0.0.1:$port/v1/chat/completions")"
-  if [[ "$http_status" != "503" ]] || ! jq -e '(.error.message | contains("当前没有符合路由规则且可用的上游凭证"))' "$response_file" >/dev/null; then
-    echo "全部候选被黑名单排除后未返回 503。" >&2
+  if [[ "$http_status" != "503" ]] || ! jq -e '(.error.message | contains("No available upstream credential matches the routing rules"))' "$response_file" >/dev/null; then
+    echo "Excluding every candidate did not return HTTP 503." >&2
     return 1
   fi
 
@@ -676,18 +676,18 @@ assert_route_blacklist_policy() {
   for requested in "gpt-5.6-sol" "gpt-5.6-sol(high)" "gpt-5.6-sol(max)"; do
     http_status="$(curl -sS --max-time 30 -H "Content-Type: application/json" -H "Authorization: Bearer e2e-downstream-key" --data "$(request_body chat "$requested" false "Reply with exactly OK.")" --output "$response_file" --write-out '%{http_code}' "http://127.0.0.1:$port/v1/chat/completions")"
     if [[ "$http_status" != "403" ]] || ! jq -e '(.error.message | contains("denied by a routing rule"))' "$response_file" >/dev/null; then
-      echo "模型黑名单被直接白名单或推理后缀绕过：$requested。" >&2
+      echo "Model denylist was bypassed by a direct allowlist or reasoning suffix: $requested." >&2
       return 1
     fi
   done
   account_call "$port" "/v0/resource/plugins/cpa-key-billing/routing" >"$runtime_dir/blacklist-account.json"
   if ! jq -e '.models == ["gpt-5.6-sol"] and .denied_models == ["gpt-5.6-sol"] and .routing_valid == true' "$runtime_dir/blacklist-account.json" >/dev/null; then
-    echo "账户权限没有保留黑白名单冲突语义。" >&2
+    echo "Account permissions did not preserve allowlist/denylist conflict semantics." >&2
     return 1
   fi
   management_call GET "$port" "/v0/management/plugins/cpa-key-billing/events?limit=100" >"$events_file"
   if [[ "$(jq -er '.entries | length' "$events_file")" != "$((expected_count + 2))" ]]; then
-    echo "黑名单拦截进入了计费用量。" >&2
+    echo "A denylist-blocked request was included in billed usage." >&2
     return 1
   fi
   management_call PUT "$port" "/v0/management/plugins/cpa-key-billing/keys/routes" -H "Content-Type: application/json" --data "$(jq -nc --arg scope "$scope" '{scope:$scope,bindings:{}}')" >/dev/null
@@ -713,7 +713,7 @@ assert_route_credential_policy() {
   # from the route. Provider and exact-credential limits must still apply.
   management_call POST "$port" "/v0/management/plugins/cpa-key-billing/routes" \
     -H "Content-Type: application/json" \
-    --data "$(jq -nc --arg scope "$scope" '{name:"e2e-凭证路由",rule:{models:["e2e-other-route-model"],credential_ids:[],credential_providers:[{source:"ai-providers",provider:"openai-compatible-route-allowed-e2e"}]},scopes:[$scope]}')" \
+    --data "$(jq -nc --arg scope "$scope" '{name:"e2e-credential-route",rule:{models:["e2e-other-route-model"],credential_ids:[],credential_providers:[{source:"ai-providers",provider:"openai-compatible-route-allowed-e2e"}]},scopes:[$scope]}')" \
     >"$runtime_dir/credential-route.json"
   route="$(jq -er '.route.id' "$runtime_dir/credential-route.json")"
   management_call PUT "$port" "/v0/management/plugins/cpa-key-billing/keys/routes" \
@@ -722,7 +722,7 @@ assert_route_credential_policy() {
     >/dev/null
 
   body="$(request_body chat "e2e-credential-route" false "Reply with exactly OK.")"
-  api_call "$port" "凭证类别路由：仅允许 route-allowed-e2e" \
+  api_call "$port" "Credential-provider routing: route-allowed-e2e only" \
     "/v1/chat/completions" "$body" chat "$runtime_dir/responses/credential-provider-route.json"
   wait_for_event_count "$port" "$((expected_count + 1))" "$events_file"
   if ! jq -e '
@@ -731,7 +731,7 @@ assert_route_credential_policy() {
       .billing_model == "e2e-credential-route" and
       .executor_type == "OpenAICompatExecutor" and .failed == false
     ' "$events_file" >/dev/null; then
-    echo "凭证类别路由选择了错误的 Provider：$(jq -c '.entries[0]' "$events_file")" >&2
+    echo "Credential-provider routing selected the wrong provider: $(jq -c '.entries[0]' "$events_file")" >&2
     return 1
   fi
 
@@ -742,7 +742,7 @@ assert_route_credential_policy() {
       first(.credentials[] | select(.source == "ai-providers" and .provider == "openai-compatible-route-allowed-e2e")) |
       .display_name == "e2e-ro…1111"
     ' "$access_file" >/dev/null; then
-    echo "配置型上游凭证未显示安全的 API Key 掩码：$(jq -c '.credentials' "$access_file")" >&2
+    echo "Configured upstream credentials do not show a safe API-key mask: $(jq -c '.credentials' "$access_file")" >&2
     return 1
   fi
   allowed_ref="$(jq -er 'first(.credentials[] | select(.source == "ai-providers" and .provider == "openai-compatible-route-allowed-e2e")).ref' "$access_file")"
@@ -751,14 +751,14 @@ assert_route_credential_policy() {
     --data "$(jq -nc --arg id "$route" --arg ref "$allowed_ref" '{id:$id,rule:{models:["e2e-other-route-model"],credential_ids:[$ref],credential_providers:[]}}')" \
     >/dev/null
 
-  api_call "$port" "指定凭证路由：仅允许 route-allowed-e2e" \
+  api_call "$port" "Explicit credential routing: allow only route-allowed-e2e" \
     "/v1/chat/completions" "$body" chat "$runtime_dir/responses/credential-exact-route.json"
   wait_for_event_count "$port" "$((expected_count + 2))" "$events_file"
   if ! jq -e '
       [.entries[] | select(.billing_model == "e2e-credential-route")] as $rows |
       ($rows | length) == 2 and all($rows[]; .provider == "openai-compatible-route-allowed-e2e")
     ' "$events_file" >/dev/null; then
-    echo "指定凭证路由未稳定限制候选集：$(jq -c '.entries' "$events_file")" >&2
+    echo "Explicit credential routing did not consistently restrict the candidate set: $(jq -c '.entries' "$events_file")" >&2
     return 1
   fi
 
@@ -776,14 +776,14 @@ assert_route_credential_policy() {
     "http://127.0.0.1:$port/v1/chat/completions")"
   if [[ "$http_status" != "503" ]] || ! jq -e '
       .error.type == "server_error" and .error.code == "internal_server_error" and
-      (.error.message | contains("当前没有符合路由规则且可用的上游凭证"))
+      (.error.message | contains("No available upstream credential matches the routing rules"))
     ' "$response_file" >/dev/null; then
-    echo "没有合格凭证时未按预期返回 503：HTTP $http_status $(jq -c '.' "$response_file")" >&2
+    echo "503 not returned as expected without qualifying credentials: HTTP $http_status $(jq -c '.' "$response_file")" >&2
     return 1
   fi
   management_call GET "$port" "/v0/management/plugins/cpa-key-billing/events?limit=100" >"$events_file"
   if [[ "$(jq -er '.entries | length' "$events_file")" != "$((expected_count + 2))" ]]; then
-    echo "凭证路由拦截进入了请求事件。" >&2
+    echo "A credential-routing block was recorded as a request event." >&2
     return 1
   fi
 
@@ -799,9 +799,9 @@ assert_route_credential_policy() {
       all($rows[] | select(.status == 200);
         .model_result == "allow" and .credential_policy == "restricted" and .credential_result == "selected" and
         ((.selected_credential // "") | length) > 0 and
-        ((.selected_credential // "") | contains("上游凭证") | not))
+        ((.selected_credential // "") | contains("Upstream credential") | not))
     ' "$plugin_logs_file" >/dev/null; then
-    echo "插件日志缺少凭证路由选择结果：$(jq -c '.entries' "$plugin_logs_file")" >&2
+    echo "Plugin log is missing the credential-routing result: $(jq -c '.entries' "$plugin_logs_file")" >&2
     return 1
   fi
 
@@ -844,13 +844,13 @@ assert_concurrency_limit() {
       first(.keys[] | select(.scope == $scope)) |
       .concurrency_limit == 1 and .current_concurrency == 0
     ' "$access_file" >/dev/null; then
-    echo "API Key 并发数保存结果不正确。" >&2
+    echo "Saved API-key concurrency limit is incorrect." >&2
     return 1
   fi
 
   body="$(request_body responses "gpt-5.6-sol" true "E2E HOLD CONCURRENCY SLOT")"
   endpoint="$(client_endpoint responses "gpt-5.6-sol" true)"
-  api_call "$port" "并发限制：保持 SSE 请求" "$endpoint" "$body" responses "$response_file" \
+  api_call "$port" "Concurrency Limit: Keep SSE requests" "$endpoint" "$body" responses "$response_file" \
     >"$request_log" 2>&1 &
   hold_pid=$!
 
@@ -864,7 +864,7 @@ assert_concurrency_limit() {
     sleep 0.05
   done
   if [[ "$current" != "1" ]]; then
-    echo "SSE 请求未占用 API Key 并发槽位。" >&2
+    echo "SSE request did not occupy an API-key concurrency slot." >&2
     wait "$hold_pid" || cat "$request_log" >&2
     return 1
   fi
@@ -883,13 +883,13 @@ assert_concurrency_limit() {
       .error.code == "rate_limit_exceeded" and
       (.error.message | startswith("API key concurrency limit reached"))
     ' "$blocked_file" >/dev/null; then
-    echo "并发饱和请求的响应不正确（HTTP ${http_status}）：$(jq -c '.' "$blocked_file")" >&2
+    echo "Incorrect response to concurrent saturation request (HTTP ${http_status}): $(jq -c '.' "$blocked_file")" >&2
     wait "$hold_pid" || true
     return 1
   fi
   retry_after="$(awk 'tolower($1) == "retry-after:" {gsub(/\r/, "", $2); print $2}' "$headers_file" | tail -n 1)"
   if [[ "$retry_after" != "1" ]]; then
-    echo "并发饱和请求缺少 Retry-After: 1。" >&2
+    echo "Concurrent saturation request missing Retry-After: 1." >&2
     wait "$hold_pid" || true
     return 1
   fi
@@ -908,7 +908,7 @@ assert_concurrency_limit() {
     sleep 0.05
   done
   if [[ "$current" != "0" ]]; then
-    echo "SSE 请求完成后 API Key 并发槽位未释放。" >&2
+    echo "API-key concurrency slot was not released after the SSE request completed." >&2
     return 1
   fi
 
@@ -917,7 +917,7 @@ assert_concurrency_limit() {
   fi
   actual_count="$(jq -er '.entries | length' "$request_events_file")"
   if [[ "$actual_count" != "$((expected_count + 1))" ]]; then
-    echo "并发拦截请求进入了请求事件。" >&2
+    echo "A concurrency-blocked request was recorded as a request event." >&2
     return 1
   fi
 
@@ -939,7 +939,7 @@ assert_quota_exhausted() {
   local dimension="$4"
   local scope plan client endpoint body header_line http_status retry_after actual_count
   local response_file headers_file request_events_file plugin_logs_file
-  local plan_name="e2e-额度计划-$dimension"
+  local plan_name="e2e-quota-plan-$dimension"
   local -a headers
 
   response_file="$runtime_dir/responses/quota-blocked.json"
@@ -969,7 +969,7 @@ assert_quota_exhausted() {
 
   # The dummy provider's fixed usage costs more than this plan allows.
   body="$(request_body chat "gpt-5.6-sol" false "Reply with exactly OK.")"
-  api_call "$port" "额度耗尽前：OpenAI Chat → OpenAI Chat 非流式" \
+  api_call "$port" "Before quota exhaustion: OpenAI Chat → OpenAI Chat non-streaming" \
     "/v1/chat/completions" "$body" chat "$runtime_dir/responses/quota-spend.json"
   expected_count=$((expected_count + 1))
   assert_billing_entry "$port" "$expected_count" chat chat \
@@ -991,11 +991,11 @@ assert_quota_exhausted() {
          else .dimensions[0].used == ($events[0].entries[0].cost |
            .uncached_input_tokens + .cache_read_tokens + .cache_write_tokens + .billed_output_tokens) end))
     ' "$runtime_dir/quota-access.json" >/dev/null; then
-    echo "多维度周期消费与单笔请求费用不一致。" >&2
+    echo "Multi-dimensional cycle consumption is inconsistent with the cost of a single request." >&2
     return 1
   fi
 
-  # The model stays one the key may call, so only the exhausted budget can be
+  # The model remains one the key may call, so only the exhausted budget can be
   # refusing these. Anthropic clients read an error envelope of their own; every
   # other client, Gemini included, reads the OpenAI-shaped one.
   for client in chat responses anthropic gemini; do
@@ -1013,7 +1013,7 @@ assert_quota_exhausted() {
       --write-out '%{http_code}' \
       "http://127.0.0.1:$port$endpoint")"
     if [[ "$http_status" != "429" ]]; then
-      echo "额度耗尽后 ${client} 返回 HTTP ${http_status}，预期 429。" >&2
+      echo "After quota exhaustion, ${client} returned HTTP ${http_status}; expected 429." >&2
       return 1
     fi
     if ! jq -e --arg client "$client" --arg plan "$plan_name" --arg dimension "$dimension" '
@@ -1026,12 +1026,12 @@ assert_quota_exhausted() {
              else (.error.message | contains($dimension + " ")) end)
         and (.error.message | contains("on plan \"" + $plan + "\""))
       ' "$response_file" >/dev/null; then
-      echo "额度拦截 ${client} 的错误内容不正确：$(jq -c '.' "$response_file")" >&2
+      echo "Quota block for ${client} returned an incorrect error: $(jq -c '.' "$response_file")" >&2
       return 1
     fi
     retry_after="$(awk 'tolower($1) == "retry-after:" {gsub(/\r/, "", $2); print $2}' "$headers_file" | tail -n 1)"
     if [[ -z "$retry_after" ]] || (( retry_after <= 0 )); then
-      echo "额度拦截 ${client} 缺少 Retry-After 响应头：${retry_after:-无}" >&2
+      echo "Quota block for ${client} is missing Retry-After: ${retry_after:-none}" >&2
       return 1
     fi
   done
@@ -1039,13 +1039,13 @@ assert_quota_exhausted() {
   management_call GET "$port" "/v0/management/plugins/cpa-key-billing/events?limit=100" >"$request_events_file"
   actual_count="$(jq -er '.entries | length' "$request_events_file")"
   if [[ "$actual_count" != "$expected_count" ]]; then
-    echo "被额度拦截的请求进入了请求事件：${actual_count}，预期 ${expected_count}。" >&2
+    echo "A quota-blocked request was recorded as an event: ${actual_count}; expected ${expected_count}." >&2
     return 1
   fi
   management_call GET "$port" "/v0/management/plugins/cpa-key-billing/plugin-logs" >"$plugin_logs_file"
-  if ! jq -e --arg plan "$plan_name" '[.entries[] | select(.level == "info" and (.message | startswith("额度拦截：")) and (.message | contains($plan)))] | length == 1' \
+  if ! jq -e --arg plan "$plan_name" '[.entries[] | select(.level == "info" and (.message | startswith("Quota blocked:")) and (.message | contains($plan)))] | length == 1' \
     "$plugin_logs_file" >/dev/null; then
-    echo "插件日志的额度拦截记录数量不正确：$(jq -c '[.entries[] | select(.message | startswith("额度拦截："))]' "$plugin_logs_file")" >&2
+    echo "Incorrect number of quota-block records in the plugin log: $(jq -c '[.entries[] | select(.message | startswith("Quota blocked:"))]' "$plugin_logs_file")" >&2
     return 1
   fi
 
@@ -1061,12 +1061,12 @@ assert_quota_exhausted() {
        then [.windows[].end_at] == [$old.windows[].end_at] and all(.windows[]; .started)
        else all(.windows[]; .started | not) end)
     ' "$runtime_dir/quota-reset.json" >/dev/null; then
-    echo "重置额度改变了周期安排或未清零消费。" >&2
+    echo "Resetting the quota changed the cycle schedule or did not clear usage." >&2
     return 1
   fi
 
   body="$(request_body chat "gpt-5.6-sol" false "Reply with exactly OK.")"
-  api_call "$port" "额度拦截解除后：OpenAI Chat → OpenAI Chat 非流式" \
+  api_call "$port" "After quota reset: OpenAI Chat → OpenAI Chat non-streaming" \
     "/v1/chat/completions" "$body" chat "$runtime_dir/responses/quota-restored.json"
   assert_billing_entry "$port" "$((expected_count + 1))" chat chat \
     "gpt-5.6-sol" "gpt-5.6-sol" "$runtime_dir/quota-restored-request-events.json" \
@@ -1095,13 +1095,13 @@ assert_headless_price_admission() {
       "http://127.0.0.1:$port$endpoint")"
     if [[ "$http_status" != "503" ]] || ! jq -e '
       .error.type == "cpa_key_billing_error" and .error.code == "model_price_error" and
-      .error.message == "模型 e2e-chat-to-chat-nonstream 尚未定价"
+      .error.message == "Model e2e-chat-to-chat-nonstream is not priced"
     ' "$runtime_dir/unpriced-$client.json" >/dev/null; then
-      echo "未访问前端时的 ${client} 定价拦截失败，HTTP ${http_status}。" >&2
+      echo "Headless ${client} price admission failed with HTTP ${http_status}." >&2
       return 1
     fi
   done
-  log_step "未访问前端：4 种协议均拒绝未定价模型"
+  log_step "Headless admission: all 4 protocols rejected an unpriced model"
 }
 
 assert_reference_price_billing() {
@@ -1121,12 +1121,12 @@ assert_reference_price_billing() {
     response_name="${model//\//-}"
     management_call GET "$port" "/v0/management/plugins/cpa-key-billing/prices?model=$requested_model&include_custom=false" >"$prices_file"
     if ! jq -e 'length == 1 and .[0].source == "reference"' "$prices_file" >/dev/null; then
-      echo "模型 $requested_model 未匹配到 models.dev 参考价。" >&2
+      echo "Model $requested_model did not match a models.dev reference price." >&2
       return 1
     fi
     for stream in false true; do
       body="$(request_body chat "$requested_model" "$stream" "Reply with exactly OK.")"
-      api_call "$port" "参考价准入与记账：$requested_model stream=$stream" \
+      api_call "$port" "Reference-price admission and billing: $requested_model stream=$stream" \
         "/v1/chat/completions" "$body" chat "$runtime_dir/responses/reference-$response_name-$stream.json"
       count=$((count + 1))
       wait_for_event_count "$port" "$count" "$events_file"
@@ -1142,12 +1142,12 @@ assert_reference_price_billing() {
         .cost.cache_write_tokens == 16 and .cost.billed_output_tokens == 8 and
         ((.cost.total_usd - $expected) | fabs) < 0.000000000001
       ' "$events_file" >/dev/null; then
-        echo "参考价准入后的 usage.handle 计费不正确。" >&2
+        echo "Incorrect usage.handle billing after reference price admission." >&2
         return 1
       fi
     done
   done
-  log_step "参考价已验证：普通模型及带前缀、思考后缀的模型，流式和非流式均按参考价记账"
+  log_step "Reference prices: base, prefixed, and reasoning-suffix models billed in both response modes"
 }
 
 run_target() {
@@ -1166,10 +1166,10 @@ run_target() {
   local -a matrix_models matrix_upstream_models matrix_responses matrix_errors matrix_request_ok matrix_ok matrix_reasons
   mkdir -p "$host_dir" "$runtime_dir/plugins" "$runtime_dir/auth" "$runtime_dir/responses"
 
-  log_stage "目标 $((index + 1))/${#targets[@]}：${target}"
+  log_stage "Target $((index + 1))/${#targets[@]}: ${target}"
   resolve_host "$target" "$host_dir"
   if [[ -z "$host_binary" || ! -x "$host_binary" ]]; then
-    echo "CLIProxyAPI ${host_label} 缺少可执行文件：$host_binary" >&2
+    echo "CLIProxyAPI ${host_label} executable is missing: $host_binary" >&2
     return 1
   fi
   cp "$plugin_path" "$runtime_dir/plugins/cpa-key-billing.$plugin_extension"
@@ -1184,16 +1184,16 @@ run_target() {
     -e "s|__UPSTREAM_API_KEY__|$api_key_json|g" \
     "$script_dir/e2e_config.yaml" >"$runtime_dir/config.yaml"
   if grep -q '__[A-Z_]*__' "$runtime_dir/config.yaml"; then
-    echo "配置模板存在未替换的占位符：$(grep -o '__[A-Z_]*__' "$runtime_dir/config.yaml" | sort -u | tr '\n' ' ')" >&2
+    echo "Configuration template has unreplaced placeholders: $(grep -o '__[A-Z_]*__' "$runtime_dir/config.yaml" | sort -u | tr '\n' ' ')" >&2
     return 1
   fi
   chmod 600 "$runtime_dir/config.yaml"
 
   if ! port_available "$port"; then
-    echo "测试端口已被占用：127.0.0.1:${port}。" >&2
+    echo "Test port is occupied: 127.0.0.1:${port}." >&2
     return 1
   fi
-  log_step "启动 ${host_label}，监听 127.0.0.1:${port}"
+  log_step "Starting ${host_label} on 127.0.0.1:${port}"
   "$host_binary" -config "$runtime_dir/config.yaml" -local-model >"$runtime_dir/host.log" 2>&1 &
   active_pid=$!
   if ! wait_for_server "$port"; then
@@ -1204,11 +1204,11 @@ run_target() {
   plugins_file="$runtime_dir/plugins.json"
   management_call GET "$port" "/v0/management/plugins" >"$plugins_file"
   if ! jq -e '.plugins[] | select(.id == "cpa-key-billing" and .registered == true and .effective_enabled == true)' "$plugins_file" >/dev/null; then
-    echo "插件未在 CLIProxyAPI ${host_label} 中注册。" >&2
+    echo "Plugin was not registered in CLIProxyAPI ${host_label}." >&2
     tail -n 80 "$runtime_dir/host.log" >&2 || true
     return 1
   fi
-  log_step "插件已注册并启用"
+  log_step "Plugin registered and enabled"
 
   assert_headless_price_admission "$port" "$runtime_dir"
   account_call "$port" "/v1/models" >"$runtime_dir/models.json"
@@ -1218,7 +1218,7 @@ run_target() {
     management_call PUT "$port" "/v0/management/plugins/cpa-key-billing/prices" \
       -H "Content-Type: application/json" --data-binary "@$runtime_dir/model-price.json" >"$runtime_dir/price.json"
   done <"$runtime_dir/model-ids.txt"
-  log_step "所有测试模型的自定义价已配置"
+  log_step "Custom pricing configured for all test models"
 
   prompt="Reply with exactly OK."
   request_index=0
@@ -1234,7 +1234,7 @@ run_target() {
   matrix_upstream_models=()
   matrix_responses=()
   matrix_errors=()
-  log_step "并发执行 32 个协议转换与 usage 用例"
+  log_step "Running 32 protocol-conversion and usage cases concurrently"
   for client in chat responses anthropic gemini; do
     client_label="$(protocol_label "$client")"
     for upstream in "${provider_cases[@]}"; do
@@ -1242,9 +1242,9 @@ run_target() {
       for stream in false true; do
         request_index=$((request_index + 1))
         if [[ "$stream" == "true" ]]; then
-          mode="stream"; mode_label="流式"; extension="sse"
+          mode="stream"; mode_label="streaming"; extension="sse"
         else
-          mode="nonstream"; mode_label="非流式"; extension="json"
+          mode="nonstream"; mode_label="non-streaming"; extension="json"
         fi
         model_id="e2e-${client}-to-${upstream}-${mode}"
         requested_model="$model_id"
@@ -1292,12 +1292,12 @@ run_target() {
   for ((matrix_index = 0; matrix_index < 32; matrix_index++)); do
     matrix_ok[$matrix_index]=0
     if [[ "${matrix_request_ok[$matrix_index]}" != "1" ]]; then
-      matrix_reasons[$matrix_index]="请求失败"
+      matrix_reasons[$matrix_index]="request failed"
       matrix_failed=$((matrix_failed + 1))
       continue
     fi
     if (( matrix_logs_ok == 0 )); then
-      matrix_reasons[$matrix_index]="日志读取失败"
+      matrix_reasons[$matrix_index]="log read failed"
       matrix_failed=$((matrix_failed + 1))
       continue
     fi
@@ -1306,12 +1306,12 @@ run_target() {
     upstream="${matrix_upstreams[$matrix_index]}"
     matches="$(jq -er --arg model "$billing_model" '[.entries[] | select(.billing_model == $model)] | length' "$request_events_file")"
     if [[ "$matches" == "0" ]]; then
-      matrix_reasons[$matrix_index]="漏记"
+      matrix_reasons[$matrix_index]="missing billing record"
       matrix_failed=$((matrix_failed + 1))
       continue
     fi
     if [[ "$matches" != "1" ]]; then
-      matrix_reasons[$matrix_index]="重复 ${matches} 条"
+      matrix_reasons[$matrix_index]="duplicate ${matches} entries"
       matrix_failed=$((matrix_failed + 1))
       continue
     fi
@@ -1336,7 +1336,7 @@ run_target() {
         (.ttft_ms // 0) > 0 and
         .ttft_ms <= .latency_ms
       ' "$request_events_file" >/dev/null; then
-      matrix_reasons[$matrix_index]="模型、来源或延迟不符"
+      matrix_reasons[$matrix_index]="model, source, or latency mismatch"
       matrix_failed=$((matrix_failed + 1))
       continue
     fi
@@ -1353,7 +1353,7 @@ run_target() {
         .billed_output_tokens == $output and
         .total_usd > 0
       ' "$request_events_file" >/dev/null; then
-      matrix_reasons[$matrix_index]="usage 不符"
+      matrix_reasons[$matrix_index]="usage mismatch"
       matrix_failed=$((matrix_failed + 1))
       continue
     fi
@@ -1362,13 +1362,13 @@ run_target() {
       if ! usage="$(extract_downstream_usage \
         "${matrix_clients[$matrix_index]}" "${matrix_streams[$matrix_index]}" \
         "${matrix_responses[$matrix_index]}" 2>/dev/null)"; then
-        matrix_reasons[$matrix_index]="响应 usage 缺失"
+      matrix_reasons[$matrix_index]="missing response usage"
         matrix_failed=$((matrix_failed + 1))
         continue
       fi
       IFS=$'\t' read -r input output <<<"$usage"
       if [[ "$input" != "$expected_input_tokens" || "$output" != "$expected_output_tokens" ]]; then
-        matrix_reasons[$matrix_index]="响应 usage 不符"
+      matrix_reasons[$matrix_index]="response usage mismatch"
         matrix_failed=$((matrix_failed + 1))
         continue
       fi
@@ -1381,45 +1381,45 @@ run_target() {
     if [[ "${matrix_ok[$matrix_index]}" == "1" ]]; then
       printf '    [%02d/32] ✓ %s\n' "$((matrix_index + 1))" "${matrix_labels[$matrix_index]}"
     else
-      printf '    [%02d/32] ✗ %s（%s）\n' \
+      printf '    [%02d/32] ✗ %s (%s)\n' \
         "$((matrix_index + 1))" "${matrix_labels[$matrix_index]}" "${matrix_reasons[$matrix_index]}"
     fi
   done
   if (( matrix_failed != 0 )); then
-    printf '  ✗ 协议转换：%d/32 通过，%d/32 失败\n' \
+    printf '  ✗ Protocol conversion: %d/32 passed, %d/32 failed\n' \
       "$((32 - matrix_failed))" "$matrix_failed"
     return 1
   fi
-  log_ok "协议转换：32/32 通过"
+  log_ok "Protocol conversion: 32/32 passed"
 
-  # 名称|客户端|上游|流式|请求模型|计费模型|可能的上游模型
+  # Name|client|upstream|streaming|requested model|billing model|possible upstream models
   model_cases=(
-    "推理后缀|chat|chat|false|gpt-5.6-sol(high)|gpt-5.6-sol|gpt-5.6-sol"
-    "前缀与推理后缀|anthropic|responses|true|codex/gpt-5.6-sol(high)|codex/gpt-5.6-sol|gpt-5.6-sol"
-    "模型池|gemini|chat|false|gpt-auto|gpt-auto|gpt-5.6-sol,gpt-5.5"
+    "reasoning suffix|chat|chat|false|gpt-5.6-sol(high)|gpt-5.6-sol|gpt-5.6-sol"
+    "prefix and reasoning suffix|anthropic|responses|true|codex/gpt-5.6-sol(high)|codex/gpt-5.6-sol|gpt-5.6-sol"
+    "model pool|gemini|chat|false|gpt-auto|gpt-auto|gpt-5.6-sol,gpt-5.5"
   )
-  log_step "模型路由：推理后缀、前缀与模型池"
+  log_step "Model routing: reasoning suffixes, prefixes, and model pools"
   for model_case in "${model_cases[@]}"; do
     IFS='|' read -r case_name client upstream stream requested_model billing_model upstream_models <<<"$model_case"
     client_label="$(protocol_label "$client")"
     upstream_label="$(protocol_label "$upstream")"
     request_index=$((request_index + 1))
     if [[ "$stream" == "true" ]]; then
-      mode="stream"; mode_label="流式"; extension="sse"
+      mode="stream"; mode_label="streaming"; extension="sse"
     else
-      mode="nonstream"; mode_label="非流式"; extension="json"
+      mode="nonstream"; mode_label="non-streaming"; extension="json"
     fi
     body="$(request_body "$client" "$requested_model" "$stream" "$prompt")"
     endpoint="$(client_endpoint "$client" "$requested_model" "$stream")"
     printf -v request_number '%02d' "$request_index"
     response_file="$runtime_dir/responses/${request_number}-${case_name}-${mode}.${extension}"
     request_events_file="$runtime_dir/responses/${request_number}-billing.json"
-    api_call "$port" "${case_name}：${client_label} → ${upstream_label} ${mode_label}" \
+    api_call "$port" "${case_name}: ${client_label} → ${upstream_label} ${mode_label}" \
       "$endpoint" "$body" "$client" "$response_file"
     assert_billing_entry "$port" "$request_index" "$client" "$upstream" \
       "$billing_model" "$upstream_models" "$request_events_file" "$response_file" "$stream"
     actual_upstream_model="$(jq -er '.entries[0].upstream_model' "$request_events_file")"
-    printf '    [%d/3] %s：请求 %s；计费 %s；上游 %s\n' \
+    printf '    [%d/3] %s: requested %s; billed %s; upstream %s\n' \
       "$((request_index - 32))" "$case_name" "$requested_model" "$billing_model" "$actual_upstream_model"
   done
 
@@ -1430,7 +1430,7 @@ run_target() {
   expected_requests=35
   actual_requests="$(jq -er '.entries | length' "$request_events_file")"
   if [[ "$actual_requests" != "$expected_requests" ]]; then
-    echo "CLIProxyAPI ${host_label} 请求事件数量为 ${actual_requests}，预期 ${expected_requests}。" >&2
+    echo "CLIProxyAPI ${host_label} recorded ${actual_requests} request events; expected ${expected_requests}." >&2
     return 1
   fi
   account_access_file="$runtime_dir/account-access.json"
@@ -1456,10 +1456,10 @@ run_target() {
       all(.entries[]; .scope == "" and (has("auth_index") | not) and has("cost")) and
       any(.entries[]; has("executor_type")) and any(.entries[]; has("source"))
     ' "$account_events_file" >/dev/null; then
-    echo "CLIProxyAPI ${host_label} 的 API Key 自助查询范围或响应字段不正确。" >&2
+    echo "CLIProxyAPI ${host_label} returned an incorrect API-key self-service scope or response field." >&2
     return 1
   fi
-  log_step "API Key 自助查询已验证：仅返回当前 Key 的 35 条请求事件"
+  log_step "API-key self-service query returned only the current key's 35 request events"
   management_call GET "$port" "/v0/management/plugins/cpa-key-billing/analysis" >"$runtime_dir/analysis.json"
   if ! jq -e '
       .usage_distribution.models as $models |
@@ -1470,47 +1470,47 @@ run_target() {
       ([ $models[] | select(.key == "codex/gpt-5.6-sol") | .requests ] | add) == 1 and
       ([ $models[] | select(.key == "gpt-auto") | .requests ] | add) == 1
     ' "$runtime_dir/analysis.json" >/dev/null; then
-    echo "复杂模型路由的用量统计不正确。" >&2
+    echo "Incorrect usage statistics for complex model routing." >&2
     return 1
   fi
-  log_step "聚合统计已验证：35 条基础计费记录"
+  log_step "Aggregation statistics verified: 35 base billing records"
 
-  log_step "并发限制：SSE 占槽、HTTP 拦截与完成释放"
+  log_step "Concurrency limit: SSE slot acquisition, HTTP block, and completion release"
   assert_concurrency_limit "$port" "$runtime_dir" "$expected_requests"
   expected_requests=$((expected_requests + 1))
-  log_step "路由模型规则：无绑定状态、3 次拦截与恢复"
+  log_step "Model routing: unbound state, 3 blocks, and recovery"
   assert_route_model_policy "$port" "$runtime_dir" "$expected_requests"
   expected_requests=$((expected_requests + 1))
-  log_step "路由凭证规则：整类与指定凭证均限制真实候选集"
+  log_step "Credential routing: provider-wide and explicit rules restrict real candidates"
   assert_route_credential_policy "$port" "$runtime_dir" "$expected_requests"
   expected_requests=$((expected_requests + 2))
-  log_step "黑名单：类别排除、单凭证例外、跨规则优先级、全部排除及推理后缀"
+  log_step "Denylists: providers, credentials, merged precedence, full exclusion, and reasoning suffixes"
   assert_route_blacklist_policy "$port" "$runtime_dir" "$expected_requests"
   expected_requests=$((expected_requests + 2))
   for dimension in amount_usd requests tokens; do
-    log_step "订阅额度 ${dimension}：消费、4 种协议拦截与恢复"
+    log_step "Subscription quota ${dimension}: usage, blocks in 4 protocols, and recovery"
     assert_quota_exhausted "$port" "$runtime_dir" "$expected_requests" "$dimension"
     expected_requests=$((expected_requests + 2))
   done
 
   management_call GET "$port" "/v0/management/plugins/cpa-key-billing/plugin-logs" >"$runtime_dir/plugin-logs.json"
-  if ! jq -e '[.entries[] | select(.level == "info" and (.message | contains("已加载计费数据库")))] | length == 1' \
+  if ! jq -e '[.entries[] | select(.level == "info" and (.message | contains("Billing database loaded")))] | length == 1' \
     "$runtime_dir/plugin-logs.json" >/dev/null; then
-    echo "插件日志缺少启动记录：$(jq -c '.entries' "$runtime_dir/plugin-logs.json")" >&2
+    echo "Plugin log is missing its startup record: $(jq -c '.entries' "$runtime_dir/plugin-logs.json")" >&2
     return 1
   fi
-  log_step "插件启动事件已验证"
+  log_step "Plugin startup event verified"
   assert_reference_price_billing "$port" "$runtime_dir"
 
   kill "$active_pid" >/dev/null 2>&1 || true
   wait "$active_pid" >/dev/null 2>&1 || true
   active_pid=""
-  log_ok "${host_label}：51 个上游请求（含 4 个参考价请求），1 次并发拦截，6 次模型拦截，4 次凭证路由，2 次凭证拦截，12 次额度拦截"
+  log_ok "${host_label}: 51 upstream requests (including 4 reference price requests), 1 concurrent interception, 6 model interceptions, 4 credential routes, 2 credential blocks, 12 quota interceptions"
 }
 
-log_stage "启动 dummy provider"
+log_stage "Starting dummy provider"
 start_upstream
-log_step "监听 127.0.0.1:${upstream_port}"
+log_step "Listening on 127.0.0.1:${upstream_port}"
 
 target_index=0
 for target in "${targets[@]}"; do
@@ -1519,5 +1519,5 @@ for target in "${targets[@]}"; do
 done
 
 if (( ${#targets[@]} > 1 )); then
-  log_ok "全部 ${#targets[@]} 个目标通过"
+  log_ok "All ${#targets[@]} targets passed"
 fi

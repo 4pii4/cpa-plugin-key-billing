@@ -142,8 +142,8 @@ func TestUsageRequestTimesPreserveWindowAttribution(t *testing.T) {
 	store := newAccountStore(t, start)
 	store.ReplaceAll(func(state *State) {
 		state.Plans = []Plan{{ID: "p", Windows: []QuotaWindow{
-			{ID: "short", Name: "短时", AmountUSD: 5, PeriodSeconds: 3600},
-			{ID: "long", Name: "预算", AmountUSD: 10, PeriodSeconds: 86400},
+			{ID: "short", Name: "for a short time.", AmountUSD: 5, PeriodSeconds: 3600},
+			{ID: "long", Name: "Budget", AmountUSD: 10, PeriodSeconds: 86400},
 		}}}
 		state.Keys["scope-a"] = &KeyState{PlanID: "p"}
 	})
@@ -168,7 +168,7 @@ func TestUsageRequestTimesPreserveWindowAttribution(t *testing.T) {
 	}
 	found := false
 	for _, entry := range mustPluginLogs(t, store) {
-		found = found || strings.Contains(entry.Message, "请求时间")
+		found = found || strings.Contains(entry.Message, "Request time")
 	}
 	if !found {
 		t.Fatal("missing time was not diagnosed")
@@ -185,8 +185,8 @@ func TestUsageAfterAdministrativeChange(t *testing.T) {
 				store.now = func() time.Time { return now }
 				store.ReplaceAll(func(state *State) {
 					state.Plans = []Plan{
-						{ID: "daily", Windows: []QuotaWindow{{ID: "default", Name: "额度", AmountUSD: 5, PeriodSeconds: 86400}}},
-						{ID: "weekly", Windows: []QuotaWindow{{ID: "default", Name: "额度", AmountUSD: 5, PeriodSeconds: 604800}}},
+						{ID: "daily", Windows: []QuotaWindow{{ID: "default", Name: "Limit", AmountUSD: 5, PeriodSeconds: 86400}}},
+						{ID: "weekly", Windows: []QuotaWindow{{ID: "default", Name: "Limit", AmountUSD: 5, PeriodSeconds: 604800}}},
 					}
 					if unified {
 						for i := range state.Plans {
@@ -255,7 +255,7 @@ func TestReferenceUsageLogsAppliedTierRatesAndBillingModel(t *testing.T) {
 	if len(logs) != 1 || logs[0].Level != PluginLogDebug {
 		t.Fatalf("reference usage logs = %+v", logs)
 	}
-	for _, want := range []string{`billing_model="codex/gpt-5.6-sol"`, "输入=$10", "输出=$45", "费用=$3.00450000"} {
+	for _, want := range []string{`billing_model="codex/gpt-5.6-sol"`, "input=$10", "output=$45", "cost=$3.00450000"} {
 		if !strings.Contains(logs[0].Message, want) {
 			t.Fatalf("reference usage log missing %q: %s", want, logs[0].Message)
 		}

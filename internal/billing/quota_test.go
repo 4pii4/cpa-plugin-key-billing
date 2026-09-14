@@ -13,7 +13,7 @@ func quotaStore(t *testing.T, window QuotaWindow) (*Store, *memoryRepository, ti
 	t.Helper()
 	now := time.Date(2026, 9, 8, 12, 0, 0, 0, time.UTC)
 	store, repo := newAccountStoreWithRepository(t, now)
-	window.ID, window.Name, window.PeriodSeconds = "w", "额度", 3600
+	window.ID, window.Name, window.PeriodSeconds = "w", "Limit", 3600
 	store.ReplaceAll(func(state *State) {
 		state.Plans = []Plan{{ID: "p", Windows: []QuotaWindow{window}}}
 		state.Keys["s"] = &KeyState{PlanID: "p", Preview: "sk-tes…0001"}
@@ -106,7 +106,7 @@ func TestQuotaPreservesOverageAndRetriesWrites(t *testing.T) {
 func TestLimitEditsKeepCurrentCounters(t *testing.T) {
 	store, _, now := quotaStore(t, QuotaWindow{AmountUSD: 10})
 	store.RecordUsage(subsetEvent("s", now))
-	windows := []QuotaWindow{{ID: "w", Name: "额度", PeriodSeconds: 3600, RequestLimit: 1}}
+	windows := []QuotaWindow{{ID: "w", Name: "Limit", PeriodSeconds: 3600, RequestLimit: 1}}
 	if _, err := store.UpdatePlanWithBindings(PlanPatch{ID: "p", Windows: &windows}, nil); err != nil {
 		t.Fatal(err)
 	}

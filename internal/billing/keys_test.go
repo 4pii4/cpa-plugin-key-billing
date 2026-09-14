@@ -14,10 +14,10 @@ func TestPlanBindingTransactions(t *testing.T) {
 		state.Keys["a"] = &KeyState{}
 		state.Keys["b"] = &KeyState{}
 		state.Keys["owned"] = &KeyState{PlanID: "other"}
-		state.Plans = []Plan{{ID: "other", Windows: []QuotaWindow{{ID: "default", Name: "额度", AmountUSD: 1, PeriodSeconds: 3600}}}}
+		state.Plans = []Plan{{ID: "other", Windows: []QuotaWindow{{ID: "default", Name: "Limit", AmountUSD: 1, PeriodSeconds: 3600}}}}
 	})
 
-	created, err := store.CreatePlanWithBindings(Plan{ID: "p", Windows: []QuotaWindow{{Name: "额度", AmountUSD: 5, PeriodSeconds: 86400}}}, []string{"a"})
+	created, err := store.CreatePlanWithBindings(Plan{ID: "p", Windows: []QuotaWindow{{Name: "Limit", AmountUSD: 5, PeriodSeconds: 86400}}}, []string{"a"})
 	if err != nil || created.ID != "p" {
 		t.Fatalf("CreatePlanWithBindings = %+v, %v", created, err)
 	}
@@ -54,7 +54,7 @@ func newSyncStore(t *testing.T, clock *time.Time) *Store {
 	store := newAccountStore(t, *clock)
 	store.now = func() time.Time { return *clock }
 	store.ReplaceAll(func(state *State) {
-		state.Plans = []Plan{{ID: "p", Name: "Weekly", Windows: []QuotaWindow{{ID: "default", Name: "额度", AmountUSD: 10, PeriodSeconds: 604800}}}}
+		state.Plans = []Plan{{ID: "p", Name: "Weekly", Windows: []QuotaWindow{{ID: "default", Name: "Limit", AmountUSD: 10, PeriodSeconds: 604800}}}}
 	})
 	if _, errSync := store.SyncKeys([]string{keptKeyPlaintext, deletedKeyPlaintext}, false); errSync != nil {
 		t.Fatalf("SyncKeys error = %v", errSync)

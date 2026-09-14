@@ -81,13 +81,13 @@ func (a *App) accountRouting(access viewAccess) ManagementResponse {
 		RoutingValid: decision.ConfigurationError == "", Warnings: []string{},
 	}
 	if decision.ConfigurationError != "" {
-		response.Warnings = append(response.Warnings, "路由规则已不存在，请联系管理员")
+		response.Warnings = append(response.Warnings, "A routing rule no longer exists; contact the administrator")
 	}
 	if !decision.RestrictsCredentials() {
 		return apiKeyJSON(http.StatusOK, response)
 	}
 	if err := a.refreshCredentialInventory(); err != nil {
-		response.Warnings = append(response.Warnings, "上游凭证加载失败")
+		response.Warnings = append(response.Warnings, "Upstream credential loading failed")
 	}
 	inventory := a.credentialInventory()
 	var warnings []string
@@ -126,7 +126,7 @@ func accountRoutingCredentials(inventory []credentialView, refs []string, provid
 		if credential, ok := byRef[ref]; ok {
 			addCredential(credential)
 		} else if !missingCredential {
-			credentials = append(credentials, accountRouteCredential{Name: "指定上游凭证不可用", Status: "missing", Denied: !decision.AllowsCredential(ref, "", "")})
+			credentials = append(credentials, accountRouteCredential{Name: "Specified upstream credential is unavailable", Status: "missing", Denied: !decision.AllowsCredential(ref, "", "")})
 			missingCredential = true
 		}
 	}
@@ -146,7 +146,7 @@ func accountRoutingCredentials(inventory []credentialView, refs []string, provid
 			Source: selector.Source, Provider: selector.Provider, Status: "missing", ProviderWide: true,
 			Denied: !decision.AllowsCredential("", selector.Source, selector.Provider),
 		})
-		warnings = append(warnings, "没有匹配「"+name+"」的上游凭证")
+		warnings = append(warnings, "No upstream credential matches “"+name+"”.")
 	}
 	sort.Slice(credentials, func(i, j int) bool {
 		left, right := credentials[i], credentials[j]
@@ -170,10 +170,10 @@ func accountCredential(item credentialView) accountRouteCredential {
 }
 func sourceLabel(source string) string {
 	if source == billing.CredentialSourceAuthFiles {
-		return "认证文件"
+		return "Auth files"
 	}
 	if source == billing.CredentialSourceAIProviders {
-		return "AI 供应商"
+		return "AI provider"
 	}
 	return source
 }
@@ -191,7 +191,7 @@ func accountScope(headers http.Header) (string, bool) {
 }
 
 func apiKeyUnauthorized() ManagementResponse {
-	response := apiKeyJSONError(http.StatusUnauthorized, "unauthorized", "API Key 无效")
+	response := apiKeyJSONError(http.StatusUnauthorized, "unauthorized", "Invalid API key")
 	response.Headers.Set("WWW-Authenticate", `Bearer realm="cpa-key-billing-account"`)
 	return response
 }

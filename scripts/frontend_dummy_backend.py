@@ -21,11 +21,11 @@ CALLER_SCOPE_SALT = b"cli-proxy-api:caller-scope:v1\0"
 
 
 HOST_SHELL = r"""<!doctype html>
-<html lang="zh-CN" data-host="__HOST_MODE__">
+<html lang="en" data-host="__HOST_MODE__">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>__HOST_LABEL__ · API Key 计费样式预览</title>
+<title>__HOST_LABEL__ · API Key Billing preview</title>
 <style>
 :root{
   --bg-secondary:#faf9f5;--bg-primary:#f0eee8;--bg-tertiary:#e9e6df;--bg-hover:var(--bg-tertiary);
@@ -145,18 +145,18 @@ html[data-host=cpamp] #plugin-frame{background:var(--bg-primary)}
 <body>
 <aside class="sidebar">
   <div class="brand"><span class="brand-mark">◈</span><span>__HOST_LABEL__</span></div>
-  <div class="nav-placeholder"><span>仪表盘</span><span>AI 提供商</span><span>插件管理</span><span class="active">API Key 计费</span></div>
+  <div class="nav-placeholder"><span>Dashboard</span><span>AI providers</span><span>Plugin management</span><span class="active">API Key Billing</span></div>
 </aside>
 <header class="navbar">
-  <div class="navbar-left"><button class="mobile-menu" title="菜单">☰</button><span>API Key 计费</span></div>
-  <div class="theme-controls" aria-label="预览主题">
-    <button type="button" data-action="refresh" title="刷新">↻</button>
-    <button type="button" data-theme-choice="light" title="浅色主题">◐</button>
-    <button type="button" class="theme-white" data-theme-choice="white" title="白色主题">○</button>
-    <button type="button" data-theme-choice="dark" title="深色主题">●</button>
+  <div class="navbar-left"><button class="mobile-menu" title="Menu">☰</button><span>API Key Billing</span></div>
+  <div class="theme-controls" aria-label="Preview theme">
+    <button type="button" data-action="refresh" title="Refresh">↻</button>
+    <button type="button" data-theme-choice="light" title="Light theme">◐</button>
+    <button type="button" class="theme-white" data-theme-choice="white" title="White theme">○</button>
+    <button type="button" data-theme-choice="dark" title="Dark theme">●</button>
   </div>
 </header>
-<main class="content"><iframe id="plugin-frame" src="/ui" title="API Key 计费插件"></iframe></main>
+<main class="content"><iframe id="plugin-frame" src="/ui" title="API Key Billing plugin"></iframe></main>
 <script>
 "use strict";
 const HOST_MODE="__HOST_MODE__";
@@ -242,20 +242,20 @@ def iso(value):
 
 
 PLANS = [
-    {"id": "engineering", "name": "研发团队", "windows": [
-        {"id": "short", "name": "短时额度", "amount_usd": 15, "request_limit": 100, "token_limit": 1000000, "period_seconds": 18000},
-        {"id": "budget", "name": "团队预算", "amount_usd": 300, "period_seconds": 2592000},
+    {"id": "engineering", "name": "R&D team", "windows": [
+        {"id": "short", "name": "Short-term quota", "amount_usd": 15, "request_limit": 100, "token_limit": 1000000, "period_seconds": 18000},
+        {"id": "budget", "name": "Team budget", "amount_usd": 300, "period_seconds": 2592000},
     ]},
-    {"id": "production", "name": "生产服务", "windows": [
-        {"id": "short", "name": "峰值保护", "amount_usd": 0, "request_limit": 200, "token_limit": 0,
+    {"id": "production", "name": "Production service", "windows": [
+        {"id": "short", "name": "Peak protection", "amount_usd": 0, "request_limit": 200, "token_limit": 0,
          "period_seconds": 7200, "cycle_anchor_at": iso(NOW + timedelta(hours=2))},
-        {"id": "medium", "name": "服务额度", "amount_usd": 0, "request_limit": 0, "token_limit": 2000000,
+        {"id": "medium", "name": "Service quota", "amount_usd": 0, "request_limit": 0, "token_limit": 2000000,
          "period_seconds": 86400, "cycle_anchor_at": iso((NOW + timedelta(days=1)).replace(hour=0))},
-        {"id": "budget", "name": "生产预算", "amount_usd": 1000,
+        {"id": "budget", "name": "Production budget", "amount_usd": 1000,
          "period_seconds": 2592000, "cycle_anchor_at": iso((NOW + timedelta(days=15)).replace(hour=0))},
     ]},
-    {"id": "project-credit", "name": "项目额度", "windows": [
-        {"id": "budget", "name": "项目预算", "amount_usd": 100, "period_seconds": 864000},
+    {"id": "project-credit", "name": "Project quota", "windows": [
+        {"id": "budget", "name": "Project budget", "amount_usd": 100, "period_seconds": 864000},
     ]},
 ]
 
@@ -321,12 +321,12 @@ CREDENTIALS = [
 SYNCED_CREDENTIAL_REFS = set()
 
 ROUTES = [
-    {"id": "coding", "name": "代码开发", "rule": {"models": ["gpt-5.6-sol", "gpt-5.5", "codex/deepseek-v4-flash-vision-exp"], "credential_ids": [], "credential_providers": [{"source": "auth-files", "provider": "codex"}]}},
-    {"id": "analytics", "name": "数据分析", "rule": {"models": ["claude/deepseek-v4-pro", "claude/deepseek-v4-flash"], "credential_ids": ["sha256:" + "b" * 64], "credential_providers": []}},
-    {"id": "economy", "name": "轻量任务", "rule": {"models": ["gpt-5.6-luna"], "credential_ids": [], "credential_providers": [{"source": "auth-files", "provider": "codex"}]}},
+    {"id": "coding", "name": "Code development", "rule": {"models": ["gpt-5.6-sol", "gpt-5.5", "codex/deepseek-v4-flash-vision-exp"], "credential_ids": [], "credential_providers": [{"source": "auth-files", "provider": "codex"}]}},
+    {"id": "analytics", "name": "Data analysis", "rule": {"models": ["claude/deepseek-v4-pro", "claude/deepseek-v4-flash"], "credential_ids": ["sha256:" + "b" * 64], "credential_providers": []}},
+    {"id": "economy", "name": "Lightweight tasks", "rule": {"models": ["gpt-5.6-luna"], "credential_ids": [], "credential_providers": [{"source": "auth-files", "provider": "codex"}]}},
     {
         "id": "ci",
-        "name": "持续集成",
+        "name": "Continuous integration",
         "rule": {
             "models": ["gpt-5.6-luna", "gpt-5.6-terra"],
             "credential_ids": [],
@@ -338,7 +338,7 @@ ROUTES = [
     },
     {
         "id": "text-only",
-        "name": "文本服务",
+        "name": "Text service",
         "rule": {
             "models": [], "credential_ids": [], "credential_providers": [],
             "denied_models": ["gpt-image-2"],
@@ -441,14 +441,14 @@ AUTH_FILE_QUOTAS = {
         "plan": "pro-20x",
         "rate_limit_reset_credits_available_count": 1,
         "quota": [
-            quota_row("周限额", 62, 432000),
+            quota_row("Weekly limit", 62, 432000),
             quota_row(
-                "GPT-5.3-Codex-Spark 5 小时限额",
+                "GPT-5.3-Codex-Spark 5-hour limit",
                 100,
                 18000,
             ),
             quota_row(
-                "GPT-5.3-Codex-Spark 周限额",
+                "GPT-5.3-Codex-Spark Weekly limit",
                 100,
                 604800,
             ),
@@ -458,17 +458,17 @@ AUTH_FILE_QUOTAS = {
         "plan": "plus",
         "rate_limit_reset_credits_available_count": 1,
         "quota": [
-            quota_row("5 小时限额", 35, 14400),
-            quota_row("周限额", 90, 518400),
+            quota_row("5-hour limit", 35, 14400),
+            quota_row("Weekly limit", 90, 518400),
         ],
     },
     "auth-demo-claude": {
         "plan": "Team",
         "quota": [
-            quota_row("5 小时限额", 76, 12600),
-            quota_row("周限额", 59, 388800),
+            quota_row("5-hour limit", 76, 12600),
+            quota_row("Weekly limit", 59, 388800),
             {
-                "label": "额外用量",
+                "label": "Extra usage",
                 "used": 12.5,
                 "limit": 100,
                 "remaining_percent": 87.5,
@@ -480,13 +480,13 @@ AUTH_FILE_QUOTAS = {
         "plan": "Google AI Pro",
         "quota": [
             quota_row(
-                "5 小时限额",
+                "5-hour limit",
                 82,
                 64800,
                 group_label="Gemini Models",
             ),
             quota_row(
-                "周限额",
+                "Weekly limit",
                 93,
                 64800,
                 group_label="Gemini Models",
@@ -495,15 +495,15 @@ AUTH_FILE_QUOTAS = {
     },
     "auth-demo-kimi": {
         "quota": [
-            quota_row("5 小时限额", 48, 7200),
-            quota_row("周限额", 69, 345600),
+            quota_row("5-hour limit", 48, 7200),
+            quota_row("Weekly limit", 69, 345600),
         ],
     },
     "auth-demo-xai-active": {
         "quota": [
-            quota_row("周限额", 78, 410400),
+            quota_row("Weekly limit", 78, 410400),
             {
-                "label": "月度额度",
+                "label": "Monthly limit",
                 "used": 8.5,
                 "limit": 50,
                 "remaining_percent": 83,
@@ -529,23 +529,23 @@ def auth_file_quota(query):
 
 
 KEY_PROFILES = [
-    {"label": "代码审查机器人", "plan_id": "engineering", "spent_usd": 128.64, "concurrency_limit": 5, "current_concurrency": 2,
+    {"label": "Code-review bot", "plan_id": "engineering", "spent_usd": 128.64, "concurrency_limit": 5, "current_concurrency": 2,
      "route_bindings": {"route_ids": ["coding", "analytics", "economy", "text-only"], "models": [], "credential_ids": [], "credential_providers": []}},
-    {"label": "CI 构建服务", "plan_id": "engineering", "spent_usd": 84.27, "concurrency_limit": 10, "current_concurrency": 3,
+    {"label": "CI build service", "plan_id": "engineering", "spent_usd": 84.27, "concurrency_limit": 10, "current_concurrency": 3,
      "route_bindings": {"route_ids": ["ci"], "models": ["gpt-5.6-terra", "gpt-5.5"],
                         "credential_ids": [AUTOMATION_CREDENTIAL_REF], "credential_providers": [],
                         "denied_models": ["gpt-5.6-sol", "gpt-image-2"], "denied_credential_ids": ["sha256:" + "a" * 64], "denied_credential_providers": []}},
-    {"label": "数据分析平台", "plan_id": "production", "spent_usd": 368.91, "concurrency_limit": 5, "current_concurrency": 1,
+    {"label": "Data analytics platform", "plan_id": "production", "spent_usd": 368.91, "concurrency_limit": 5, "current_concurrency": 1,
      "route_bindings": {"route_ids": ["analytics"], "models": [], "credential_ids": [], "credential_providers": []}},
-    {"label": "客服助手", "plan_id": "production", "spent_usd": 241.36, "concurrency_limit": 8, "current_concurrency": 2,
+    {"label": "Customer service assistant", "plan_id": "production", "spent_usd": 241.36, "concurrency_limit": 8, "current_concurrency": 2,
      "route_bindings": {"route_ids": ["analytics"], "models": ["gpt-5.5"], "denied_models": ["gpt-image-2"], "credential_ids": [], "credential_providers": []}},
-    {"label": "文档生成", "plan_id": "engineering", "spent_usd": 56.48, "concurrency_limit": 3, "current_concurrency": 0,
+    {"label": "Document generation", "plan_id": "engineering", "spent_usd": 56.48, "concurrency_limit": 3, "current_concurrency": 0,
      "route_bindings": {"route_ids": ["text-only"], "models": [], "credential_ids": [], "credential_providers": []}},
-    {"label": "预发布环境", "plan_id": "project-credit", "spent_usd": 43.72, "concurrency_limit": 2, "current_concurrency": 1,
+    {"label": "Pre-release environment", "plan_id": "project-credit", "spent_usd": 43.72, "concurrency_limit": 2, "current_concurrency": 1,
      "route_bindings": {"route_ids": ["economy"], "models": [], "credential_ids": [], "credential_providers": []}},
-    {"label": "内部工具", "plan_id": "", "spent_usd": 0, "concurrency_limit": 0, "current_concurrency": 1,
+    {"label": "Internal tools", "plan_id": "", "spent_usd": 0, "concurrency_limit": 0, "current_concurrency": 1,
      "route_bindings": {"route_ids": [], "models": [], "credential_ids": [], "credential_providers": []}},
-    {"label": "临时测试", "plan_id": "project-credit", "spent_usd": 87.19, "concurrency_limit": 1, "current_concurrency": 0,
+    {"label": "Temporary test", "plan_id": "project-credit", "spent_usd": 87.19, "concurrency_limit": 1, "current_concurrency": 0,
      "route_bindings": {"route_ids": [], "models": ["gpt-5.5"], "credential_ids": ["sha256:" + "c" * 64], "credential_providers": []}},
 ]
 
@@ -895,9 +895,9 @@ def request_error(event_index, message, status=0, error_type="", code=""):
         error["code"] = code
     if 400 <= status <= 599:
         error["status"] = status
-    reason = (f"HTTP {status}：" if status else "") + message
+    reason = (f"HTTP {status}: " if status else "") + message
     if error_type:
-        reason += f"（{error_type}）"
+        reason += f" ({error_type})"
     return {
         "id": event["id"],
         "at": event["at"],
@@ -942,22 +942,22 @@ PLUGIN_LOGS = [
         "id": 3,
         "at": iso(NOW - timedelta(minutes=2)),
         "level": "debug",
-        "message": "route " + json.dumps({"key": "代码审查机器人 · sk-demo…0001", "model": "gpt-5.6-sol", "model_policy": "restricted", "model_result": "allow", "credential_policy": "restricted", "credential_result": "selected", "selected_credential": "codex · dev-team@example.com", "outcome": "succeeded", "status": 200}, ensure_ascii=False, separators=(",", ":")),
+        "message": "route " + json.dumps({"key": "Code-review bot · sk-demo…0001", "model": "gpt-5.6-sol", "model_policy": "restricted", "model_result": "allow", "credential_policy": "restricted", "credential_result": "selected", "selected_credential": "codex · dev-team@example.com", "outcome": "succeeded", "status": 200}, ensure_ascii=False, separators=(",", ":")),
     },
     {
         "id": 2,
         "at": iso(NOW - timedelta(minutes=11)),
         "level": "info",
         "message": (
-            "已加载计费数据库 /srv/cli-proxy-api/plugins/cpa-key-billing-state-v1.db："
-            "8 个 API Key、3 个订阅计划、29 条请求事件。已启用。"
+            "Billing database loaded: /srv/cli-proxy-api/plugins/cpa-key-billing-state-v1.db, "
+            "8 API keys, 3 subscription plans, 29 request events, enabled"
         ),
     },
     {
         "id": 1,
         "at": iso(NOW - timedelta(hours=12, minutes=40)),
         "level": "info",
-        "message": "已同步 CLIProxyAPI 的 API Key 列表：新增 1 个。",
+        "message": "CLIProxyAPI API keys synchronized: 1 added, 0 deleted",
     },
 ]
 
@@ -1052,7 +1052,7 @@ def analysis_view(query, scope=""):
     if selected and not scope:
         rows = [entry for entry in rows if entry["scope"] == selected]
 
-    def distribution(field, label_field=None, unknown="未知"):
+    def distribution(field, label_field=None, unknown="Unknown"):
         grouped = {}
         for entry in rows:
             key = entry.get(field, "") or unknown
@@ -1171,8 +1171,8 @@ def analysis_view(query, scope=""):
         "trends": trends,
         "usage_distribution": {
             "api_keys": [] if scope or selected else distribution("scope", "label"),
-            "models": distribution("billing_model", unknown="未知模型"),
-            "sources": distribution("source", unknown="未知来源"),
+            "models": distribution("billing_model", unknown="Unknown model"),
+            "sources": distribution("source", unknown="Unknown source"),
         },
     }
 
@@ -1382,7 +1382,7 @@ class Handler(BaseHTTPRequestHandler):
         api_keys = [f"sk-demo-{index:04d}" for index in range(1, len(LIVE_KEYS) + 1)]
         if parsed.path == "/v1/models":
             if not authorization.startswith("Bearer ") or authorization[7:] not in api_keys:
-                self.send_json(401, {"error": {"message": "API Key 无效"}})
+                self.send_json(401, {"error": {"message": "Invalid API key"}})
                 return
         resource_paths = {
             f"{RESOURCE_BASE}/profile",
@@ -1397,7 +1397,7 @@ class Handler(BaseHTTPRequestHandler):
         }
         if parsed.path in resource_paths:
             if not authorization.startswith("Bearer ") or authorization[7:] not in api_keys:
-                self.send_json(401, {"error": {"message": "API Key 无效"}})
+                self.send_json(401, {"error": {"message": "Invalid API key"}})
                 return
             index = api_keys.index(authorization[7:])
             if parsed.path.endswith("/profile"):
@@ -1425,7 +1425,7 @@ class Handler(BaseHTTPRequestHandler):
                 auth_index = query.get("auth_index", [""])[0]
                 payload = auth_file_quota(query) if auth_index in allowed else None
                 if payload is None:
-                    self.send_json(404, {"error": {"message": "认证文件不存在或不支持限额查询"}})
+                    self.send_json(404, {"error": {"message": "Auth file does not exist or does not support quota queries"}})
                 else:
                     self.send_json(200, payload)
             elif parsed.path.endswith("/events"):
@@ -1479,7 +1479,7 @@ class Handler(BaseHTTPRequestHandler):
             model = parse_qs(parsed.query).get("model_id", [""])[0]
             row = next((price for price in PRICES if price["model_id"] == model), None)
             if row is None or row["source"] != "custom":
-                self.send_json(404, {"error": {"message": "自定义价不存在"}})
+                self.send_json(404, {"error": {"message": "Custom price does not exist"}})
                 return
             if not row["in_models"]:
                 PRICES.remove(row)
@@ -1549,7 +1549,7 @@ class Handler(BaseHTTPRequestHandler):
             body = json.loads(request_body or b"{}")
             route_id = f"route-dummy-{len(ROUTES)}"
             scopes = set(body.get("scopes", []))
-            stored = {"id": route_id, "name": body.get("name", "新路由"), "rule": body.get("rule", {})}
+            stored = {"id": route_id, "name": body.get("name", "New Route"), "rule": body.get("rule", {})}
             ROUTES.append(stored)
             for key in KEYS:
                 if key["scope"] in scopes:

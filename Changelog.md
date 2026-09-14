@@ -2,345 +2,345 @@
 
 ## v1.3.10
 
-### 升级须知
+### Upgrade notes
 
-- 已有订阅计划保持原独立周期；启用统一周期后请勿直接回退旧版。
+- Existing subscription plans retain their independent billing periods. Do not downgrade directly after enabling synchronized periods.
 
-### 后端
+### Backend
 
-- 订阅计划支持统一周期，各额度窗口可分别指定下次开始时间，所有绑定 Key 按相同时间重置，各 Key 额度独立计算。
-- 手动重置额度不改变统一周期的重置时间。
+- Subscription plans support synchronized periods. Each quota window can specify its own next start time, all bound keys reset at the same time, and quota usage is calculated independently for each key.
+- Manually resetting a quota does not change the synchronized period's reset time.
 
-### 前端
+### Frontend
 
-- 新建和编辑订阅计划可选择周期模式，按重置周期预填下次开始时间，并提示无效输入。
-- 优化时间选择器和窄屏布局，订阅计划卡片显示下次重置时间。
+- New and edited subscription plans can select a period mode, prefill the next start time from the reset interval, and report invalid input.
+- Improved the time picker and narrow-screen layout, and show the next reset time on subscription-plan cards.
 
 ## v1.3.9
 
-### 升级须知
+### Upgrade notes
 
-- 兼容已有路由规则；使用黑名单后，旧版本无法执行这些限制，请勿直接回退。
+- Existing routing rules remain compatible. Older versions cannot enforce denylist restrictions, so do not downgrade directly after using a denylist.
 
-### 后端
+### Backend
 
-- 路由规则支持模型、整类凭证和单个凭证黑名单，黑名单优先于白名单。
+- Routing rules support denylists for models, complete credential categories, and individual credentials. Denylists take precedence over allowlists.
 
-### 前端
+### Frontend
 
-- 模型和凭证支持未选、白名单、黑名单三态切换，并提供全白选、全黑选和清空操作。
-- 统一路由编辑列表、选框与类型图标，支持折叠和筛选，优化窄屏布局。
-- API Key 路由规则以胶囊展示，支持悬浮查看完整列表、弹窗编辑和清空确认。
+- Models and credentials support three-state selection: unselected, allowlisted, and denylisted. Actions are available to allow all, deny all, and clear all selections.
+- Standardized routing editor lists, checkboxes, and type icons; added collapsing and filtering; and improved the narrow-screen layout.
+- API-key routing rules are displayed as pills with hover details, dialog-based editing, and confirmation before clearing.
 
 ## v1.3.8
 
-### 后端
+### Backend
 
-- 优化大数据量下的分析、请求事件、错误事件和插件日志查询，加快 Key 筛选与条数统计。
+- Optimized analytics, request-event, error-event, and plugin-log queries for large datasets, making key filtering and record counting faster.
 
-### 前端
+### Frontend
 
-- 加快 API Key 与设置页加载，减少重复请求；修复退出登录后仍继续查询的问题。
-- 统一页面留白与卡片高度，优化窄屏下时间范围、路由选择和编辑弹窗的显示。
-- 页面底部新增版权、版本信息及仓库和许可证链接。
+- Accelerated the API Keys and Setup pages, reduced duplicate requests, and stopped queries from continuing after logout.
+- Standardized page spacing and card heights, and improved the narrow-screen display of time ranges, routing selection, and edit dialogs.
+- Added copyright, version, repository, and license information to the page footer.
 
 ## v1.3.7
 
-### 升级须知
+### Upgrade notes
 
-- 升级前请备份数据；升级后保留历史记录，回退旧版时需恢复升级前的备份。
+- Back up the data before upgrading. Historical records are retained after the upgrade; restore the pre-upgrade backup if you downgrade.
 
-### 后端
+### Backend
 
-- 修复 API Key 直接指定模型时绕过已绑定路由凭证限制的问题。
-- 去掉凭证表，凭证信息直接记录到请求事件表中。
-- 增加配置型 AI 供应商表，持久化管理员前端 sync 到后端的配置型 AI 供应商列表。
+- Fixed API keys with directly assigned models bypassing the credential restrictions of bound routing rules.
+- Removed the credential table; credential information is now recorded directly in the request-event table.
+- Added a table for configured AI providers to persist the configured-provider list synchronized by the administrator UI.
 
-### 前端
+### Frontend
 
-- 取消自动刷新，修复路由模型和凭证选项加载不完整的问题。
-- 修复筛选条件、时间范围和图表选项记忆异常的问题。
+- Removed automatic refresh and fixed incomplete loading of routing model and credential options.
+- Fixed incorrect persistence of filters, time ranges, and chart options.
 
 ## v1.3.6
 
-### 后端
+### Backend
 
-- 订阅计划支持金额、Token、请求数三种额度，可按窗口单独设置或组合使用。
+- Subscription plans support spend, token, and request quotas, which can be configured individually or combined in each window.
 
-### 前端
+### Frontend
 
-- 统一订阅计划与路由规则卡片样式，优化计划编辑、额度展示及并发限制布局。
-- 修复 API Key 登录未勾选“记住密钥”时，刷新页面退出登录的问题。
-- 修复确认弹窗错误触发浏览器自动填充的问题，精简重置提示。
+- Standardized subscription-plan and routing-rule card styles, and improved plan editing, quota presentation, and concurrency-limit layouts.
+- Fixed API-key sessions ending on page refresh when **Remember key** was not selected.
+- Prevented confirmation dialogs from incorrectly triggering browser autofill and simplified reset prompts.
 
 ## v1.3.5
 
-### 升级须知
+### Upgrade notes
 
-- 升级前请备份数据。支持迁移 v1.0.0 至 v1.2.3 的数据库；v0.8.4 及更早版本需使用新数据文件。
-- 已有定价保留为自定义价，删除后可使用参考价；原通配定价需改为按模型 ID 配置。
-- 原订阅计划迁移为单个额度窗口，保留已用额度；“不重置”计划改为 365 天周期。
+- Back up the data before upgrading. Databases from v1.0.0 through v1.2.3 can be migrated; v0.8.4 and earlier require a new data file.
+- Existing prices are retained as custom prices and can be deleted to use reference prices. Previous wildcard prices must be replaced with per-model-ID configuration.
+- Existing subscription plans migrate to a single quota window while preserving used quota. **Never reset** plans become 365-day periods.
 
-### 后端
+### Backend
 
-- 未定价请求按 0 成本参与分析汇总，不再隐藏总成本和趋势。
-- `codex-auto-review` 内置价由免费调整为 models.dev 的 GPT-5.4 价格，包含缓存读和长上下文档位。
+- Unpriced requests participate in analytics aggregation at zero cost instead of hiding total cost and trend data.
+- Changed the built-in `codex-auto-review` price from free to the models.dev GPT-5.4 price, including cache-read and long-context tiers.
 
-### 前端
+### Frontend
 
-- 请求事件 CSV 导出时，未知 Token 数留空，不再显示为 0。
+- Unknown token counts are left blank rather than shown as zero in request-event CSV exports.
 
 ## v1.3.4
 
-### 升级须知
+### Upgrade notes
 
-- 升级前请备份数据。支持迁移 v1.0.0 至 v1.2.3 的数据库；v0.8.4 及更早版本需使用新数据文件。
-- 已有定价保留为自定义价，删除后可使用参考价；原通配定价需改为按模型 ID 配置。
-- 原订阅计划迁移为单个额度窗口，保留已用额度；“不重置”计划改为 365 天周期。
+- Back up the data before upgrading. Databases from v1.0.0 through v1.2.3 can be migrated; v0.8.4 and earlier require a new data file.
+- Existing prices are retained as custom prices and can be deleted to use reference prices. Previous wildcard prices must be replaced with per-model-ID configuration.
+- Existing subscription plans migrate to a single quota window while preserving used quota. **Never reset** plans become 365-day periods.
 
-### 后端
+### Backend
 
-- 新增 `codex_fast_mode_billing` 开关，默认关闭；开启后，Codex 请求包含 `service_tier=priority` 时按 2.5 倍计费。
-- 请求记录保留计费倍率，关闭开关后历史费用与倍率标记保持不变。
+- Added the `codex_fast_mode_billing` switch, disabled by default. When enabled, Codex requests containing `service_tier=priority` are billed at 2.5 times the standard rate.
+- Request records retain their billing multiplier, so historical costs and multiplier markers remain unchanged after the switch is disabled.
 
-### 前端
+### Frontend
 
-- 请求事件合并显示上下文档位和倍率，例如“标准 · x2.5”；成本明细注明单价和金额已包含倍率。
-- 请求事件 CSV 导出新增 `multiplier` 列，区分普通计费和 2.5 倍计费。
+- Request events combine the context tier and multiplier, for example **Standard · x2.5**; cost details note that unit prices and amounts include the multiplier.
+- Added a `multiplier` column to request-event CSV exports to distinguish standard and 2.5x billing.
 
 ## v1.3.3
 
-### 升级须知
+### Upgrade notes
 
-- 升级前请备份数据。支持迁移 v1.0.0 至 v1.2.3 的数据库；v0.8.4 及更早版本需使用新数据文件。
-- 已有定价保留为自定义价，删除后可使用参考价；原通配定价需改为按模型 ID 配置。
-- 原订阅计划迁移为单个额度窗口，保留已用额度；“不重置”计划改为 365 天周期。
+- Back up the data before upgrading. Databases from v1.0.0 through v1.2.3 can be migrated; v0.8.4 and earlier require a new data file.
+- Existing prices are retained as custom prices and can be deleted to use reference prices. Previous wildcard prices must be replaced with per-model-ID configuration.
+- Existing subscription plans migrate to a single quota window while preserving used quota. **Never reset** plans become 365-day periods.
 
-### 后端
+### Backend
 
-- 按资源拆分查询接口，配置修改可直接返回最新视图，减少后续查询。
-- 请求事件和错误事件提供稳定 ID 与分页快照，避免滚动加载和导出时重复、遗漏记录。
+- Split query endpoints by resource. Configuration mutations can return the latest view directly, reducing subsequent queries.
+- Request and error events provide stable IDs and paginated snapshots, preventing duplicated or omitted records during infinite scrolling and export.
 
-### 前端
+### Frontend
 
-- 统一按需加载、共享缓存和增量渲染，减少重复请求与界面重建；仅自动刷新当前页面，分析范围超过 24 小时时不自动刷新。
-- 配置提交成功后立即更新界面；提交期间锁定表单，失败时保留编辑内容。
-- 请求事件统一显示成功／失败和成本，精简成本明细，并优化事件及插件日志卡片高度。
-- 请求事件和错误事件支持按筛选条件导出 CSV，仅保留展示字段，使用英文变量名和未格式化的值。
-- 支持一键导入 CPAMP 的 API Key 备注，跳过未变化和无法匹配的记录。
+- Standardized on-demand loading, shared caching, and incremental rendering to reduce duplicate requests and interface reconstruction. Only the active page refreshes automatically, and analytics ranges longer than 24 hours do not auto-refresh.
+- The interface updates immediately after successful configuration submissions. Forms remain locked during submission and retain edited content when a submission fails.
+- Standardized success/failure and cost presentation for request events, simplified cost details, and improved event and plugin-log card heights.
+- Request and error events can be exported to CSV with the active filters. Exports contain only displayed fields, use English column names, and retain unformatted values.
+- Added one-click import of CPAMP API-key notes, skipping unchanged and unmatched records.
 
 ## v1.3.2
 
-### 升级须知
+### Upgrade notes
 
-- 升级前请备份数据。支持迁移 v1.0.0 至 v1.2.3 的数据库；v0.8.4 及更早版本需使用新数据文件。
-- 已有定价保留为自定义价，删除后可使用参考价；原通配定价需改为按模型 ID 配置。
-- 原订阅计划迁移为单个额度窗口，保留已用额度；“不重置”计划改为 365 天周期。
+- Back up the data before upgrading. Databases from v1.0.0 through v1.2.3 can be migrated; v0.8.4 and earlier require a new data file.
+- Existing prices are retained as custom prices and can be deleted to use reference prices. Previous wildcard prices must be replaced with per-model-ID configuration.
+- Existing subscription plans migrate to a single quota window while preserving used quota. **Never reset** plans become 365-day periods.
 
-### 后端
+### Backend
 
-- 新增 `codex-auto-review` 和 `gpt-image-1.5` 内置价格，优先级低于自定义价、高于参考价。
-- 新增 debug 日志开关，默认关闭；info 和 error 日志不受影响。
+- Added built-in prices for `codex-auto-review` and `gpt-image-1.5`. Their precedence is lower than custom prices and higher than reference prices.
+- Added a debug-log switch, disabled by default. Info and error logs are unaffected.
 
-### 前端
+### Frontend
 
-- 分析图表刷新时复用已有图表实例，减少闪烁。
-- 请求事件在缓存写为零时隐藏缓存写列。
+- Reused existing chart instances when analytics charts refresh, reducing flicker.
+- Request events hide the cache-write column when the cache-write value is zero.
 
 ## v1.3.1
 
-### 升级须知
+### Upgrade notes
 
-- 升级前请备份数据。支持迁移 v1.0.0 至 v1.2.3 的数据库；v0.8.4 及更早版本需使用新数据文件。
-- 已有定价保留为自定义价，删除后可使用参考价；原通配定价需改为按模型 ID 配置。
-- 原订阅计划迁移为单个额度窗口，保留已用额度；“不重置”计划改为 365 天周期。
+- Back up the data before upgrading. Databases from v1.0.0 through v1.2.3 can be migrated; v0.8.4 and earlier require a new data file.
+- Existing prices are retained as custom prices and can be deleted to use reference prices. Previous wildcard prices must be replaced with per-model-ID configuration.
+- Existing subscription plans migrate to a single quota window while preserving used quota. **Never reset** plans become 365-day periods.
 
-### 前端
+### Frontend
 
-- 分析卡片新增按日／小时平均请求数、Token 和成本，以及缓存率峰值。
-- 修复插件日志级别计数，支持滚动自动加载，并固定列表高度、显示加载进度。
-- API Key 表格的订阅计划下拉框按选项内容调整宽度，避免过宽。
+- Added average daily/hourly request, token, and cost figures plus peak cache rate to analytics cards.
+- Fixed plugin-log level counts, added automatic loading while scrolling, constrained the list height, and show loading progress.
+- API-key subscription-plan dropdowns size themselves to their option content to avoid excessive width.
 
 ## v1.3.0
 
-### 升级须知
+### Upgrade notes
 
-- 升级前请备份数据。支持迁移 v1.0.0 至 v1.2.3 的数据库；v0.8.4 及更早版本需使用新数据文件。
-- 已有定价保留为自定义价，删除后可使用参考价；原通配定价需改为按模型 ID 配置。
-- 原订阅计划迁移为单个额度窗口，保留已用额度；“不重置”计划改为 365 天周期。
+- Back up the data before upgrading. Databases from v1.0.0 through v1.2.3 can be migrated; v0.8.4 and earlier require a new data file.
+- Existing prices are retained as custom prices and can be deleted to use reference prices. Previous wildcard prices must be replaced with per-model-ID configuration.
+- Existing subscription plans migrate to a single quota window while preserving used quota. **Never reset** plans become 365-day periods.
 
-### 后端
+### Backend
 
-- 重构模型价格体系：自定义价优先、models.dev 参考价补充，无可用价格时拦截请求；参考价维护不依赖前端访问。
-- 重构 API Key 管理体系：首次上报用量时自动纳入管理，删除后保留历史关联，重新添加后沿用配置与额度。
-- 重构订阅计划体系：支持多个自定义额度窗口，从首次使用开始独立计算周期，任一窗口用尽即暂停新请求。
-- 请求事件及错误事件保留期限延长至 365 天。
+- Reworked model pricing: custom prices take precedence, models.dev supplies reference prices, and requests without an available price are blocked. Reference-price maintenance no longer depends on opening the frontend.
+- Reworked API-key management: a key is managed automatically when it first reports usage, historical associations remain after deletion, and re-added keys retain their configuration and quota.
+- Reworked subscription plans: plans support multiple custom quota windows with independent periods beginning on first use; new requests pause when any window is exhausted.
+- Extended request-event and error-event retention to 365 days.
 
-### 前端
+### Frontend
 
-- 支持自定义价删除、已删除 Key 管理和多窗口额度展示。
-- 用量分布新增请求数、成本占比；时间范围选择器支持按小时、按天及自定义区间选择。
+- Added custom-price deletion, deleted-key management, and multi-window quota presentation.
+- Added request-count and cost-share usage distributions. The time-range picker supports hourly, daily, and custom ranges.
 
 ## v1.2.3
 
-### 升级须知
+### Upgrade notes
 
-- 从 v1.0.0 至 v1.1.3 升级时会自动将 SQLite V10 或 V11 数据库迁移到 V12；更早格式不再支持，请使用新的数据库文件并重新配置。
+- Upgrading from v1.0.0 through v1.1.3 automatically migrates SQLite V10 or V11 databases to V12. Earlier formats are no longer supported; use a new database file and reconfigure the plugin.
 
-### 后端
+### Backend
 
-- 精简并统一参数校验、凭证状态和运行日志提示，保留诊断详情。
+- Simplified and standardized parameter validation, credential states, and runtime log messages while retaining diagnostic detail.
 
-### 前端
+### Frontend
 
-- 修复 HTTP 访问下凭证标识计算、按凭证保存偏好和 API Key 复制的问题，并为剪贴板访问受限的环境提供兼容处理。
-- 网络异常和响应格式错误显示简明提示，过滤代理错误页面并限制错误提示长度。
-- 统一界面提示文案，准确展示上游凭证不可用状态。
+- Fixed credential identifier calculation over HTTP, per-credential preference storage, and API-key copying, with compatibility handling for environments where clipboard access is restricted.
+- Network failures and malformed responses show concise messages, filter proxy error pages, and limit error-message length.
+- Standardized interface messages and accurately show unavailable upstream credentials.
 
 ## v1.2.2
 
-### 升级须知
+### Upgrade notes
 
-- 从 v1.0.0 至 v1.1.3 升级时会自动将 SQLite V10 或 V11 数据库迁移到 V12；更早格式不再支持，请使用新的数据库文件并重新配置。
+- Upgrading from v1.0.0 through v1.1.3 automatically migrates SQLite V10 or V11 databases to V12. Earlier formats are no longer supported; use a new database file and reconfigure the plugin.
 
-### 后端
+### Backend
 
-- 错误事件的错误类型优先采用上游 JSON 中的 `code`，未提供时回退到 `type`。
-- 分析接口返回脱敏 API Key 标识，无需额外查询访问数据即可展示用量分布。
+- Error events prefer the upstream JSON `code` as their error type and fall back to `type` when no code is provided.
+- The analytics API returns masked API-key identifiers, allowing usage distribution to render without an additional access-data query.
 
-### 前端
+### Frontend
 
-- 全局刷新补齐当前标签页及顶部导航栏的数据依赖，分析内容不再等待 `access` 接口返回后才展示。
-- 修复重复请求和旧会话响应干扰，稳定请求事件分页与导出的时间范围。
-- 错误事件新增带数量统计的错误类型筛选，支持筛选空错误类型，并优化窄屏下的时间、类型与清除筛选布局。
-- 导航栏及独立页面的全局刷新按钮新增加载旋转效果。
+- Global refresh now includes the active tab and top-navigation data dependencies; analytics no longer waits for the `access` endpoint before rendering.
+- Fixed duplicate requests and stale-session response interference, stabilizing request-event pagination and export time ranges.
+- Added an error-type filter with counts to error events, including filtering for empty error types, and improved the narrow-screen time, type, and clear-filter layout.
+- Added a loading rotation effect to global refresh buttons in the navigation bar and standalone page.
 
 ## v1.2.1
 
-### 升级须知
+### Upgrade notes
 
-- 从 v1.0.0 至 v1.1.3 升级时会自动将 SQLite V10 或 V11 数据库迁移到 V12；更早格式不再支持，请使用新的数据库文件并重新配置。
+- Upgrading from v1.0.0 through v1.1.3 automatically migrates SQLite V10 or V11 databases to V12. Earlier formats are no longer supported; use a new database file and reconfigure the plugin.
 
-### 后端
+### Backend
 
-- 记录所有主程序上报的用量事件，包括无 API Key 归属及 `generate=false` 的请求；无归属用量仅参与分析，不计入订阅费用。
-- API Key 登录后的认证文件列表与限额查询遵循路由限制，且不混入配置型 AI 供应商凭证。
+- Record every usage event reported by the host, including requests without an API-key owner and those with `generate=false`. Unowned usage appears only in analytics and is not charged to a subscription.
+- After API-key login, auth-file and quota queries follow routing restrictions and exclude configured AI-provider credentials.
 
-### 前端
+### Frontend
 
-- 新增标签页内刷新按钮，无需重新加载宿主页面即可更新当前数据。
-- 优化 API Key 标识、已停用凭证、模型价格、错误事件和响应式导航的展示。
+- Added per-tab refresh buttons so the current data can be updated without reloading the host page.
+- Improved API-key identifiers, disabled credentials, model prices, error events, and responsive navigation.
 
 ## v1.2.0
 
-### 升级须知
+### Upgrade notes
 
-- 从 v1.0.0 至 v1.1.3 升级时会自动将 SQLite V10 或 V11 数据库迁移到 V12；更早格式不再支持，请使用新的数据库文件并重新配置。
+- Upgrading from v1.0.0 through v1.1.3 automatically migrates SQLite V10 or V11 databases to V12. Earlier formats are no longer supported; use a new database file and reconfigure the plugin.
 
-### 后端
+### Backend
 
-- 订阅周期统一按秒存储和传输，移除周期类型；SQLite V10 和 V11 数据库会直接迁移到 V12。
-- 以空绑定表示全部路由，移除 `system:all` 实体和特殊分支，并统一路由状态更新路径。
-- API Key 的订阅、用量、并发和路由信息统一由 `access` 返回，移除冗余状态接口和已退役 Key 的管理视图。
-- 统一认证额度响应、请求失败筛选和额度重置契约，简化分析成本与模型数据结构。
+- Standardized subscription periods as seconds in storage and transport and removed period types. SQLite V10 and V11 databases migrate directly to V12.
+- An empty binding now represents all routes. Removed the `system:all` entity and special branches, and standardized route-state updates.
+- API-key subscription, usage, concurrency, and routing data now comes from `access`; removed redundant state endpoints and the retired-key management view.
+- Standardized auth-quota responses, failed-request filters, and quota-reset contracts, and simplified analytics cost and model data structures.
 
-### 前端
+### Frontend
 
-- 路由选择以“全部路由”表示空绑定，支持直接清空选择，不再展示 `system:all`。
-- 记住筛选条件、时间范围、分析维度、凭证开关和独立页面主题，并按登录凭证隔离。
-- API Key 访问页改用统一访问数据，移除冗余运行状态展示。
-- 修复切换用量分布维度时趋势图重复渲染的问题，并降低趋势图网格密度和对比度。
+- Routing selection uses **All routes** for empty bindings and allows selections to be cleared directly; `system:all` is no longer shown.
+- Remembers filters, time ranges, analytics dimensions, credential toggles, and standalone-page theme, isolated by login credential.
+- The API-key access page uses unified access data and no longer shows redundant runtime state.
+- Fixed duplicate trend-chart rendering when switching usage-distribution dimensions and reduced trend-chart grid density and contrast.
 
 ## v1.1.3
 
-### 升级须知
+### Upgrade notes
 
-- 从 v1.0.0 或 v1.0.1 升级时会自动迁移数据库，并将原有模型权限转换为路由规则。
-- 从低于 v1.0.0 的版本升级时无法迁移原有数据，请使用新的数据库文件并重新配置。
+- Upgrading from v1.0.0 or v1.0.1 automatically migrates the database and converts existing model permissions into routing rules.
+- Data from versions earlier than v1.0.0 cannot be migrated; use a new database file and reconfigure the plugin.
 
-### 后端
+### Backend
 
-- 分析接口新增请求数、Token 分项、缓存率和成本趋势桶；24 小时及以内按小时、超过 24 小时按浏览器时区自然日聚合，并移除 RPM 和 TPM 计算。
+- Added analytics buckets for request counts, token categories, cache rate, and cost trends. Ranges up to 24 hours aggregate hourly; longer ranges aggregate by calendar day in the browser's time zone. Removed RPM and TPM calculations.
 
-### 前端
+### Frontend
 
-- 分析摘要卡新增独立配色、渐变背景和趋势折线图，并将 Token 与成本明细收紧为单行展示。
-- 新增用量趋势组合图，以堆叠柱展示 Token 分项，以折线展示请求数、总成本和 Token 平均值。
-- 优化移动端筛选和操作区布局，并修复 CPAMC 导航栏渐变边缘的内容泄露。
+- Added distinct colors, gradient backgrounds, and trend sparklines to analytics summary cards, and condensed token and cost details into single lines.
+- Added a combined usage-trend chart with stacked token-category bars and lines for request count, total cost, and average token count.
+- Improved mobile filter and action layouts and fixed content leaking through the CPAMC navigation bar's gradient edge.
 
 ## v1.1.2
 
-### 升级须知
+### Upgrade notes
 
-- 从 v1.0.0 或 v1.0.1 升级时会自动迁移数据库，并将原有模型权限转换为路由规则。
-- 从低于 v1.0.0 的版本升级时无法迁移原有数据，请使用新的数据库文件并重新配置。
+- Upgrading from v1.0.0 or v1.0.1 automatically migrates the database and converts existing model permissions into routing rules.
+- Data from versions earlier than v1.0.0 cannot be migrated; use a new database file and reconfigure the plugin.
 
-### 后端
+### Backend
 
-- 同步配置型上游凭证的安全指纹，使单个上游 API Key 无需预先调用即可用于精确路由。
+- Synchronize secure fingerprints for configured upstream credentials so individual upstream API keys can be used for exact routing before their first request.
 
-### 前端
+### Frontend
 
-- 路由凭证列表直接显示配置型上游 API Key 的掩码信息，并区分“暂无凭证”和“暂无启用凭证”。
-- 路由选择弹窗根据内容和可用空间自适应宽度，优化长名称、标签和“仅启用”开关的布局。
+- The routing credential list directly shows masked configured upstream API keys and distinguishes between no credentials and no enabled credentials.
+- Routing dialogs adapt their width to content and available space, improving layouts for long names, labels, and the **Enabled only** switch.
 
 ## v1.1.1
 
-### 升级须知
+### Upgrade notes
 
-- 从 v1.0.0 或 v1.0.1 升级时会自动迁移数据库，并将原有模型权限转换为路由规则。
-- 从低于 v1.0.0 的版本升级时无法迁移原有数据，请使用新的数据库文件并重新配置。
+- Upgrading from v1.0.0 or v1.0.1 automatically migrates the database and converts existing model permissions into routing rules.
+- Data from versions earlier than v1.0.0 cannot be migrated; use a new database file and reconfigure the plugin.
 
-### 后端
+### Backend
 
-- 修复路由日志无法记录实际选中凭证的问题，并明确标记没有符合条件的可用凭证。
-- 改进上游 API Key 凭证识别，以安全掩码显示凭证，不记录完整密钥。
+- Fixed routing logs failing to record the credential actually selected and clearly identify when no matching credential is available.
+- Improved upstream API-key credential recognition, showing a secure masked value without recording the complete secret.
 
-### 前端
+### Frontend
 
-- 修复未使用过的配置型 AI 供应商不出现在路由凭证列表的问题。
-- 路由凭证列表新增“仅启用”筛选，并区分认证文件与 AI 供应商，统一排序、图标和下拉框样式。
+- Fixed configured AI providers that had not yet been used being absent from the routing credential list.
+- Added an **Enabled only** filter to the routing credential list, distinguished auth files from AI providers, and standardized sorting, icons, and dropdown styles.
 
 ## v1.1.0
 
-### 升级须知
+### Upgrade notes
 
-- 从 v1.0.0 或 v1.0.1 升级时会自动迁移数据库，并将原有模型权限转换为路由规则。
-- 从低于 v1.0.0 的版本升级时无法迁移原有数据，请使用新的数据库文件并重新配置。
+- Upgrading from v1.0.0 or v1.0.1 automatically migrates the database and converts existing model permissions into routing rules.
+- Data from versions earlier than v1.0.0 cannot be migrated; use a new database file and reconfigure the plugin.
 
-### 后端
+### Backend
 
-- 新增路由规则，可按 API Key 限制模型和上游凭证，并在符合规则的可用凭证间调度；路由决策会写入插件日志。模型无权访问时返回 HTTP 403，无可用凭证或配置无效时返回 HTTP 503。
+- Added routing rules that restrict models and upstream credentials per API key and schedule among available credentials matching those rules. Routing decisions are written to plugin logs. Unauthorized models return HTTP 403; unavailable credentials or invalid configuration return HTTP 503.
 
-### 前端
+### Frontend
 
-- 以路由规则管理取代可用模型管理，新增 API Key 路由选择，并将订阅计划和路由规则改为卡片布局。
-- 优化 standalone、CPAMC 和 CPAMP 的桌面端与移动端显示。
+- Replaced allowed-model management with routing-rule management, added API-key routing selection, and changed subscription plans and routing rules to card layouts.
+- Improved desktop and mobile rendering in standalone, CPAMC, and CPAMP contexts.
 
 ## v1.0.1
 
-### 前端
+### Frontend
 
-- 增加 API Key 复制按钮
-- 修复可用模型选择器 bug
+- Added an API-key copy button.
+- Fixed an allowed-model selector bug.
 
 ## v1.0.0
 
-### 升级须知
+### Upgrade notes
 
-- v1.0.0 不迁移旧版 JSON 或 SQLite 数据，升级后需要使用新的数据库并重新配置。
-- 默认数据库路径改为 `plugins/cpa-key-billing-state-v1.db`。如果曾显式配置 `state_file`，请在升级前修改路径并保留旧文件作为备份。
+- v1.0.0 does not migrate legacy JSON or SQLite data. Use a new database and reconfigure the plugin after upgrading.
+- The default database path changed to `plugins/cpa-key-billing-state-v1.db`. If `state_file` was set explicitly, change its path before upgrading and keep the old file as a backup.
 
-### 后端
+### Backend
 
-- 统一管理密钥与 API Key 登录的后端接口和数据结构。
-- 重构数据库，分开保存请求事件、错误事件和插件运行日志。
-- 移除 API Key 和模型的累计用量数据，分析结果改为根据请求事件实时计算。
+- Standardized backend APIs and data structures for management-key and API-key login.
+- Reworked the database to store request events, error events, and plugin runtime logs separately.
+- Removed cumulative usage data for API keys and models; analytics are now calculated from request events in real time.
 
-### 前端
+### Frontend
 
-- 重新设计管理端和 API Key 自助页面，新增“分析”和“错误事件”。
-- 新增请求数、Token、缓存率、成本和用量分布分析，支持按时间范围、API Key、模型和来源查看。
-- 订阅计划、模型分组、模型定价和插件日志统一收纳到设置页。
-- 重构刷新机制：首次进入页面立即加载；请求事件、错误事件和插件日志在滚动离开顶部后暂停自动刷新；分析数据不自动刷新。
-- 完善独立页面、CPAMC 和 CPAMP 的主题适配及窄屏布局。
+- Redesigned the administration and API-key self-service pages and added **Analytics** and **Error events**.
+- Added analytics for request counts, tokens, cache rate, cost, and usage distribution by time range, API key, model, and source.
+- Consolidated subscription plans, model groups, model pricing, and plugin logs on the Setup page.
+- Reworked refresh behavior: data loads immediately on first entry; request events, error events, and plugin logs pause automatic refresh after scrolling away from the top; analytics do not refresh automatically.
+- Completed theme adaptation and narrow-screen layouts for standalone, CPAMC, and CPAMP contexts.

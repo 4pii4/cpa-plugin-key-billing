@@ -30,8 +30,8 @@ func mustPluginLogs(t *testing.T, database *DB, since time.Time) []billing.Plugi
 func TestPluginLogsSurviveAReopen(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "state.db")
 	database := openDatabase(t, path)
-	mustAppendPluginLog(t, database, eventStart, billing.PluginLogError, "保存计费数据失败", time.Time{})
-	mustAppendPluginLog(t, database, eventStart.Add(time.Minute), billing.PluginLogInfo, "已加载计费数据库", time.Time{})
+	mustAppendPluginLog(t, database, eventStart, billing.PluginLogError, "Failed to save billing data", time.Time{})
+	mustAppendPluginLog(t, database, eventStart.Add(time.Minute), billing.PluginLogInfo, "Billing database loaded", time.Time{})
 	if errClose := database.Close(); errClose != nil {
 		t.Fatalf("Close error = %v", errClose)
 	}
@@ -40,7 +40,7 @@ func TestPluginLogsSurviveAReopen(t *testing.T) {
 	if len(events) != 2 {
 		t.Fatalf("events = %+v, want both lines read back", events)
 	}
-	if events[0].Message != "已加载计费数据库" || events[0].Level != billing.PluginLogInfo {
+	if events[0].Message != "Billing database loaded" || events[0].Level != billing.PluginLogInfo {
 		t.Fatalf("newest = %+v, want the last line written, with its level", events[0])
 	}
 	if events[1].Level != billing.PluginLogError || !events[1].At.Equal(eventStart) {
@@ -53,11 +53,11 @@ func TestPluginLogsSurviveAReopen(t *testing.T) {
 func TestPluginLogsAreDroppedPastRetention(t *testing.T) {
 	database := openTestDB(t)
 	cutoff := eventStart.Add(-billing.PluginLogRetention)
-	mustAppendPluginLog(t, database, cutoff.Add(-time.Hour), billing.PluginLogInfo, "过期", time.Time{})
-	mustAppendPluginLog(t, database, eventStart, billing.PluginLogInfo, "保留", cutoff)
+	mustAppendPluginLog(t, database, cutoff.Add(-time.Hour), billing.PluginLogInfo, "expires", time.Time{})
+	mustAppendPluginLog(t, database, eventStart, billing.PluginLogInfo, "Reserved.", cutoff)
 
 	events := mustPluginLogs(t, database, time.Time{})
-	if len(events) != 1 || events[0].Message != "保留" {
+	if len(events) != 1 || events[0].Message != "Reserved." {
 		t.Fatalf("events = %+v, want the expired line dropped on append", events)
 	}
 
@@ -71,7 +71,7 @@ func TestPluginLogsAreDroppedPastRetention(t *testing.T) {
 
 func TestClearPluginLogs(t *testing.T) {
 	database := openTestDB(t)
-	mustAppendPluginLog(t, database, eventStart, billing.PluginLogInfo, "事件", time.Time{})
+	mustAppendPluginLog(t, database, eventStart, billing.PluginLogInfo, "Event", time.Time{})
 
 	cleared, errClear := database.ClearPluginLogs()
 	if cleared != 1 || errClear != nil {

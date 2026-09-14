@@ -225,7 +225,7 @@ func TestUsageHandleRecordsUnscopedUsageWithoutCreatingKey(t *testing.T) {
 	}
 	analysis, err := app.store.Analysis(billing.RequestEventQuery{From: now.Add(-time.Hour), To: now})
 	if err != nil || analysis.Summary.Requests != 1 || len(analysis.UsageDistribution.APIKeys) != 1 ||
-		analysis.UsageDistribution.APIKeys[0].Label != "未归属" {
+		analysis.UsageDistribution.APIKeys[0].Label != "Unassigned" {
 		t.Fatalf("analysis = %+v, err = %v", analysis, err)
 	}
 	assertCostClose(t, analysis.Summary.Cost.TotalUSD, 0.001)
@@ -296,7 +296,7 @@ func TestUsageHandleSpendDrivesQuotaEnforcement(t *testing.T) {
 		t.Fatalf("SyncKeys error = %v", errSync)
 	}
 	if _, errCreate := app.store.CreatePlanWithBindings(billing.Plan{
-		ID: "p", Name: "Tiny", Windows: []billing.QuotaWindow{{Name: "额度", AmountUSD: 0.0015, PeriodSeconds: 86400}},
+		ID: "p", Name: "Tiny", Windows: []billing.QuotaWindow{{Name: "Limit", AmountUSD: 0.0015, PeriodSeconds: 86400}},
 	}, []string{flowScope()}); errCreate != nil {
 		t.Fatalf("CreatePlanWithBindings error = %v", errCreate)
 	}

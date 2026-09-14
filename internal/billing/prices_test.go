@@ -26,18 +26,56 @@ func TestResolveCustomPrice(t *testing.T) {
 }
 
 func TestResolveBuiltinPrice(t *testing.T) {
-	price := ResolveBuiltinPrice("gpt-image-1.5")
-	if price.Source != PriceSourceBuiltin || price.InputPer1M != 5 || price.OutputPer1M != 32 || price.CacheReadPer1M != 1.25 {
-		t.Fatalf("gpt-image-1.5 builtin price = %+v", price)
+	tests := []struct {
+		model                                string
+		input, output, cacheRead, cacheWrite float64
+		long                                 *ResolvedLongContextPrice
+	}{
+		{"claude-opus-4-6-thinking", 5, 25, 0.5, 6.25, nil},
+		{"claude-sonnet-4-6", 3, 15, 0.3, 3.75, nil},
+		{"codex-auto-review", 2.5, 15, 0.25, 2.5, &ResolvedLongContextPrice{272000, 5, 22.5, 0.5, 5}},
+		{"gemini-3-flash", 0.5, 3, 0.05, 0.5, nil},
+		{"gemini-3.1-flash-image", 0.5, 60, 0.5, 0.5, nil},
+		{"gemini-3.1-flash-lite", 0.25, 1.5, 0.025, 0.25, nil},
+		{"gemini-3.1-pro-low", 2, 12, 0.2, 2, &ResolvedLongContextPrice{200000, 4, 18, 0.4, 4}},
+		{"gemini-3.6-flash-high", 0.75, 3.75, 0.075, 0.75, nil},
+		{"gemini-3.7-flash-high", 0.75, 3.75, 0.075, 0.75, nil},
+		{"gemini-3.8-flash-high", 0.75, 3.75, 0.075, 0.75, nil},
+		{"gemini-pro-agent", 2, 12, 0.2, 0.375, nil},
+		{"gpt-5.3-codex-spark", 1.75, 14, 0.175, 1.75, nil},
+		{"gpt-5.5", 5, 30, 0.5, 5, &ResolvedLongContextPrice{272000, 10, 45, 1, 10}},
+		{"gpt-5.6-luna", 0.2, 1.2, 0.02, 0.25, &ResolvedLongContextPrice{272000, 0.4, 1.8, 0.04, 0.5}},
+		{"gpt-5.6-sol", 4, 20, 0.4, 5, &ResolvedLongContextPrice{272000, 8, 30, 0.8, 10}},
+		{"gpt-5.6-terra", 2, 12, 0.2, 2.5, &ResolvedLongContextPrice{272000, 4, 18, 0.4, 5}},
+		{"gpt-6-astra", 10, 50, 1, 12.5, &ResolvedLongContextPrice{272000, 20, 75, 2, 25}},
+		{"gpt-image-1.5", 5, 32, 1.25, 5, nil},
+		{"gpt-image-2", 2.5, 15, 0.625, 2.5, nil},
+		{"gpt-image-2.5", 5, 30, 1.25, 5, nil},
+		{"gpt-image-2.5-flare", 5, 30, 1.25, 5, nil},
+		{"gpt-image-2.5-sunburst", 5, 30, 1.25, 5, nil},
+		{"gpt-oss-120b-medium", 0.15, 0.6, 0.15, 0.15, nil},
 	}
-	price = ResolveBuiltinPrice("codex-auto-review")
-	if price.Source != PriceSourceBuiltin || price.InputPer1M != 2.5 || price.OutputPer1M != 15 ||
-		price.CacheReadPer1M != 0.25 || price.CacheWritePer1M != 2.5 {
-		t.Fatalf("codex-auto-review builtin price = %+v", price)
+	if len(builtinPrices) != len(tests) {
+		t.Fatalf("builtin price count = %d, want %d", len(builtinPrices), len(tests))
 	}
-	if tier := price.LongContext; tier == nil || tier.ThresholdInputTokens != 272000 ||
-		tier.InputPer1M != 5 || tier.OutputPer1M != 22.5 || tier.CacheReadPer1M != 0.5 || tier.CacheWritePer1M != 5 {
-		t.Fatalf("codex-auto-review long context price = %+v", tier)
+	for _, test := range tests {
+		t.Run(test.model, func(t *testing.T) {
+			price := ResolveBuiltinPrice(test.model)
+			if price.Source != PriceSourceBuiltin || price.InputPer1M != test.input ||
+				price.OutputPer1M != test.output || price.CacheReadPer1M != test.cacheRead ||
+				price.CacheWritePer1M != test.cacheWrite {
+				t.Fatalf("builtin price = %+v", price)
+			}
+			if test.long == nil {
+				if price.LongContext != nil {
+					t.Fatalf("unexpected long-context price = %+v", price.LongContext)
+				}
+				return
+			}
+			if price.LongContext == nil || *price.LongContext != *test.long {
+				t.Fatalf("long-context price = %+v, want %+v", price.LongContext, test.long)
+			}
+		})
 	}
 	if price := ResolveBuiltinPrice("unknown"); price.Source != PriceSourceNone {
 		t.Fatalf("unknown model has a builtin price: %+v", price)

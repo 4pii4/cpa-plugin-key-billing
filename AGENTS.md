@@ -38,8 +38,8 @@ Source paths are relative to this repository's root:
 - Edit `Changelog.md` only when the user explicitly requests preparation for a tag or release.
 - Prepend one `## vX.Y.Z` section directly below `# Changelog`; never append releases or add an unreleased placeholder.
 - Treat sections for tags that already exist as immutable history. Do not edit, move, merge, or delete them unless the user explicitly requests changes to that tag's entry.
-- Use concise Chinese bullets that describe released behavior, not the development process. Include only relevant sections, ordered as `### 升级须知`, `### 后端`, then `### 前端`.
-- Put breaking changes, migration requirements, and operator actions in `### 升级须知`. Omit implementation details unless they affect users or operators.
+- Use concise English bullets that describe released behavior, not the development process. Include only relevant sections, ordered as `### Upgrade notes`, `### Backend`, then `### Frontend`.
+- Put breaking changes, migration requirements, and operator actions in `### Upgrade notes`. Omit implementation details unless they affect users or operators.
 
 ## Commit Messages
 

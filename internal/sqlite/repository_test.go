@@ -50,7 +50,7 @@ func TestRepositoryRoundTrip(t *testing.T) {
 			path := filepath.Join(t.TempDir(), "state.db")
 			start := time.Date(2026, 8, 12, 9, 30, 0, 123456789, time.UTC)
 			state := billing.NewState()
-			state.Plans = []billing.Plan{{ID: "weekly", Name: "Weekly 10", Windows: []billing.QuotaWindow{{ID: "default", Name: "额度", AmountUSD: 10, PeriodSeconds: 604800}, {ID: "long", Name: "预算", AmountUSD: 50, PeriodSeconds: 1209600}}}}
+			state.Plans = []billing.Plan{{ID: "weekly", Name: "Weekly 10", Windows: []billing.QuotaWindow{{ID: "default", Name: "Limit", AmountUSD: 10, PeriodSeconds: 604800}, {ID: "long", Name: "Budget", AmountUSD: 50, PeriodSeconds: 1209600}}}}
 			state.Prices = map[string]billing.CustomPrice{"gpt-5.5": {ModelID: "gpt-5.5", PriceRates: billing.PriceRates{InputPer1M: 1, OutputPer1M: 2, CacheReadPer1M: price(.1)}}}
 			state.Routes = []billing.Route{{ID: "fast", Name: "Fast", Rule: billing.RouteRule{Models: []string{"gpt-5.5"}, CredentialIDs: []string{billing.CredentialFingerprint("dummy-allowed")}, CredentialProviders: []billing.CredentialProviderSelector{{Source: "auth-files", Provider: "codex"}}, DeniedModels: []string{"blocked"}, DeniedCredentialIDs: []string{billing.CredentialFingerprint("dummy-denied")}, DeniedCredentialProviders: []billing.CredentialProviderSelector{{Source: "auth-files", Provider: "claude"}}}}}
 			state.ConfigCredentials[billing.CredentialFingerprint("dummy-config")] = billing.ConfigCredential{
@@ -193,7 +193,7 @@ func TestOpenRejectsExistingSchemas(t *testing.T) {
 			if reopened, err := Open(path); err == nil {
 				_ = reopened.Close()
 				t.Fatal("Open accepted an existing schema")
-			} else if !strings.Contains(err.Error(), "文件格式不受支持") {
+			} else if !strings.Contains(err.Error(), "unsupported file format") {
 				t.Fatalf("error = %v", err)
 			}
 		})
@@ -206,7 +206,7 @@ func TestQuotaConfigurationExtendsExistingJSON(t *testing.T) {
 	database := openDatabase(t, path)
 	// Load the original JSON without counter or schedule extensions.
 	if _, err := database.db.Exec(`INSERT INTO plans (position, id, name, windows_json)
-		VALUES (0, 'p', '团队', '[{"id":"w","name":"额度","period_seconds":3600,"amount_usd":10}]')`); err != nil {
+		VALUES (0, 'p', 'Team', '[{"id":"w","name":"Limit","period_seconds":3600,"amount_usd":10}]')`); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := database.db.Exec(insertKey, "dummy-scope", "sk-dum…0001", "", true, 0, "p", 0,
@@ -225,7 +225,7 @@ func TestQuotaConfigurationExtendsExistingJSON(t *testing.T) {
 	state.Keys["dummy-scope"].Cycles["w"] = cycle
 	state.Plans[0].Windows = append(state.Plans[0].Windows,
 		billing.QuotaWindow{ID: "tokens", Name: "Token", PeriodSeconds: 7200, TokenLimit: 1000},
-		billing.QuotaWindow{ID: "requests", Name: "请求", PeriodSeconds: 86400, RequestLimit: 100})
+		billing.QuotaWindow{ID: "requests", Name: "Request", PeriodSeconds: 86400, RequestLimit: 100})
 	for i := range state.Plans[0].Windows {
 		state.Plans[0].Windows[i].CycleAnchorAt = start.Add(time.Duration(state.Plans[0].Windows[i].PeriodSeconds) * time.Second)
 	}

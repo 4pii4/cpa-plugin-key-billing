@@ -89,9 +89,9 @@ func TestQuotaWindowsValidationAndIdentity(t *testing.T) {
 
 func TestPlanAcceptsIndependentQuotaDimensions(t *testing.T) {
 	plan := Plan{ID: "p", Windows: []QuotaWindow{
-		{ID: "requests", Name: "请求", PeriodSeconds: 3600, RequestLimit: maxQuotaCount},
+		{ID: "requests", Name: "Request", PeriodSeconds: 3600, RequestLimit: maxQuotaCount},
 		{ID: "tokens", Name: "Token", PeriodSeconds: 86400, TokenLimit: maxQuotaCount},
-		{ID: "mixed", Name: "综合", PeriodSeconds: 604800, AmountUSD: 100, TokenLimit: 10000, RequestLimit: 100},
+		{ID: "mixed", Name: "Combined", PeriodSeconds: 604800, AmountUSD: 100, TokenLimit: 10000, RequestLimit: 100},
 	}}
 	if err := plan.Validate(); err != nil {
 		t.Fatal(err)

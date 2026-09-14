@@ -25,7 +25,7 @@ func exhaustedApp(t *testing.T, resetAfter time.Duration) *App {
 		t.Fatalf("SyncKeys error = %v", errSync)
 	}
 	if _, errCreate := app.store.CreatePlanWithBindings(billing.Plan{
-		ID: "plan-5", Name: "Plan 5", Windows: []billing.QuotaWindow{{Name: "额度", AmountUSD: 5, PeriodSeconds: int64(resetAfter / time.Second)}},
+		ID: "plan-5", Name: "Plan 5", Windows: []billing.QuotaWindow{{Name: "Limit", AmountUSD: 5, PeriodSeconds: int64(resetAfter / time.Second)}},
 	}, []string{billing.CallerScope(testAPIKey)}); errCreate != nil {
 		t.Fatalf("CreatePlanWithBindings error = %v", errCreate)
 	}
@@ -144,7 +144,7 @@ func TestCompletionDuringReferencePriceRefresh(t *testing.T) {
 				t.Fatal(err)
 			}
 			if _, err := app.store.CreatePlanWithBindings(billing.Plan{
-				ID: "cancel-test", Name: "Cancel test", Windows: []billing.QuotaWindow{{Name: "额度", AmountUSD: 10, PeriodSeconds: 3600}},
+				ID: "cancel-test", Name: "Cancel test", Windows: []billing.QuotaWindow{{Name: "Limit", AmountUSD: 10, PeriodSeconds: 3600}},
 			}, []string{flowScope()}); err != nil {
 				t.Fatal(err)
 			}
@@ -210,7 +210,7 @@ func TestInterceptEnforcesQuotaDimensionsAfterRestart(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err := app.store.CreatePlanWithBindings(billing.Plan{ID: "p", Windows: []billing.QuotaWindow{
-		{Name: "请求", RequestLimit: 1, PeriodSeconds: 3600},
+		{Name: "Request", RequestLimit: 1, PeriodSeconds: 3600},
 		{Name: "Token", TokenLimit: 1000, PeriodSeconds: 7200},
 	}}, []string{flowScope()})
 	if err != nil {

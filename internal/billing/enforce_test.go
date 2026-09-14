@@ -13,8 +13,8 @@ func TestQuotaWindowSchedules(t *testing.T) {
 			store := newAccountStore(t, now)
 			store.ReplaceAll(func(state *State) {
 				windows := []QuotaWindow{
-					{ID: "short", Name: "短时", AmountUSD: wantSubsetCost, PeriodSeconds: 3600},
-					{ID: "long", Name: "预算", AmountUSD: wantSubsetCost, PeriodSeconds: 7200},
+					{ID: "short", Name: "for a short time.", AmountUSD: wantSubsetCost, PeriodSeconds: 3600},
+					{ID: "long", Name: "Budget", AmountUSD: wantSubsetCost, PeriodSeconds: 7200},
 				}
 				if unified {
 					for i := range windows {
@@ -88,9 +88,9 @@ func TestQuotaWindowsWithDifferentDimensions(t *testing.T) {
 	now := time.Date(2026, 9, 8, 12, 0, 0, 0, time.UTC)
 	store := newAccountStore(t, now)
 	plan := Plan{ID: "p", Windows: []QuotaWindow{
-		{ID: "requests", Name: "请求", RequestLimit: 1, PeriodSeconds: 3600},
+		{ID: "requests", Name: "Request", RequestLimit: 1, PeriodSeconds: 3600},
 		{ID: "tokens", Name: "Token", TokenLimit: 3000, PeriodSeconds: 7200},
-		{ID: "amount", Name: "金额", AmountUSD: 4 * wantSubsetCost, PeriodSeconds: 86400},
+		{ID: "amount", Name: "Amount", AmountUSD: 4 * wantSubsetCost, PeriodSeconds: 86400},
 	}}
 	if err := plan.Validate(); err != nil {
 		t.Fatal(err)

@@ -65,7 +65,7 @@ func TestConfigureReportsReferencePricePreloadFailure(t *testing.T) {
 	requests := 0
 	app := newApp(billing.NewStore(openRepository, func(context.Context) ([]byte, error) {
 		requests++
-		return nil, errors.New("下载参考价：HTTP 503")
+		return nil, errors.New("Download reference price: HTTP 503")
 	}))
 	t.Cleanup(app.Shutdown)
 	raw, errHandle := app.HandleMethod(MethodPluginRegister, mustMarshal(t, LifecycleRequest{
@@ -84,7 +84,7 @@ func TestConfigureReportsReferencePricePreloadFailure(t *testing.T) {
 	}
 	events := page.Entries
 	if len(events) == 0 || events[0].Level != billing.PluginLogError ||
-		!strings.Contains(events[0].Message, "同步 models.dev 参考价失败") {
+		!strings.Contains(events[0].Message, "Failed to sync models.dev reference price") {
 		t.Fatalf("events = %+v, want the preload failure", events)
 	}
 }

@@ -52,7 +52,7 @@ func (s *Store) recordUsage(event UsageEvent, failure *RequestError) {
 	}
 	price, billingModel, priceErr := s.ResolveModelPrice(event.UpstreamModel, event.RouteModel, false)
 	if priceErr != nil {
-		s.AddPluginLog(PluginLogError, "模型价格读取失败，保留用量事件并按零计费")
+		s.AddPluginLog(PluginLogError, "Model pricing read failed, usage event preserved and billed at zero")
 	}
 	if priceErr != nil || price.Source == PriceSourceNone {
 		// Usage has already happened. Keep all reported tokens and failure
@@ -134,11 +134,11 @@ func (s *Store) recordUsage(event UsageEvent, failure *RequestError) {
 		return struct{}{}, changes
 	})
 	if missingCycleTime {
-		s.AddPluginLog(PluginLogError, "用量记录缺少请求时间，保留用量事件并跳过额度扣除")
+		s.AddPluginLog(PluginLogError, "Request time is missing; retained the usage event and skipped quota deduction")
 	}
 	if price.Source == PriceSourceReference {
 		s.AddPluginLog(PluginLogDebug,
-			"参考价计费：billing_model=%q，费用=$%.8f，单价（每百万 Token）：输入=$%g，输出=$%g，缓存读=$%g，缓存写=$%g",
+			"Reference-price billing: billing_model=%q, cost=$%.8f, unit prices per 1M tokens: input=$%g, output=$%g, cache read=$%g, cache write=$%g",
 			billingModel, cost.TotalUSD, cost.AppliedInputPer1M, cost.AppliedOutputPer1M,
 			cost.AppliedCacheReadPer1M, cost.AppliedCacheWritePer1M)
 	}

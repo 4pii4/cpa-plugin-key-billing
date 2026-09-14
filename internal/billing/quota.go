@@ -160,7 +160,7 @@ func activateCycles(key *KeyState, plan Plan, now time.Time) bool {
 
 func (key *KeyState) ValidateCycles(plan Plan) error {
 	if key.PlanID != "" && plan.ID != key.PlanID {
-		return invalidf("API Key 绑定的订阅计划不存在")
+		return invalidf("Subscription plan bound to API key does not exist")
 	}
 	for id, cycle := range key.Cycles {
 		index := slices.IndexFunc(plan.Windows, func(window QuotaWindow) bool { return window.ID == id })
@@ -168,12 +168,12 @@ func (key *KeyState) ValidateCycles(plan Plan) error {
 			!cycle.EndAt.Equal(cycle.StartAt.Add(time.Duration(plan.Windows[index].PeriodSeconds)*time.Second)) ||
 			cycle.SpentUSD < 0 || math.IsNaN(cycle.SpentUSD) || math.IsInf(cycle.SpentUSD, 0) ||
 			cycle.UsedRequests < 0 || cycle.UsedTokens < 0 {
-			return invalidf("API Key 的额度周期数据无效")
+			return invalidf("API key has invalid quota-cycle data")
 		}
 		window := plan.Windows[index]
 		if !window.CycleAnchorAt.IsZero() && !window.newCycle(plan.ID, cycle.StartAt).StartAt.Equal(cycle.StartAt) ||
 			!cycle.UsageSince.IsZero() && (cycle.UsageSince.Before(cycle.StartAt) || !cycle.UsageSince.Before(cycle.EndAt)) {
-			return invalidf("API Key 的额度周期数据无效")
+			return invalidf("API key has invalid quota-cycle data")
 		}
 	}
 	return nil

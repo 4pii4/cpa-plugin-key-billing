@@ -43,7 +43,7 @@ func TestOldKeyPreviewRepairPreservesHistoryAndCanBeResolved(t *testing.T) {
 	const apiKey = "sk-dummy-legacy-0001"
 	scope := billing.CallerScope(apiKey)
 	state := billing.NewState()
-	state.Plans = []billing.Plan{{ID: "plan", Windows: []billing.QuotaWindow{{ID: "default", Name: "额度", AmountUSD: 10, PeriodSeconds: 3600}}}}
+	state.Plans = []billing.Plan{{ID: "plan", Windows: []billing.QuotaWindow{{ID: "default", Name: "Limit", AmountUSD: 10, PeriodSeconds: 3600}}}}
 	state.Keys[scope] = &billing.KeyState{
 		Preview: billing.PreviewKey(apiKey), Label: "Legacy", PlanID: "plan",
 		ConcurrencyLimit: 3, DeletedAt: time.Unix(100, 0), Cycles: map[string]billing.QuotaCycle{"default": {PlanID: "plan", StartAt: time.Unix(1, 0), EndAt: time.Unix(3601, 0), SpentUSD: 2}},

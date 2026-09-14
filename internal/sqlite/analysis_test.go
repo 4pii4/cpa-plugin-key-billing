@@ -178,7 +178,7 @@ func TestAnalysisFullRetentionKeepsZeroUsageAndEmptyScopes(t *testing.T) {
 	if len(keys) != 2 || keys[0].Percent != 50 || keys[1].Percent != 50 {
 		t.Fatalf("zero-usage key distribution=%+v", keys)
 	}
-	if view.UsageDistribution.Models[0].Label != "未知模型" || view.UsageDistribution.Sources[0].Label != "未知来源" {
+	if view.UsageDistribution.Models[0].Label != "Unknown model" || view.UsageDistribution.Sources[0].Label != "Unknown source" {
 		t.Fatalf("fallback labels=%+v", view.UsageDistribution)
 	}
 }

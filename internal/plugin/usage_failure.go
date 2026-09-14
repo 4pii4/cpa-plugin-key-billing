@@ -144,7 +144,7 @@ func stripFailureStatus(message string, statusCode int) string {
 	if statusCode == 0 {
 		return message
 	}
-	for _, separator := range []string{"：", ":"} {
+	for _, separator := range []string{": ", ":"} {
 		prefix := "HTTP " + strconv.Itoa(statusCode) + separator
 		if strings.HasPrefix(message, prefix) {
 			return strings.TrimSpace(strings.TrimPrefix(message, prefix))
@@ -164,7 +164,7 @@ func formatFailureReason(statusCode int, message string) string {
 	case status == "" || strings.Contains(message, status):
 		return truncateFailureReason(message)
 	default:
-		return truncateFailureReason(status + "：" + message)
+		return truncateFailureReason(status + ": " + message)
 	}
 }
 
@@ -196,7 +196,7 @@ func qualifyFailure(message, code string) string {
 	if message == "" || code == "" || strings.Contains(message, code) {
 		return message
 	}
-	return message + "（" + code + "）"
+	return message + " (" + code + ")"
 }
 
 func truncateFailureReason(reason string) string {

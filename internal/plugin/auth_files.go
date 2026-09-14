@@ -113,7 +113,7 @@ func (a *App) authQuota(req ManagementRequest, access viewAccess) ManagementResp
 	}
 	authIndex := strings.TrimSpace(req.Query.Get("auth_index"))
 	if authIndex == "" || len(authIndex) > 512 {
-		return viewJSONError(access, http.StatusBadRequest, "invalid", "认证文件标识无效")
+		return viewJSONError(access, http.StatusBadRequest, "invalid", "Invalid auth-file identifier")
 	}
 	files, errList := a.listHostAuthFiles()
 	if errList != nil {
@@ -127,26 +127,26 @@ func (a *App) authQuota(req ManagementRequest, access viewAccess) ManagementResp
 		}
 	}
 	if selected == nil {
-		return viewJSONError(access, http.StatusNotFound, "not_found", "认证文件不存在")
+		return viewJSONError(access, http.StatusNotFound, "not_found", "Auth file does not exist")
 	}
 	if strings.EqualFold(strings.TrimSpace(selected.AccountType), "api_key") {
-		return viewJSONError(access, http.StatusNotFound, "not_found", "认证文件不存在")
+		return viewJSONError(access, http.StatusNotFound, "not_found", "Auth file does not exist")
 	}
 	if access.APIKey {
 		decision := a.store.ResolveRouting(access.Scope, "", "")
 		if decision.ConfigurationError != "" || (decision.RestrictsCredentials() && !routingAllowsAuthFile(*selected, decision)) {
-			return viewJSONError(access, http.StatusNotFound, "not_found", "认证文件不存在")
+			return viewJSONError(access, http.StatusNotFound, "not_found", "Auth file does not exist")
 		}
 	}
 	if selected.Disabled {
-		return viewJSONError(access, http.StatusUnprocessableEntity, "disabled", "认证文件已停用")
+		return viewJSONError(access, http.StatusUnprocessableEntity, "disabled", "Auth file is disabled")
 	}
 	provider := authCategory(selected.Type)
 	if authCategoryOrder(provider) == 5 {
-		return viewJSONError(access, http.StatusUnprocessableEntity, "unsupported", "此类认证文件不支持限额查询")
+		return viewJSONError(access, http.StatusUnprocessableEntity, "unsupported", "This type of auth file does not support quota queries")
 	}
 	if selected.RuntimeOnly {
-		return viewJSONError(access, http.StatusUnprocessableEntity, "unsupported", "运行时认证文件无可读取凭据")
+		return viewJSONError(access, http.StatusUnprocessableEntity, "unsupported", "Runtime auth file contains no readable credential")
 	}
 	result, errQuota := a.fetchAuthQuota(req.HostCallbackID, *selected, provider)
 	if errQuota != nil {
@@ -206,13 +206,13 @@ func (a *App) listAuthFiles(access viewAccess) ([]authFileView, error) {
 
 func authQuotaAvailability(file hostAuthFile, category string) (bool, string) {
 	if file.Disabled {
-		return false, "认证文件已停用"
+		return false, "Auth file is disabled"
 	}
 	if file.RuntimeOnly {
-		return false, "运行时认证文件无可读取凭据"
+		return false, "Runtime auth file contains no readable credential"
 	}
 	if authCategoryOrder(category) == 5 {
-		return false, "此类认证文件不支持限额查询"
+		return false, "This type of auth file does not support quota queries"
 	}
 	return true, ""
 }
@@ -240,15 +240,15 @@ func normalizeCodexPlan(plan string) string {
 
 func (a *App) listHostAuthFiles() ([]hostAuthFile, error) {
 	if a == nil || a.hostCaller == nil {
-		return nil, fmt.Errorf("当前 CLIProxyAPI 不支持读取认证文件")
+		return nil, fmt.Errorf("current CLIProxyAPI version does not support reading auth files")
 	}
 	raw, errCall := a.hostCaller(hostAuthList, map[string]any{})
 	if errCall != nil {
-		return nil, fmt.Errorf("读取认证文件列表失败：%w", errCall)
+		return nil, fmt.Errorf("read auth-file list: %w", errCall)
 	}
 	var response hostAuthListResponse
 	if errDecode := json.Unmarshal(raw, &response); errDecode != nil {
-		return nil, fmt.Errorf("解析认证文件列表失败：%w", errDecode)
+		return nil, fmt.Errorf("parse auth-file list: %w", errDecode)
 	}
 	return response.Files, nil
 }
@@ -277,21 +277,21 @@ func authCategoryOrder(category string) int {
 func (a *App) fetchAuthQuota(callbackID string, file hostAuthFile, provider string) (authQuotaResponse, error) {
 	raw, errGet := a.hostCaller(hostAuthGet, map[string]string{"auth_index": file.AuthIndex})
 	if errGet != nil {
-		return authQuotaResponse{}, fmt.Errorf("读取认证文件失败：%w", errGet)
+		return authQuotaResponse{}, fmt.Errorf("read auth file: %w", errGet)
 	}
 	var auth hostAuthGetResponse
 	if errDecode := json.Unmarshal(raw, &auth); errDecode != nil {
-		return authQuotaResponse{}, fmt.Errorf("解析认证文件失败：%w", errDecode)
+		return authQuotaResponse{}, fmt.Errorf("parse auth file: %w", errDecode)
 	}
 	var credential map[string]any
 	if errDecode := json.Unmarshal(auth.JSON, &credential); errDecode != nil {
-		return authQuotaResponse{}, fmt.Errorf("认证文件内容无效")
+		return authQuotaResponse{}, fmt.Errorf("invalid auth-file content")
 	}
 	if credentialUsesAPIKey(credential) {
-		return authQuotaResponse{}, fmt.Errorf("API Key 凭证不支持此限额查询")
+		return authQuotaResponse{}, fmt.Errorf("API-key credentials do not support this quota query")
 	}
 	if credentialString(credential, "proxy_url", "proxyUrl") != "" {
-		return authQuotaResponse{}, fmt.Errorf("限额查询不支持认证文件的独立代理")
+		return authQuotaResponse{}, fmt.Errorf("quota queries do not support per-auth-file proxies")
 	}
 	result := authQuotaResponse{AuthRevision: authFileRevision(file), FetchedAt: time.Now().UTC(), Quota: []quotaRow{}}
 	if provider == "xai" && paidXAICredential(credential) {
@@ -300,7 +300,7 @@ func (a *App) fetchAuthQuota(callbackID string, file hostAuthFile, provider stri
 	}
 	token := credentialToken(credential)
 	if token == "" {
-		return authQuotaResponse{}, fmt.Errorf("认证文件无可用凭据")
+		return authQuotaResponse{}, fmt.Errorf("auth file contains no usable credential")
 	}
 	var err error
 	switch provider {
@@ -318,7 +318,7 @@ func (a *App) fetchAuthQuota(callbackID string, file hostAuthFile, provider stri
 	case "antigravity":
 		projectID := firstNonEmptyString(file.ProjectID, credentialString(credential, "project_id", "projectId", "gemini_virtual_project"))
 		if projectID == "" {
-			return result, fmt.Errorf("认证文件缺少 project_id")
+			return result, fmt.Errorf("auth file is missing project_id")
 		}
 		err = a.fetchAntigravityQuota(callbackID, token, projectID, &result)
 	}
@@ -339,18 +339,18 @@ func (a *App) upstream(callbackID, method, endpoint, token string, headers http.
 		var errMarshal error
 		rawBody, errMarshal = json.Marshal(body)
 		if errMarshal != nil {
-			return nil, fmt.Errorf("构造限额请求失败：%w", errMarshal)
+			return nil, fmt.Errorf("build quota request: %w", errMarshal)
 		}
 	}
 	raw, errCall := a.hostCaller(hostHTTPDo, hostHTTPRequest{
 		HostCallbackID: callbackID, Method: method, URL: endpoint, Headers: headers, Body: rawBody,
 	})
 	if errCall != nil {
-		return nil, fmt.Errorf("限额请求失败：%s", redactSecret(errCall.Error(), token))
+		return nil, fmt.Errorf("quota request failed: %s", redactSecret(errCall.Error(), token))
 	}
 	var response hostHTTPResponse
 	if errDecode := json.Unmarshal(raw, &response); errDecode != nil {
-		return nil, fmt.Errorf("解析限额响应失败：%w", errDecode)
+		return nil, fmt.Errorf("parse quota response: %w", errDecode)
 	}
 	var object map[string]any
 	if len(response.Body) > 0 {
@@ -360,19 +360,19 @@ func (a *App) upstream(callbackID, method, endpoint, token string, headers http.
 		message := upstreamErrorMessage(object)
 		if response.StatusCode == http.StatusUnauthorized {
 			if message != "" {
-				message = "认证凭据已失效或过期：" + message
+				message = "Authentication credential is invalid or expired: " + message
 			} else {
-				message = "认证凭据已失效或过期"
+				message = "Authentication credential is invalid or expired"
 			}
 		}
 		if message == "" {
 			message = http.StatusText(response.StatusCode)
 		}
 		message = redactSecret(message, token)
-		return nil, fmt.Errorf("上游返回 HTTP %d：%s", response.StatusCode, message)
+		return nil, fmt.Errorf("upstream returned HTTP %d: %s", response.StatusCode, message)
 	}
 	if object == nil {
-		return nil, fmt.Errorf("上游响应格式异常")
+		return nil, fmt.Errorf("unexpected upstream response format")
 	}
 	return object, nil
 }
@@ -450,17 +450,17 @@ func appendCodexRateLimit(result *authQuotaResponse, labelPrefix string, info ma
 			continue
 		}
 		seconds := window.seconds
-		label := "5 小时限额"
+		label := "5-hour limit"
 		if window.role == "Secondary" {
-			label = "周限额"
+			label = "Weekly limit"
 		}
 		switch {
 		case seconds == 5*60*60:
-			label = "5 小时限额"
+			label = "5-hour limit"
 		case seconds == 7*24*60*60:
-			label = "周限额"
+			label = "Weekly limit"
 		case seconds >= 28*24*60*60 && seconds <= 31*24*60*60:
-			label = "月限额"
+			label = "Monthly limit"
 		}
 		row := quotaRow{Label: labelPrefix + label}
 		if used, ok := floatValue(value, "used_percent", "usedPercent"); ok {
@@ -523,9 +523,9 @@ func (a *App) fetchClaudeQuota(callbackID, token string, result *authQuotaRespon
 	}
 	fable := claudeFableLimit(usage)
 	for _, window := range []struct{ key, label string }{
-		{"five_hour", "5 小时限额"}, {"seven_day", "周限额"},
-		{"seven_day_oauth_apps", "OAuth Apps 周限额"}, {"seven_day_opus", "Opus 周限额"},
-		{"seven_day_sonnet", "Sonnet 周限额"}, {"seven_day_cowork", "Cowork 周限额"},
+		{"five_hour", "5-hour limit"}, {"seven_day", "Weekly limit"},
+		{"seven_day_oauth_apps", "OAuth Apps weekly limit"}, {"seven_day_opus", "Opus weekly limit"},
+		{"seven_day_sonnet", "Sonnet weekly limit"}, {"seven_day_cowork", "Cowork weekly limit"},
 		{"iguana_necktie", "Iguana Necktie"},
 	} {
 		if window.key == "iguana_necktie" && fable != nil {
@@ -543,12 +543,12 @@ func (a *App) fetchClaudeQuota(callbackID, token string, result *authQuotaRespon
 	}
 	if fable != nil {
 		percent, _ := floatValue(fable, "percent")
-		result.Quota = append(result.Quota, quotaRow{Label: "Fable 周限额", RemainingPercent: remainingPercent(100 - percent), ResetAt: quotaResetAt(firstString(fable, "resets_at", "resetsAt"))})
+		result.Quota = append(result.Quota, quotaRow{Label: "Fable weekly limit", RemainingPercent: remainingPercent(100 - percent), ResetAt: quotaResetAt(firstString(fable, "resets_at", "resetsAt"))})
 	}
 	if extra := objectMap(usage, "extra_usage", "extraUsage"); extra != nil {
 		enabled, hasEnabled := boolValue(extra, "is_enabled", "isEnabled")
 		if !hasEnabled || enabled {
-			row := quotaRow{Label: "额外用量", Currency: "USD"}
+			row := quotaRow{Label: "Extra usage", Currency: "USD"}
 			if value, ok := usdValue(extra, "used_credits", "usedCredits"); ok {
 				row.Used = floatPointer(value)
 			}
@@ -598,7 +598,7 @@ func (a *App) fetchKimiQuota(callbackID, token string, result *authQuotaResponse
 			values = detail
 		}
 		windowSeconds := kimiWindowSeconds(limit)
-		label := firstNonEmptyString(firstString(limit, "name", "title"), firstString(detail, "name", "title"), windowLabel(windowSeconds), "限额")
+		label := firstNonEmptyString(firstString(limit, "name", "title"), firstString(detail, "name", "title"), windowLabel(windowSeconds), "Limit")
 		row := quotaRow{Label: label,
 			ResetAt: quotaResetAt(firstString(limit, "reset_at", "resetAt", "resetTime"), firstString(detail, "reset_at", "resetAt", "resetTime"))}
 		fillQuotaValues(&row, values)
@@ -610,7 +610,7 @@ func (a *App) fetchKimiQuota(callbackID, token string, result *authQuotaResponse
 		result.Quota = append(result.Quota, row)
 	}
 	if summary := objectMap(usage, "usage"); meaningfulQuotaValues(summary) {
-		row := quotaRow{Label: firstNonEmptyString(firstString(summary, "title"), "周限额"), ResetAt: quotaResetAt(firstString(summary, "reset_at", "resetAt", "resetTime"))}
+		row := quotaRow{Label: firstNonEmptyString(firstString(summary, "title"), "Weekly limit"), ResetAt: quotaResetAt(firstString(summary, "reset_at", "resetAt", "resetTime"))}
 		fillQuotaValues(&row, summary)
 		if row.ResetAt == "" {
 			if reset, ok := resetSeconds(summary); ok {
@@ -640,7 +640,7 @@ func (a *App) fetchXAIQuota(callbackID, token, userID string, result *authQuotaR
 		monthlyConfig = objectMap(objectMap(monthly, "body"), "config")
 	}
 	if percent, ok := floatValue(weeklyConfig, "creditUsagePercent", "credit_usage_percent"); ok {
-		row := quotaRow{Label: "周限额", RemainingPercent: remainingPercent(100 - percent), ResetAt: xaiResetAt(weeklyConfig)}
+		row := quotaRow{Label: "Weekly limit", RemainingPercent: remainingPercent(100 - percent), ResetAt: xaiResetAt(weeklyConfig)}
 		result.Quota = append(result.Quota, row)
 	}
 	monthlyLimit, hasLimit := usdValue(monthlyConfig, "monthlyLimit", "monthly_limit")
@@ -652,7 +652,7 @@ func (a *App) fetchXAIQuota(callbackID, token, userID string, result *authQuotaR
 		hasOnDemandUsed = true
 	}
 	if hasLimit || hasUsed {
-		row := quotaRow{Label: "月度额度", Currency: "USD", ResetAt: quotaResetAt(firstString(monthlyConfig, "billingPeriodEnd", "billing_period_end"))}
+		row := quotaRow{Label: "Monthly limit", Currency: "USD", ResetAt: quotaResetAt(firstString(monthlyConfig, "billingPeriodEnd", "billing_period_end"))}
 		if hasLimit {
 			row.Limit = floatPointer(monthlyLimit)
 		}
@@ -671,7 +671,7 @@ func (a *App) fetchXAIQuota(callbackID, token, userID string, result *authQuotaR
 		result.Quota = append(result.Quota, row)
 	}
 	if hasOnDemandCap && onDemandCap > 0 {
-		row := quotaRow{Label: "按量付费额度", Currency: "USD", Limit: floatPointer(onDemandCap), ResetAt: quotaResetAt(firstString(monthlyConfig, "billingPeriodEnd", "billing_period_end"))}
+		row := quotaRow{Label: "Pay-as-you-go limit", Currency: "USD", Limit: floatPointer(onDemandCap), ResetAt: quotaResetAt(firstString(monthlyConfig, "billingPeriodEnd", "billing_period_end"))}
 		if hasOnDemandUsed {
 			row.Used = floatPointer(onDemandUsed)
 			row.RemainingPercent = remainingPercent((1 - onDemandUsed/onDemandCap) * 100)
@@ -705,7 +705,7 @@ func (a *App) fetchXAIQuota(callbackID, token, userID string, result *authQuotaR
 	sort.Slice(ordered, func(i, j int) bool { return ordered[i].normalized < ordered[j].normalized })
 	for _, product := range ordered {
 		name, percent := product.name, product.percent
-		result.Quota = append(result.Quota, quotaRow{Label: name + " 用量", RemainingPercent: remainingPercent(100 - percent), ResetAt: xaiResetAt(weeklyConfig)})
+		result.Quota = append(result.Quota, quotaRow{Label: name + " usage", RemainingPercent: remainingPercent(100 - percent), ResetAt: xaiResetAt(weeklyConfig)})
 	}
 	return nil
 }
@@ -738,7 +738,7 @@ func (a *App) fetchAntigravityQuota(callbackID, token, projectID string, result 
 		if !ok {
 			continue
 		}
-		groupLabel := firstNonEmptyString(firstString(group, "displayName", "display_name"), fmt.Sprintf("限额组 %d", groupIndex+1))
+		groupLabel := firstNonEmptyString(firstString(group, "displayName", "display_name"), fmt.Sprintf("Limit group %d", groupIndex+1))
 		groupRows := make([]quotaRow, 0, len(objectSlice(group, "buckets")))
 		for _, bucketRaw := range objectSlice(group, "buckets") {
 			bucket, ok := bucketRaw.(map[string]any)
@@ -750,13 +750,13 @@ func (a *App) fetchAntigravityQuota(callbackID, token, projectID string, result 
 				continue
 			}
 			windowName := strings.ToLower(firstString(bucket, "window"))
-			label := firstNonEmptyString(firstString(bucket, "displayName", "display_name"), "限额")
+			label := firstNonEmptyString(firstString(bucket, "displayName", "display_name"), "Limit")
 			var windowSeconds int64
 			if windowName == "5h" || windowName == "five-hour" || windowName == "five_hour" {
-				label = "5 小时限额"
+				label = "5-hour limit"
 				windowSeconds = 18000
 			} else if windowName == "weekly" || windowName == "week" {
-				label = "周限额"
+				label = "Weekly limit"
 				windowSeconds = 604800
 			}
 			groupRows = append(groupRows, quotaRow{Label: label, GroupLabel: groupLabel, RemainingPercent: remainingPercent(remaining * 100), windowSeconds: windowSeconds, ResetAt: quotaResetAt(firstString(bucket, "resetTime", "reset_time"))})
@@ -1050,11 +1050,11 @@ func resetSeconds(objects ...map[string]any) (int64, bool) {
 func windowLabel(seconds int64) string {
 	switch seconds {
 	case 18000:
-		return "5 小时限额"
+		return "5-hour limit"
 	case 604800:
-		return "周限额"
+		return "Weekly limit"
 	case 2592000:
-		return "月限额"
+		return "Monthly limit"
 	}
 	return ""
 }

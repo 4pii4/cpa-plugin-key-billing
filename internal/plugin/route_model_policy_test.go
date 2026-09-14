@@ -15,7 +15,7 @@ func restrictApp(t *testing.T, rule billing.RouteRule) *App {
 	if _, errSync := app.store.SyncKeys([]string{testAPIKey}, false); errSync != nil {
 		t.Fatalf("SyncKeys error = %v", errSync)
 	}
-	_, errCreate := app.store.CreateRoute(billing.Route{Name: "基础", Rule: rule}, []string{flowScope()})
+	_, errCreate := app.store.CreateRoute(billing.Route{Name: "Basics", Rule: rule}, []string{flowScope()})
 	if errCreate != nil {
 		t.Fatalf("CreateRoute error = %v", errCreate)
 	}
@@ -100,7 +100,7 @@ func TestForbiddenModelLeavesTheSubscriptionUntouched(t *testing.T) {
 			}
 			app := restrictApp(t, rule)
 			if _, errCreate := app.store.CreatePlanWithBindings(billing.Plan{
-				ID: "daily", Name: "Daily 1", Windows: []billing.QuotaWindow{{Name: "额度", AmountUSD: 1, PeriodSeconds: 86400}},
+				ID: "daily", Name: "Daily 1", Windows: []billing.QuotaWindow{{Name: "Limit", AmountUSD: 1, PeriodSeconds: 86400}},
 			}, nil); errCreate != nil {
 				t.Fatalf("CreatePlanWithBindings error = %v", errCreate)
 			}

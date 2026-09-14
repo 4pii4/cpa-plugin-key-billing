@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>API Key 计费</title>
+    <title>API Key Billing</title>
     <script>
       if (window.parent === window) {
         document.documentElement.setAttribute("data-cpamp-plugin-host", "true");
@@ -2456,14 +2456,14 @@
     <div class="wrap">
       <section id="gate" class="card gate hidden" aria-labelledby="gate-title">
         <div class="gate-top">
-          <h1 id="gate-title">选择访问方式</h1>
+          <h1 id="gate-title">Choose how to access</h1>
           <div class="standalone-actions">
-            <button type="button" class="icon-action" data-page-action="theme" aria-label="切换主题"></button>
+            <button type="button" class="icon-action" data-page-action="theme" aria-label="Switch theme"></button>
           </div>
         </div>
-        <div class="access-switch" role="tablist" aria-label="访问方式">
-          <button id="gate-mode-admin" type="button" role="tab" aria-selected="true" class="active">管理密钥</button>
-          <button id="gate-mode-account" type="button" role="tab" aria-selected="false">API Key 查看</button>
+        <div class="access-switch" role="tablist" aria-label="Access method">
+          <button id="gate-mode-admin" type="button" role="tab" aria-selected="true" class="active">Management key</button>
+          <button id="gate-mode-account" type="button" role="tab" aria-selected="false">View with API key</button>
         </div>
         <form id="gate-form">
           <input
@@ -2476,21 +2476,21 @@
           />
           <div id="gate-error" class="notice err"></div>
           <label class="field">
-            <span id="gate-key-label">管理密钥</span>
-            <input id="gate-key" type="password" autocomplete="current-password" placeholder="输入管理密钥" />
+            <span id="gate-key-label">Management key</span>
+            <input id="gate-key" type="password" autocomplete="current-password" placeholder="Enter management key" />
           </label>
-          <label class="remember-row"> <input id="gate-remember" type="checkbox" /> 记住密钥 </label>
-          <button id="gate-submit" type="submit" class="primary gate-submit">进入管理控制台</button>
+          <label class="remember-row"> <input id="gate-remember" type="checkbox" /> Remember the key </label>
+          <button id="gate-submit" type="submit" class="primary gate-submit">Open admin console</button>
         </form>
       </section>
 
       <main id="app" class="hidden">
         <header class="head app-header">
-          <div class="app-title"><h1>API Key 计费</h1></div>
-          <div class="standalone-actions" aria-label="页面操作">
-            <button type="button" class="icon-action" data-page-action="refresh" aria-label="刷新"></button>
-            <button type="button" class="icon-action" data-page-action="theme" aria-label="切换主题"></button>
-            <button type="button" class="icon-action" data-page-action="logout" aria-label="退出登录"></button>
+          <div class="app-title"><h1>API Key Billing</h1></div>
+          <div class="standalone-actions" aria-label="Page actions">
+            <button type="button" class="icon-action" data-page-action="refresh" aria-label="Refresh"></button>
+            <button type="button" class="icon-action" data-page-action="theme" aria-label="Switch theme"></button>
+            <button type="button" class="icon-action" data-page-action="logout" aria-label="Log out"></button>
           </div>
         </header>
 
@@ -2498,18 +2498,18 @@
           <div class="tabs-scroll">
             <div class="tabs">
               <button data-tab="keys" class="active">API Key</button>
-              <button data-tab="analysis">分析</button>
-              <button data-tab="request-events">请求事件</button>
-              <button data-tab="errors">错误事件</button>
-              <button data-tab="auth-files">认证文件</button>
-              <button data-tab="settings">设置</button>
+              <button data-tab="analysis">Analysis</button>
+              <button data-tab="request-events">Request events</button>
+              <button data-tab="errors">Error events</button>
+              <button data-tab="auth-files">Authentication files</button>
+              <button data-tab="settings">Settings</button>
             </div>
           </div>
           <div class="page-tab-actions hidden">
             <div id="shared-time-filter" class="shared-time-filter hidden">
               <span class="native-select">
-                <select id="analysis-key" aria-label="按 API Key 筛选">
-                  <option value="">全部 API Key</option>
+                <select id="analysis-key" aria-label="Filter by API Key">
+                  <option value="">All API Keys</option>
                 </select>
               </span>
               <div class="time-range-control">
@@ -2521,20 +2521,20 @@
                   aria-expanded="false"
                 >
                   <span class="time-range-icon" data-lucide-icon="clock" aria-hidden="true"></span>
-                  <span id="shared-time-label">最近 30 天</span>
+                  <span id="shared-time-label">Last 30 days</span>
                   <span class="time-range-chevron" data-lucide-icon="chevron-down" aria-hidden="true"></span>
                 </button>
                 <div
                   id="shared-time-popover"
                   class="time-range-popover hidden"
                   role="dialog"
-                  aria-label="选择时间范围"
+                  aria-label="Select a time range"
                 ></div>
               </div>
             </div>
-            <button id="events-export" class="labeled-icon-button hidden" type="button">导出</button>
+            <button id="events-export" class="labeled-icon-button hidden" type="button">Export</button>
           </div>
-          <button type="button" class="icon-action tab-refresh" data-page-action="refresh" aria-label="刷新"></button>
+          <button type="button" class="icon-action tab-refresh" data-page-action="refresh" aria-label="Refresh"></button>
         </div>
         <div id="shared-time-backdrop" class="time-range-backdrop hidden"></div>
 
@@ -2542,18 +2542,18 @@
         <section id="tab-keys">
           <div class="card">
             <div class="row spread section-toolbar">
-              <h2>API Key</h2>
+              <h2>API keys</h2>
               <div class="row section-actions">
-                <input id="key-filter" placeholder="搜索 API Key、备注或计划" class="wide-search" />
+                <input id="key-filter" placeholder="Search API keys, notes, or plans" class="wide-search" />
                 <div class="row key-toolbar-buttons">
                   <label class="toggle-filter">
                     <input id="keys-include-deleted" type="checkbox" role="switch" />
-                    <span>包含已删除</span>
+                    <span>Include deleted</span>
                   </label>
-                  <button id="keys-import-labels" class="labeled-icon-button" type="button">导入备注</button>
+                  <button id="keys-import-labels" class="labeled-icon-button" type="button">Import notes</button>
                   <button id="keys-reset-all" class="labeled-icon-button">
                     <span data-lucide-icon="party-popper" aria-hidden="true"></span>
-                    全员重置
+                    Reset all
                   </button>
                 </div>
               </div>
@@ -2567,36 +2567,36 @@
         <section id="tab-plans" class="hidden">
           <div class="card">
             <div class="row spread settings-section-header">
-              <h2>订阅计划</h2>
-              <button id="plan-new" type="button">新建订阅计划</button>
+              <h2>Subscription plans</h2>
+              <button id="plan-new" type="button">New subscription plan</button>
             </div>
             <div id="plans-body"></div>
           </div>
           <dialog id="plan-dialog" class="settings-dialog plan-dialog">
-            <h2 id="plan-dialog-title">新建订阅计划</h2>
+            <h2 id="plan-dialog-title">New subscription plan</h2>
             <div class="editor-state notice hidden"></div>
             <input id="plan-id" type="hidden" />
             <div class="plan-details">
-              <label class="field"> 计划名称 <input id="plan-name" placeholder="团队额度" /> </label>
-              <label class="field"> 周期模式
+              <label class="field"> Plan name <input id="plan-name" placeholder="Team quota" /> </label>
+              <label class="field"> Cycle mode
                 <span class="native-select"><select id="plan-cycle-mode">
-                  <option value="independent">独立周期</option>
-                  <option value="unified">统一周期</option>
+                  <option value="independent">Independent cycle</option>
+                  <option value="unified">Unified cycle</option>
                 </select></span>
               </label>
             </div>
             <div class="row spread plan-windows-heading">
-              <span class="small muted">额度窗口</span>
-              <button id="plan-window-add" type="button" class="link small">添加窗口</button>
+              <span class="small muted">Quota windows</span>
+              <button id="plan-window-add" type="button" class="link small">Add quota window</button>
             </div>
             <div id="plan-windows"></div>
             <div class="selection-section">
-              <div class="small muted">绑定 API Key</div>
+              <div class="small muted">Bind API keys</div>
               <div id="plan-key-list" class="selection-list"></div>
             </div>
             <div class="row dialog-actions">
-              <button id="plan-cancel" type="button">取消</button>
-              <button id="plan-save" class="primary" type="button">保存</button>
+              <button id="plan-cancel" type="button">Cancel</button>
+              <button id="plan-save" class="primary" type="button">Save</button>
             </div>
           </dialog>
         </section>
@@ -2604,34 +2604,34 @@
         <section id="tab-routes" class="hidden">
           <div class="card">
             <div class="row spread settings-section-header">
-              <h2>路由规则</h2>
-              <button id="route-new" type="button">新建路由规则</button>
+              <h2>Routing rules</h2>
+              <button id="route-new" type="button">New routing rule</button>
             </div>
             <div id="routes-body"></div>
           </div>
           <dialog id="route-dialog" class="settings-dialog route-dialog">
-            <h2 id="route-dialog-title">新建路由规则</h2>
+            <h2 id="route-dialog-title">New routing rule</h2>
             <div class="editor-state notice hidden"></div>
             <input id="route-id" type="hidden" />
             <div class="route-form-toolbar">
-              <label class="field"> 规则名称 <input id="route-name" placeholder="Codex 认证文件" /> </label>
+              <label class="field"> Rule name <input id="route-name" placeholder="Codex authentication files" /> </label>
               <label class="field">
-                筛选 <input id="route-rule-search" type="search" placeholder="搜索模型或凭证" />
+                Filter <input id="route-rule-search" type="search" placeholder="Search for models or credentials" />
               </label>
               <div class="row compact-actions">
-                <button id="route-rule-all" type="button" class="link">全白选</button>
-                <button id="route-rule-deny-all" type="button" class="link">全黑选</button>
-                <button id="route-rule-none" type="button" class="link">清空</button>
+                <button id="route-rule-all" type="button" class="link">Allow all</button>
+                <button id="route-rule-deny-all" type="button" class="link">Deny all</button>
+                <button id="route-rule-none" type="button" class="link">Clear</button>
               </div>
             </div>
             <div id="route-rule-list" class="routing-list route-rule-list"></div>
             <div class="selection-section">
-              <div class="small muted">绑定 API Key</div>
+              <div class="small muted">Bind API keys</div>
               <div id="route-key-list" class="selection-list"></div>
             </div>
             <div class="row dialog-actions">
-              <button id="route-cancel" type="button">取消</button>
-              <button id="route-save" class="primary" type="button">保存</button>
+              <button id="route-cancel" type="button">Cancel</button>
+              <button id="route-save" class="primary" type="button">Save</button>
             </div>
           </dialog>
         </section>
@@ -2639,11 +2639,11 @@
         <section id="tab-prices" class="hidden">
           <div class="card">
             <div class="row spread section-toolbar">
-              <h2>模型定价</h2>
+              <h2>Model pricing</h2>
               <div class="row section-actions">
-                <input id="price-filter" placeholder="搜索模型" />
-                <button id="price-reference-refresh">更新参考价</button>
-                <button id="price-new">新增定价</button>
+                <input id="price-filter" placeholder="Search models" />
+                <button id="price-reference-refresh">Refresh reference prices</button>
+                <button id="price-new">Add price</button>
               </div>
             </div>
             <div id="prices-body"></div>
@@ -2654,26 +2654,26 @@
         <section id="tab-request-events" class="hidden">
           <div class="card event-list-card">
             <div class="row spread section-toolbar">
-              <h2>请求事件</h2>
+              <h2>Request events</h2>
               <div class="row section-actions event-card-actions">
                 <span class="native-select">
-                  <select id="request-event-model" aria-label="按模型筛选">
-                    <option value="">全部模型</option>
+                  <select id="request-event-model" aria-label="Filter by model">
+                    <option value="">All models</option>
                   </select>
                 </span>
                 <span class="native-select">
-                  <select id="request-event-source" aria-label="按来源筛选">
-                    <option value="">全部来源</option>
+                  <select id="request-event-source" aria-label="Filter by source">
+                    <option value="">All sources</option>
                   </select>
                 </span>
                 <span class="native-select">
-                  <select id="request-event-status" aria-label="按结果筛选">
-                    <option value="">全部结果</option>
-                    <option value="false">成功</option>
-                    <option value="true">失败</option>
+                  <select id="request-event-status" aria-label="Filter by outcome">
+                    <option value="">All outcomes</option>
+                    <option value="false">Success</option>
+                    <option value="true">Failure</option>
                   </select>
                 </span>
-                <button id="request-events-filter-clear" class="link" type="button" disabled>清除筛选</button>
+                <button id="request-events-filter-clear" class="link" type="button" disabled>Clear filter</button>
               </div>
             </div>
             <div id="request-events-body" class="event-list-region"></div>
@@ -2684,24 +2684,24 @@
         <section id="tab-errors" class="hidden">
           <div class="card event-list-card">
             <div class="row spread section-toolbar">
-              <h2>错误事件</h2>
+              <h2>Error events</h2>
               <div class="row section-actions event-card-actions">
                 <span class="native-select">
-                  <select id="error-model" aria-label="按模型筛选">
-                    <option value="">全部模型</option>
+                  <select id="error-model" aria-label="Filter by model">
+                    <option value="">All models</option>
                   </select>
                 </span>
                 <span class="native-select">
-                  <select id="error-source" aria-label="按来源筛选">
-                    <option value="">全部来源</option>
+                  <select id="error-source" aria-label="Filter by source">
+                    <option value="">All sources</option>
                   </select>
                 </span>
                 <span class="native-select">
-                  <select id="error-type" aria-label="按错误类型筛选">
-                    <option value="">全部错误类型</option>
+                  <select id="error-type" aria-label="Filter by error type">
+                    <option value="">All error categories</option>
                   </select>
                 </span>
-                <button id="errors-filter-clear" class="link" type="button" disabled>清除筛选</button>
+                <button id="errors-filter-clear" class="link" type="button" disabled>Clear filter</button>
               </div>
             </div>
             <div id="errors-body" class="event-list-region"></div>
@@ -2712,15 +2712,15 @@
         <section id="tab-auth-files" class="hidden">
           <div class="card">
             <div class="row spread section-toolbar">
-              <h2>认证文件</h2>
+              <h2>Authentication files</h2>
               <div class="row section-actions auth-filter-bar">
                 <label class="toggle-filter">
                   <input id="auth-enabled-only" type="checkbox" role="switch" checked />
-                  <span>仅启用</span>
+                  <span>Enabled only</span>
                 </label>
                 <span class="native-select">
-                  <select id="auth-provider" aria-label="按认证文件类别筛选">
-                    <option value="">全部类别</option>
+                  <select id="auth-provider" aria-label="Filter by authentication provider">
+                    <option value="">All categories</option>
                     <option value="claude">Claude</option>
                     <option value="antigravity">Antigravity</option>
                     <option value="codex">Codex</option>
@@ -2728,8 +2728,8 @@
                     <option value="kimi">Kimi</option>
                   </select>
                 </span>
-                <input id="auth-search" type="search" placeholder="搜索认证文件" autocomplete="off" />
-                <button id="auth-refresh-filtered" class="labeled-icon-button" type="button">更新限额</button>
+                <input id="auth-search" type="search" placeholder="Search authentication files" autocomplete="off" />
+                <button id="auth-refresh-filtered" class="labeled-icon-button" type="button">Refresh quotas</button>
               </div>
             </div>
             <div id="auth-files-body"></div>
@@ -2739,18 +2739,18 @@
         <section id="tab-plugin-logs" class="hidden">
           <div class="card event-list-card plugin-log-card">
             <div class="row spread section-toolbar">
-              <h2>插件日志</h2>
+              <h2>Plugin logs</h2>
               <div class="row section-actions">
                 <span class="native-select">
-                  <select id="plugin-log-level" aria-label="按级别筛选">
-                    <option value="all">全部级别</option>
-                    <option value="debug">调试</option>
-                    <option value="info">信息</option>
-                    <option value="error">错误</option>
+                  <select id="plugin-log-level" aria-label="Filter by level">
+                    <option value="all">All log levels</option>
+                    <option value="debug">Debug</option>
+                    <option value="info">Info</option>
+                    <option value="error">Error</option>
                   </select>
                 </span>
-                <input id="plugin-log-filter" placeholder="搜索已加载日志" class="wide-search" />
-                <button id="plugin-logs-clear" class="danger">清空日志</button>
+                <input id="plugin-log-filter" placeholder="Search loaded logs" class="wide-search" />
+                <button id="plugin-logs-clear" class="danger">Clear logs</button>
               </div>
             </div>
             <div id="plugin-logs-body" class="event-list-region"></div>
@@ -2762,29 +2762,29 @@
       <main id="account-app" class="hidden">
         <header class="head app-header">
           <div class="app-title">
-            <h1>API Key 用量</h1>
+            <h1>API key usage</h1>
             <span id="account-identity" class="muted mono"></span>
           </div>
-          <div class="standalone-actions" aria-label="页面操作">
-            <button type="button" class="icon-action" data-page-action="refresh" aria-label="刷新"></button>
-            <button type="button" class="icon-action" data-page-action="theme" aria-label="切换主题"></button>
-            <button type="button" class="icon-action" data-page-action="logout" aria-label="退出登录"></button>
+          <div class="standalone-actions" aria-label="Page actions">
+            <button type="button" class="icon-action" data-page-action="refresh" aria-label="Refresh"></button>
+            <button type="button" class="icon-action" data-page-action="theme" aria-label="Switch theme"></button>
+            <button type="button" class="icon-action" data-page-action="logout" aria-label="Log out"></button>
           </div>
         </header>
         <div id="account-data-status" class="notice err" role="status"></div>
         <section id="account-untracked" class="card account-empty hidden">
-          <h2>尚无计费记录</h2>
-          <p class="muted">该 API Key 已通过验证，但插件尚未收到可归属的用量。</p>
+          <h2>No billing records yet</h2>
+          <p class="muted">The API Key has been validated, but the plugin has not yet received attributable usage.</p>
         </section>
         <section id="account-content">
           <div class="page-tabs-row">
             <div class="tabs-scroll">
-              <nav class="tabs" aria-label="API Key 查询功能">
-                <button type="button" class="active" data-account-tab="subscription">订阅</button>
-                <button type="button" data-account-tab="analysis">分析</button>
-                <button type="button" data-account-tab="request-events">请求事件</button>
-                <button type="button" data-account-tab="errors">错误事件</button>
-                <button type="button" data-account-tab="auth-files">认证文件</button>
+              <nav class="tabs" aria-label="API key views">
+                <button type="button" class="active" data-account-tab="subscription">Subscription</button>
+                <button type="button" data-account-tab="analysis">Analysis</button>
+                <button type="button" data-account-tab="request-events">Request events</button>
+                <button type="button" data-account-tab="errors">Error events</button>
+                <button type="button" data-account-tab="auth-files">Authentication files</button>
               </nav>
             </div>
             <div class="page-tab-actions hidden">
@@ -2798,43 +2798,43 @@
                     aria-expanded="false"
                   >
                     <span class="time-range-icon" data-lucide-icon="clock" aria-hidden="true"></span>
-                    <span id="account-shared-time-label">最近 30 天</span>
+                    <span id="account-shared-time-label">Last 30 days</span>
                     <span class="time-range-chevron" data-lucide-icon="chevron-down" aria-hidden="true"></span>
                   </button>
                   <div
                     id="account-shared-time-popover"
                     class="time-range-popover hidden"
                     role="dialog"
-                    aria-label="选择时间范围"
+                    aria-label="Select a time range"
                   ></div>
                 </div>
               </div>
-              <button id="account-events-export" class="labeled-icon-button hidden" type="button">导出</button>
+              <button id="account-events-export" class="labeled-icon-button hidden" type="button">Export</button>
             </div>
-            <button type="button" class="icon-action tab-refresh" data-page-action="refresh" aria-label="刷新"></button>
+            <button type="button" class="icon-action tab-refresh" data-page-action="refresh" aria-label="Refresh"></button>
           </div>
           <div id="account-shared-time-backdrop" class="time-range-backdrop hidden"></div>
           <section id="account-tab-subscription">
             <div class="stats account-subscription-stats">
               <div class="card account-plan">
                 <div class="row spread">
-                  <h2 id="account-plan-name">订阅剩余额度</h2>
+                  <h2 id="account-plan-name">Subscription balance</h2>
                   <span id="account-plan-status" class="tag plain"></span>
                 </div>
                 <div id="account-windows"></div>
               </div>
               <div class="card account-plan">
-                <h2>并发限制</h2>
+                <h2>Concurrency limit</h2>
                 <b id="account-concurrency" class="account-plan-value">—</b>
-                <div class="muted small">当前活跃连接数 / 此 API Key 的并发上限</div>
+                <div class="muted small">Active connections / maximum for this API key</div>
               </div>
             </div>
             <div class="card" id="account-access-card">
-              <h2>访问权限</h2>
+              <h2>Access</h2>
               <div id="account-access"></div>
             </div>
             <div class="card">
-              <h2>模型价格</h2>
+              <h2>Model pricing</h2>
               <div id="account-models" class="account-models"></div>
             </div>
           </section>
@@ -2842,26 +2842,26 @@
           <section id="account-tab-request-events" class="hidden">
             <div class="card event-list-card">
               <div class="row spread section-toolbar">
-                <h2>请求事件</h2>
+                <h2>Request events</h2>
                 <div class="row section-actions event-card-actions">
                   <span class="native-select">
-                    <select id="account-request-event-model" aria-label="按模型筛选">
-                      <option value="">全部模型</option>
+                    <select id="account-request-event-model" aria-label="Filter by model">
+                      <option value="">All models</option>
                     </select>
                   </span>
                   <span class="native-select">
-                    <select id="account-request-event-source" aria-label="按来源筛选">
-                      <option value="">全部来源</option>
+                    <select id="account-request-event-source" aria-label="Filter by source">
+                      <option value="">All sources</option>
                     </select>
                   </span>
                   <span class="native-select">
-                    <select id="account-request-event-status" aria-label="按结果筛选">
-                      <option value="">全部结果</option>
-                      <option value="false">成功</option>
-                      <option value="true">失败</option>
+                    <select id="account-request-event-status" aria-label="Filter by outcome">
+                      <option value="">All outcomes</option>
+                      <option value="false">Success</option>
+                      <option value="true">Failure</option>
                     </select>
                   </span>
-                  <button id="account-request-events-filter-clear" class="link" type="button" disabled>清除筛选</button>
+                  <button id="account-request-events-filter-clear" class="link" type="button" disabled>Clear filter</button>
                 </div>
               </div>
               <div id="account-request-events-body" class="event-list-region"></div>
@@ -2871,24 +2871,24 @@
           <section id="account-tab-errors" class="hidden">
             <div class="card event-list-card">
               <div class="row spread section-toolbar">
-                <h2>错误事件</h2>
+                <h2>Error events</h2>
                 <div class="row section-actions event-card-actions">
                   <span class="native-select">
                     <select id="account-error-model">
-                      <option value="">全部模型</option>
+                      <option value="">All models</option>
                     </select>
                   </span>
                   <span class="native-select">
                     <select id="account-error-source">
-                      <option value="">全部来源</option>
+                      <option value="">All sources</option>
                     </select>
                   </span>
                   <span class="native-select">
-                    <select id="account-error-type" aria-label="按错误类型筛选">
-                      <option value="">全部错误类型</option>
+                    <select id="account-error-type" aria-label="Filter by error type">
+                      <option value="">All error categories</option>
                     </select>
                   </span>
-                  <button id="account-errors-filter-clear" class="link" type="button" disabled>清除筛选</button>
+                  <button id="account-errors-filter-clear" class="link" type="button" disabled>Clear filter</button>
                 </div>
               </div>
               <div id="account-errors-body" class="event-list-region"></div>
@@ -2898,15 +2898,15 @@
           <section id="account-tab-auth-files" class="hidden">
             <div class="card">
               <div class="row spread section-toolbar">
-                <h2>认证文件</h2>
+                <h2>Authentication files</h2>
                 <div class="row section-actions auth-filter-bar">
                   <label class="toggle-filter">
                     <input id="account-auth-enabled-only" type="checkbox" role="switch" checked />
-                    <span>仅启用</span>
+                    <span>Enabled only</span>
                   </label>
                   <span class="native-select">
-                    <select id="account-auth-provider" aria-label="按认证文件类别筛选">
-                      <option value="">全部类别</option>
+                    <select id="account-auth-provider" aria-label="Filter by authentication provider">
+                      <option value="">All categories</option>
                       <option value="claude">Claude</option>
                       <option value="antigravity">Antigravity</option>
                       <option value="codex">Codex</option>
@@ -2914,8 +2914,8 @@
                       <option value="kimi">Kimi</option>
                     </select>
                   </span>
-                  <input id="account-auth-search" type="search" placeholder="搜索认证文件" autocomplete="off" />
-                  <button id="account-auth-refresh-filtered" class="labeled-icon-button" type="button">更新限额</button>
+                  <input id="account-auth-search" type="search" placeholder="Search authentication files" autocomplete="off" />
+                  <button id="account-auth-refresh-filtered" class="labeled-icon-button" type="button">Refresh quotas</button>
                 </div>
               </div>
               <div id="account-auth-files-body"></div>
@@ -2927,14 +2927,14 @@
     <footer class="page-footer">
       <span
         >© 2026
-        <a href="https://github.com/haowang02/cpa-plugin-key-billing" target="_blank" rel="noopener noreferrer"
+        <a href="https://github.com/4pii4/cpa-plugin-key-billing" target="_blank" rel="noopener noreferrer"
           >CPA Key Billing</a
         ></span
       >
       <span
         >·
         <a
-          href="https://github.com/haowang02/cpa-plugin-key-billing/blob/main/LICENSE"
+          href="https://github.com/4pii4/cpa-plugin-key-billing/blob/main/LICENSE"
           target="_blank"
           rel="noopener noreferrer"
           >License</a
@@ -2946,54 +2946,54 @@
     <div id="notice" class="notice" popover="manual"></div>
 
     <dialog id="price-dialog" class="settings-dialog">
-      <h2 id="price-dialog-title">编辑模型定价</h2>
+      <h2 id="price-dialog-title">Edit model pricing</h2>
       <div class="editor-state notice hidden"></div>
       <label class="field">
-        模型 ID
-        <input class="mono price-dialog-model" id="price-model" placeholder="模型 ID" maxlength="1024" />
+        Model ID
+        <input class="mono price-dialog-model" id="price-model" placeholder="Model ID" maxlength="1024" />
       </label>
       <div class="price-reference">
         <label class="field">
-          选择参考价
-          <input id="price-reference-search" placeholder="搜索参考模型" autocomplete="off" />
+          Select reference price
+          <input id="price-reference-search" placeholder="Search reference models" autocomplete="off" />
         </label>
         <div id="price-reference-results" class="price-reference-results" aria-live="polite"></div>
       </div>
       <div class="price-fields">
         <label class="field">
-          输入 / 1M Token <input id="price-in" type="number" step="any" min="0" value="0" />
+          Input / 1M tokens <input id="price-in" type="number" step="any" min="0" value="0" />
         </label>
         <label class="field">
-          输出 / 1M Token <input id="price-out" type="number" step="any" min="0" value="0" />
+          Output / 1M tokens <input id="price-out" type="number" step="any" min="0" value="0" />
         </label>
-        <label class="field"> 缓存读 / 1M Token <input id="price-cr" type="number" step="any" min="0" /> </label>
-        <label class="field"> 缓存写 / 1M Token <input id="price-cw" type="number" step="any" min="0" /> </label>
+        <label class="field"> Cache read / 1M tokens <input id="price-cr" type="number" step="any" min="0" /> </label>
+        <label class="field"> Cache write / 1M tokens <input id="price-cw" type="number" step="any" min="0" /> </label>
       </div>
-      <label class="switch-field"> <input id="price-tiered" type="checkbox" /> 启用长上下文阶梯计价 </label>
+      <label class="switch-field"> <input id="price-tiered" type="checkbox" /> Enable tiered long-context pricing </label>
       <div id="price-tier-fields" class="price-fields tier-fields hidden">
         <label class="field">
-          长上下文阈值（输入 Token）
+          Long-context threshold (input tokens)
           <input id="price-tier-threshold" type="number" step="1" min="1" value="272000" />
         </label>
         <span></span>
         <label class="field">
-          长上下文输入 / 1M Token
+          Long-context input / 1M tokens
           <input id="price-tier-in" type="number" step="any" min="0" value="0" />
         </label>
         <label class="field">
-          长上下文输出 / 1M Token
+          Long-context output / 1M tokens
           <input id="price-tier-out" type="number" step="any" min="0" value="0" />
         </label>
         <label class="field">
-          长上下文缓存读 / 1M Token <input id="price-tier-cr" type="number" step="any" min="0" />
+          Long-context cache read / 1M tokens <input id="price-tier-cr" type="number" step="any" min="0" />
         </label>
         <label class="field">
-          长上下文缓存写 / 1M Token <input id="price-tier-cw" type="number" step="any" min="0" />
+          Long-context cache write / 1M tokens <input id="price-tier-cw" type="number" step="any" min="0" />
         </label>
       </div>
       <div class="row dialog-actions">
-        <button id="price-cancel">取消</button>
-        <button id="price-save" class="primary">保存</button>
+        <button id="price-cancel">Cancel</button>
+        <button id="price-save" class="primary">Save</button>
       </div>
     </dialog>
 
@@ -3003,8 +3003,8 @@
       <p id="action-text" class="muted small"></p>
       <input id="action-input" class="dialog-input" />
       <div class="row dialog-actions">
-        <button id="action-cancel">取消</button>
-        <button id="action-confirm" class="primary">确定</button>
+        <button id="action-cancel">Cancel</button>
+        <button id="action-confirm" class="primary">Confirm</button>
       </div>
     </dialog>
 
@@ -3013,21 +3013,21 @@
     <div id="key-route-tooltip" class="key-route-tooltip" popover="manual" role="tooltip" tabindex="0"></div>
 
     <dialog id="route-picker" class="settings-dialog route-picker" aria-labelledby="route-picker-title" aria-describedby="route-picker-identity">
-      <h2 id="route-picker-title">编辑 API Key 路由规则</h2>
+      <h2 id="route-picker-title">Edit API key routing rules</h2>
       <p id="route-picker-identity" class="route-picker-identity"></p>
       <div id="route-picker-notice" class="editor-state notice hidden"></div>
       <div class="route-form-toolbar">
-        <input id="route-picker-search" type="search" placeholder="搜索路由规则、上游凭证或模型" aria-label="搜索路由规则、上游凭证或模型" autocomplete="off" />
+        <input id="route-picker-search" type="search" placeholder="Search for routing rules, upstream credentials, or models" aria-label="Search for routing rules, upstream credentials, or models" autocomplete="off" />
         <div class="row compact-actions">
-          <button id="route-picker-all" class="link" type="button" title="绑定当前筛选出的路由规则，并将模型和凭证加入白名单">全白选</button>
-          <button id="route-picker-deny-all" class="link" type="button" title="绑定当前筛选出的路由规则，并将模型和凭证加入黑名单">全黑选</button>
-          <button id="route-picker-clear" class="link" type="button">清空</button>
+          <button id="route-picker-all" class="link" type="button" title="Bind filtered routing rules and allow the listed models and credentials">Allow all</button>
+          <button id="route-picker-deny-all" class="link" type="button" title="Bind filtered routing rules and deny the listed models and credentials">Deny all</button>
+          <button id="route-picker-clear" class="link" type="button">Clear</button>
         </div>
       </div>
       <div id="route-picker-list" class="routing-list"></div>
       <div class="row dialog-actions">
-        <button id="route-picker-cancel">取消</button>
-        <button id="route-picker-save" class="primary">保存</button>
+        <button id="route-picker-cancel">Cancel</button>
+        <button id="route-picker-save" class="primary">Save</button>
       </div>
     </dialog>
 
@@ -3111,13 +3111,13 @@
       function openCredentialDB() {
         return new Promise((resolve, reject) => {
           if (!window.indexedDB || !window.crypto?.subtle) {
-            reject(new Error("当前环境不支持安全保存密钥"));
+            reject(new Error("Secure credential storage is not supported in this environment"));
             return;
           }
           const request = indexedDB.open(CREDENTIAL_DB, 1);
           request.onupgradeneeded = () => request.result.createObjectStore(CREDENTIAL_STORE);
           request.onsuccess = () => resolve(request.result);
-          request.onerror = () => reject(request.error || new Error("浏览器凭据存储失败"));
+          request.onerror = () => reject(request.error || new Error("Browser credential storage failed"));
         });
       }
 
@@ -3129,7 +3129,7 @@
             const request = operation(transaction.objectStore(CREDENTIAL_STORE));
             transaction.oncomplete = () => resolve(request?.result);
             transaction.onerror = transaction.onabort = () =>
-              reject(transaction.error || new Error("浏览器凭据存储失败"));
+              reject(transaction.error || new Error("Browser credential storage failed"));
           });
         } finally {
           db.close();
@@ -3197,7 +3197,7 @@
       const CONCURRENCY_OPTIONS = [0, 1, 2, 3, 5, 10, 20, 50];
       const CUSTOM_CONCURRENCY = "__custom__";
       const QUOTA_DIMENSIONS = [
-        { key: "amount_usd", metric: "amount_usd", label: "金额", unit: "USD", planUnit: "", format: usd, exact: usd },
+        { key: "amount_usd", metric: "amount_usd", label: "Amount", unit: "USD", planUnit: "", format: usd, exact: usd },
         {
           key: "token_limit",
           metric: "tokens",
@@ -3210,18 +3210,18 @@
         {
           key: "request_limit",
           metric: "requests",
-          label: "请求",
-          unit: "次",
-          planUnit: "次请求",
+          label: "Request",
+          unit: "times",
+          planUnit: "requests",
           format: int,
           exact: int,
         },
       ];
       const PERIOD_UNITS = [
-        [86400, "天"],
-        [3600, "小时"],
-        [60, "分钟"],
-        [1, "秒"],
+        [86400, "days"],
+        [3600, "hours"],
+        [60, "minutes"],
+        [1, "s"],
       ];
       const LIST_PAGE_SIZE = 50;
       const EVENT_EXPORT_BATCH_SIZE = 1000;
@@ -3263,11 +3263,11 @@
         ],
       };
       const SHARED_TIME_LABELS = {
-        hour: "小时",
-        day: "天",
-        today: "今天",
-        yesterday: "昨天",
-        custom: "自定义",
+        hour: "hours",
+        day: "days",
+        today: "Today",
+        yesterday: "Yesterday",
+        custom: "Custom",
       };
       const sharedTimeDrafts = { admin: null, account: null };
       const sharedTimeChoices = {
@@ -3285,21 +3285,21 @@
       const resources = {
         admin: dataEntries({
           keys: "API Key",
-          plans: "订阅计划",
-          routes: "路由规则",
-          credentials: "凭证目录",
-          models: "模型目录",
-          catalog: "模型价格",
-          priceStatus: "参考价状态",
-          authFiles: "认证文件",
+          plans: "subscription plan",
+          routes: "Routing Rules",
+          credentials: "Credential directory",
+          models: "Model Directory",
+          catalog: "Model pricing",
+          priceStatus: "Reference price status",
+          authFiles: "Authentication files",
         }),
         account: dataEntries({
-          profile: "账户资料",
-          subscription: "订阅",
-          routing: "访问权限",
-          models: "模型目录",
-          catalog: "模型价格",
-          authFiles: "认证文件",
+          profile: "Account profile",
+          subscription: "Subscription",
+          routing: "Access",
+          models: "Model Directory",
+          catalog: "Model pricing",
+          authFiles: "Authentication files",
         }),
       };
       // Key metadata is shared by configuration, event queries, and analysis.
@@ -3411,13 +3411,13 @@
         return query;
       }
 
-      const analysisQueries = Object.fromEntries(["admin", "account"].map((role) => [role, createQuery("分析")]));
-      const eventKeysQuery = createQuery("事件 Key 筛选");
+      const analysisQueries = Object.fromEntries(["admin", "account"].map((role) => [role, createQuery("Analysis")]));
+      const eventKeysQuery = createQuery("Event Key Filtering");
 
       const PAGED_LIST_VIEWS = {
         events: {
           tab: "request-events",
-          label: "请求事件",
+          label: "Request events",
           scrollers: ["request-events-body", "account-request-events-body"],
           timed: true,
           keyed: true,
@@ -3427,7 +3427,7 @@
         },
         errors: {
           tab: "errors",
-          label: "错误事件",
+          label: "Error events",
           scrollers: ["errors-body", "account-errors-body"],
           timed: true,
           keyed: true,
@@ -3437,7 +3437,7 @@
         },
         logs: {
           tab: "settings",
-          label: "插件日志",
+          label: "Plugin logs",
           scrollers: ["plugin-logs-body"],
           endpoint: "/plugin-logs",
           filters: () => ({ level: $("plugin-log-level").value }),
@@ -3497,7 +3497,7 @@
         const integer = (value) => Number.isSafeInteger(value) && value >= 0;
         const id = (value) => (typeof value === "string" && /^-?\d+$/.test(value)) || Number.isSafeInteger(value);
         const invalid = () => {
-          throw new Error(view.label + "分页响应无效");
+          throw new Error(view.label + " has an invalid paginated response");
         };
         if (entries.length > Number(params.limit) || entries.some((entry) => !entry || !id(entry.id))) invalid();
         let cursor = null;
@@ -3509,7 +3509,7 @@
           const offset = (previous?.cursor?.offset || 0) + entries.length;
           if (entries.length && offset < page.total) cursor = { offset, snapshot_id: String(page.snapshot_id) };
         } else {
-          if (!Object.values(requireObject(page.level_counts, "日志级别统计")).every(integer)) invalid();
+          if (!Object.values(requireObject(page.level_counts, "Log Level Statistics")).every(integer)) invalid();
           const next = page.next_before_id ?? 0;
           if (!id(next) || Number(next) < 0) invalid();
           if (BigInt(next)) {
@@ -3614,14 +3614,14 @@
           renderEmpty() {
             if (list.data) return false;
             list.rendered = null;
-            const message = query.error ? view.label + "加载失败：" + query.error : "加载中…";
+            const message = query.error ? view.label + " failed to load: " + query.error : "Loading…";
             list.scroller.replaceChildren(
               el(
                 "div",
                 { class: "empty" },
                 el("div", { text: message }),
                 query.error && !query.task
-                  ? el("button", { class: "retry-button", onclick: () => guard(() => list.load(true)) }, "重试")
+                  ? el("button", { class: "retry-button", onclick: () => guard(() => list.load(true)) }, "Retry")
                   : null,
               ),
             );
@@ -3632,8 +3632,8 @@
             const top = scroller.scrollTop,
               left = scroller.scrollLeft;
             const error = query.task ? "" : query.error;
-            let message = error ? "加载失败：" + error : "";
-            if (query.task) message = list.append ? "正在加载更多…" : "正在加载…";
+            let message = error ? " failed to load: " + error : "";
+            if (query.task) message = list.append ? "Loading more…" : "Loading…";
             const previous = scroller.querySelector(":scope > .event-load-state");
             if ((previous?.textContent || "") === message) return;
             const status = message
@@ -3883,8 +3883,8 @@
           if (generation !== sessionGeneration) throw new StaleRequestError();
         } catch (error) {
           if (generation !== sessionGeneration) throw new StaleRequestError();
-          if (controller.signal.aborted) throw new Error("请求超时");
-          if (error instanceof TypeError) throw new Error("无法连接服务");
+          if (controller.signal.aborted) throw new Error("Request timed out");
+          if (error instanceof TypeError) throw new Error("Unable to connect to service");
           throw error;
         } finally {
           clearTimeout(timeout);
@@ -3895,7 +3895,7 @@
           try {
             payload = JSON.parse(text);
           } catch (_) {
-            if (resp.ok) throw new Error("服务响应格式异常");
+            if (resp.ok) throw new Error("Invalid service response format");
           }
         }
         if (!resp.ok) {
@@ -3906,14 +3906,14 @@
             decoded && !/<[^>]+>/.test(decoded) ? decoded.slice(0, 200) + (decoded.length > 200 ? "…" : "") : "";
           if ((resp.status === 401 || resp.status === 403) && !opts?.auxiliaryCredential) {
             throw new AuthError(
-              message || (currentRole === "account" ? "API Key 无效或无访问权限" : "管理密钥无效或无访问权限"),
+              message || (currentRole === "account" ? "Invalid API key or insufficient access" : "Invalid management key or insufficient access"),
             );
           }
           throw new Error(
             message ||
               (resp.status >= 500
-                ? "服务暂不可用（HTTP " + resp.status + "）"
-                : "服务返回错误（HTTP " + resp.status + "）"),
+                ? "Service temporarily unavailable (HTTP " + resp.status + ")"
+                : "The service returned an error (HTTP " + resp.status + ")"),
           );
         }
         return opts?.raw ? payload : unescapeDeep(payload);
@@ -3941,12 +3941,12 @@
       }
       function loadedCountText(loaded, total, complete) {
         return loaded > total || (complete && loaded !== total)
-          ? "已加载 " + int(loaded) + " 条（当前匹配 " + int(total) + " 条）"
-          : "已加载 " + int(loaded) + " / " + int(total) + " 条";
+          ? "Loaded " + int(loaded) + " entries (" + int(total) + " currently match)"
+          : "Loaded " + int(loaded) + " / " + int(total) + " entries";
       }
 
       function int(value) {
-        return Number(value || 0).toLocaleString("zh-CN");
+        return Number(value || 0).toLocaleString("en-US");
       }
       function tokens(value) {
         const n = Number(value || 0);
@@ -3995,8 +3995,8 @@
         const parts = dateTimeParts(value);
         return parts ? parts.date + " " + parts.time : "—";
       }
-      const dateFormatter = new Intl.DateTimeFormat("zh-CN");
-      const timeFormatter = new Intl.DateTimeFormat("zh-CN", {
+      const dateFormatter = new Intl.DateTimeFormat("en-US");
+      const timeFormatter = new Intl.DateTimeFormat("en-US", {
         hour: "numeric",
         minute: "numeric",
         second: "numeric",
@@ -4035,7 +4035,7 @@
 
       // Replace a display collection while retaining its scroll position.
       // Paged lists also use the returned row container to append new entries.
-      function renderCollection(target, items, { render, headers, attrs, empty = "暂无数据" }) {
+      function renderCollection(target, items, { render, headers, attrs, empty = "No data" }) {
         const top = target.scrollTop,
           left = target.scrollLeft;
         const tableLeft = target.querySelector(":scope > .table-scroll")?.scrollLeft || 0;
@@ -4116,7 +4116,7 @@
             $("action-text").textContent = text || "";
             $("action-input").value = value || "";
             $("action-input").classList.toggle("hidden", value === undefined);
-            $("action-confirm").textContent = "确定";
+            $("action-confirm").textContent = "Confirm";
             $("action-confirm").onclick = () =>
               submitEditor("action-dialog", async () => {
                 await save?.($("action-input").value);
@@ -4165,7 +4165,7 @@
         editor.saving = true;
         const label = editor.button.textContent;
         updateEditorControls(editor);
-        editor.button.textContent = "正在保存…";
+        editor.button.textContent = "Saving…";
         editor.notice.className = "editor-state notice hidden";
         try {
           const saved = await save(editor);
@@ -4213,10 +4213,10 @@
         $("gate-mode-admin").setAttribute("aria-selected", String(!account));
         $("gate-mode-account").classList.toggle("active", account);
         $("gate-mode-account").setAttribute("aria-selected", String(account));
-        $("gate-key-label").textContent = account ? "API Key" : "管理密钥";
+        $("gate-key-label").textContent = account ? "API Key" : "Management key";
         $("gate-username").value = account ? "api-key" : "administrator";
-        $("gate-key").placeholder = account ? "输入 API Key" : "输入管理密钥";
-        $("gate-submit").textContent = account ? "查看我的用量" : "进入管理控制台";
+        $("gate-key").placeholder = account ? "Enter API Key" : "Enter management key";
+        $("gate-submit").textContent = account ? "View my usage" : "Open admin console";
         $("gate-key").value = "";
         if (!preserveError) {
           $("gate-error").textContent = "";
@@ -4224,7 +4224,7 @@
         }
         const saved = await recalledCredential(loginMode);
         if (ticket !== loginModeRequest) return;
-        if (saved) $("gate-key").placeholder = "已记住密钥";
+        if (saved) $("gate-key").placeholder = "Saved key available";
         $("gate-remember").checked = !!saved;
       }
 
@@ -4253,12 +4253,12 @@
       }
 
       function requireObject(value, label) {
-        if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error(label + "响应格式无效");
+        if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error(label + " has an invalid response format");
         return value;
       }
 
       function requireArray(value, label) {
-        if (!Array.isArray(value)) throw new Error(label + "响应格式无效");
+        if (!Array.isArray(value)) throw new Error(label + " has an invalid response format");
         return value;
       }
 
@@ -4371,7 +4371,7 @@
         const keys = config?.["api-keys"];
         if (keys === null) return [];
         if (!Array.isArray(keys) || keys.some((key) => typeof key !== "string"))
-          throw new Error("CPA API Key 列表格式无效");
+          throw new Error("Invalid CPA API key list format");
         return keys;
       }
 
@@ -4380,14 +4380,14 @@
         const validateEntry = (entry) => {
           requireObject(entry, field);
           for (const key of ["api-key", "base-url", "proxy-url", "prefix", "name"])
-            if (entry[key] != null && typeof entry[key] !== "string") throw new Error(field + "配置格式无效");
-          if (entry.disabled != null && typeof entry.disabled !== "boolean") throw new Error(field + "启用状态无效");
+            if (entry[key] != null && typeof entry[key] !== "string") throw new Error(field + " has an invalid configuration format");
+          if (entry.disabled != null && typeof entry.disabled !== "boolean") throw new Error(field + " has an invalid enabled value");
           if (entry.weight != null && (typeof entry.weight !== "number" || !Number.isFinite(entry.weight)))
-            throw new Error(field + "权重格式无效");
+            throw new Error(field + " has an invalid weight");
           if (entry.headers != null) {
             requireObject(entry.headers, field);
             if (Object.values(entry.headers).some((value) => typeof value !== "string"))
-              throw new Error(field + "请求头配置格式无效");
+              throw new Error(field + " has invalid request headers");
           }
         };
         for (const entry of entries) {
@@ -4414,7 +4414,7 @@
             credentials.push({
               ref: await configuredCredentialRef(kind, parts, counters),
               provider,
-              display_name: previewCredential(apiKey) || "未配置 API Key",
+              display_name: previewCredential(apiKey) || "API Key not configured",
               disabled: !configuredEntryEnabled(entry),
             });
           }
@@ -4432,7 +4432,7 @@
             credentials.push({
               ref: await configuredCredentialRef("openai-compatibility:" + providerName, [entry["base-url"]], counters),
               provider,
-              display_name: "未配置 API Key",
+              display_name: "API Key not configured",
               disabled: !parentEnabled,
             });
             continue;
@@ -4446,7 +4446,7 @@
                 counters,
               ),
               provider,
-              display_name: previewCredential(apiKey) || "未配置 API Key",
+              display_name: previewCredential(apiKey) || "API Key not configured",
               disabled: !parentEnabled || !configuredEntryEnabled(apiKeyEntry),
             });
           }
@@ -4465,7 +4465,7 @@
         const names = EDITOR_RESOURCES[kind];
         for (const name of names) {
           const resource = resources.admin[name];
-          if (resource.value === null) throw new Error(resource.error || resource.label + "尚未加载");
+          if (resource.value === null) throw new Error(resource.error || resource.label + " has not loaded yet");
         }
         // Resources are replaced on reads and writes. Holding these values gives
         // an editor stable options until it closes, including search and toggles.
@@ -4493,7 +4493,7 @@
       async function readAdminConfiguration(read) {
         // Keep plaintext configuration out of the resource cache.
         const config = api("GET", "/v0/management/config", null, { raw: true }).then((value) =>
-          requireObject(value, "CPA 配置"),
+          requireObject(value, "CPA Configuration"),
         );
         const configuredKeys = config.then(parseConfiguredAPIKeys);
         const errors = [];
@@ -4502,14 +4502,14 @@
             await operation();
           } catch (error) {
             if (error instanceof AuthError || error instanceof StaleRequestError) throw error;
-            errors.push(label + "同步失败：" + error.message);
+            errors.push(label + " sync failed: " + error.message);
           }
         };
         const synced = settleLoads([
           sync("API Key", async () =>
             plugin("POST", "/keys/sync", { keys: await configuredKeys, allow_empty: true }, { command: true }),
           ),
-          sync("凭证", async () =>
+          sync("Credential", async () =>
             plugin(
               "POST",
               "/credentials/sync",
@@ -4544,9 +4544,9 @@
           current();
           // Display errors must not turn a committed write into a failed save.
           try {
-            applyAdminView(requireObject(result.view, "保存结果"), models);
+            applyAdminView(requireObject(result.view, "Saved result"), models);
           } catch (error) {
-            notify("保存已完成，但更新显示失败：" + error.message, "err");
+            notify("Saved, but the display could not be updated: " + error.message, "err");
           }
           return result;
         });
@@ -4590,7 +4590,7 @@
         let query = new URLSearchParams();
         for (const model of models) {
           const parameter = new URLSearchParams({ model }).toString();
-          if (parameter.length > 3300) throw new Error("模型 ID 过长");
+          if (parameter.length > 3300) throw new Error("Model ID too long");
           if (query.size && query.toString().length + parameter.length + 1 > 3300) {
             batches.push(query);
             query = new URLSearchParams();
@@ -4603,8 +4603,8 @@
           batch.set("include_custom", String(!account && index === 0));
           const path = "/prices?" + batch.toString();
           const rows = await (account ? accountAPI(path) : plugin("GET", path));
-          for (const row of requireArray(rows, "模型价格")) {
-            if (!row || typeof row.model_id !== "string") throw new Error("模型价格响应格式无效");
+          for (const row of requireArray(rows, "Model pricing")) {
+            if (!row || typeof row.model_id !== "string") throw new Error("Invalid model price response format");
             const key = row.model_id.toLowerCase();
             const previous = prices.get(key);
             prices.set(key, { ...row, in_models: row.in_models || previous?.in_models || false });
@@ -4620,9 +4620,9 @@
 
       async function fetchModels(account, key) {
         const result = await api("GET", "/v1/models", null, { raw: true, key, auxiliaryCredential: !account });
-        const rows = requireArray(result?.data, "CPA 模型列表");
+        const rows = requireArray(result?.data, "CPA model list");
         if (rows.some((row) => !row || typeof row.id !== "string" || !row.id.trim()))
-          throw new Error("CPA 模型列表格式无效");
+          throw new Error("CPA returned an invalid model list");
         const models = [...new Set(rows.map((row) => row.id))].sort(compareModelId);
         const previous = resources[account ? "account" : "admin"].models.value;
         // The model list is the catalog's input. Preserve its identity when
@@ -4634,7 +4634,7 @@
 
       async function fetchCatalog(account) {
         const models = resources[account ? "account" : "admin"].models.value;
-        if (account && models === null) throw new Error("尚未取得模型目录");
+        if (account && models === null) throw new Error("Model catalog not yet available");
         const prices = await fetchModelPrices(models || [], account);
         return {
           models,
@@ -4647,28 +4647,28 @@
         const metadata = load.value?.metadata;
         $("price-status").textContent = [
           metadata?.usable && metadata?.fetched_at
-            ? "参考价更新时间：" + new Date(metadata.fetched_at).toLocaleString()
+            ? "Reference prices updated: " + new Date(metadata.fetched_at).toLocaleString()
             : load.value
-              ? "暂无参考价"
+              ? "No reference pricing available"
               : load.error
                 ? ""
-                : "正在加载参考价状态…",
+                : "Loading reference-price status…",
           metadata?.last_error,
         ]
           .filter(Boolean)
-          .join("；");
+          .join("; ");
       }
 
       async function fetchAccountData(name) {
         const result = requireObject(await accountAPI("/" + name), name);
-        if (name === "profile" && typeof result.tracked !== "boolean") throw new Error("账户资料响应格式无效");
+        if (name === "profile" && typeof result.tracked !== "boolean") throw new Error("Invalid account-profile response format");
         if (name === "subscription") {
-          requireObject(result.subscription, "订阅");
-          requireObject(result.concurrency, "并发状态");
+          requireObject(result.subscription, "Subscription");
+          requireObject(result.concurrency, "Concurrency status");
         }
         if (name === "routing") {
-          requireArray(result.models, "模型权限");
-          requireArray(result.credentials, "凭证权限");
+          requireArray(result.models, "Model permissions");
+          requireArray(result.credentials, "Credential permissions");
         }
         return result;
       }
@@ -4717,17 +4717,17 @@
             const revision = keyDirectory.beginRead();
             const value = requireObject(
               await (account ? accountAPI("/analysis?" + params) : plugin("GET", "/analysis?" + params)),
-              "分析",
+              "Analysis",
             );
-            requireObject(value.summary, "分析摘要");
-            requireObject(value.trends, "分析趋势");
-            requireObject(value.summary.cost, "分析成本");
+            requireObject(value.summary, "Analysis summary");
+            requireObject(value.trends, "Analysis trends");
+            requireObject(value.summary.cost, "Analysis cost");
             for (const name of ["requests", "total_tokens", "total_cost", "cache_rate"])
-              requireArray(value.trends[name], "分析趋势");
+              requireArray(value.trends[name], "Analysis trends");
             if (!account) {
-              const distribution = requireObject(value.usage_distribution, "用量分布");
+              const distribution = requireObject(value.usage_distribution, "Usage distribution");
               distribution.api_keys = keyDirectory.receive(
-                requireArray(distribution.api_keys, "Key 用量分布"),
+                requireArray(distribution.api_keys, "API key usage distribution"),
                 revision,
                 { field: "key", fallback: true },
               );
@@ -4866,7 +4866,7 @@
             await settleLoads([
               read("catalog", () => fetchCatalog(false)),
               read("priceStatus", async () =>
-                requireObject(await plugin("GET", "/prices/reference/status"), "参考价状态"),
+                requireObject(await plugin("GET", "/prices/reference/status"), "Reference price status"),
               ),
             ]);
           } else {
@@ -4917,15 +4917,15 @@
             chartError = message;
             reject(new Error(message));
           };
-          const timer = setTimeout(() => failed("图表加载超时"), 10000);
+          const timer = setTimeout(() => failed("Chart loading timeout"), 10000);
           script.src = "https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js";
           script.onload = () => {
-            if (typeof Chart !== "function") return failed("图表脚本未正确初始化");
+            if (typeof Chart !== "function") return failed("Chart script not initialized correctly");
             clearTimeout(timer);
             script.onload = script.onerror = null;
             resolve();
           };
-          script.onerror = () => failed("图表加载失败");
+          script.onerror = () => failed("Chart loading failed");
           document.head.append(script);
         }).finally(renderLoadedCharts);
         return chartLoadPromise;
@@ -5080,7 +5080,7 @@
           .filter((source) => source.error)
           .map(
             (source) =>
-              source.label + "：" + source.error + (source.value !== null ? "（当前显示上次成功的数据）" : ""),
+              source.label + ": " + source.error + (source.value !== null ? " (showing the last successful data)" : ""),
           );
         if (!account && page.groups.includes("configuration"))
           errors.push(...resourceGroups.admin.configuration.syncErrors);
@@ -5089,11 +5089,11 @@
         target.replaceChildren(
           ...(errors.length
             ? [
-                el("div", { text: errors.join("；") }),
+                el("div", { text: errors.join("; ") }),
                 el(
                   "button",
                   { class: "retry-button", disabled: !!page.task, onclick: refreshPage },
-                  page.task ? "正在重试…" : "重试",
+                  page.task ? "Retrying…" : "Retry",
                 ),
               ]
             : []),
@@ -5177,25 +5177,25 @@
           ? "—"
           : int(concurrency.current) + " / " + (Number(concurrency.limit || 0) > 0 ? int(concurrency.limit) : "∞");
         $("account-plan-name").textContent = !data.value
-          ? "订阅额度"
-          : subscription.name || (subscription.unlimited ? "未绑定订阅计划" : "订阅额度");
+          ? "Subscription quota"
+          : subscription.name || (subscription.unlimited ? "Unbound subscription plan" : "Subscription quota");
         $("account-plan-status").className = "tag " + (subscription.blocked ? "bad" : "plain");
         $("account-plan-status").textContent = !data.value
           ? ""
           : subscription.unlimited
-            ? "不限制"
+            ? "Unlimited"
             : subscription.blocked
-              ? "额度用尽"
-              : "正常";
+              ? "Quota exhausted"
+              : "Healthy";
         const target = $("account-windows");
-        if (renderDataPending(target, [data], "正在加载订阅状态…")) return;
+        if (renderDataPending(target, [data], "Loading subscription status…")) return;
         target.replaceChildren(renderQuotaWindows(subscription, true));
       }
 
       function renderAccountModels() {
         const data = resources.account;
         const target = $("account-models");
-        if (renderDataPending(target, [data.models, data.catalog, data.routing], "正在加载模型价格…")) return;
+        if (renderDataPending(target, [data.models, data.catalog, data.routing], "Loading model prices…")) return;
         const access = data.routing.value;
         const directory = data.models.value;
         const modelScope = new Set(access.models.map((model) => model.toLowerCase()));
@@ -5214,7 +5214,7 @@
           .sort(compareModelId);
         renderCollection(target, models, {
           attrs: { class: "display-contents" },
-          empty: "暂无模型价格",
+          empty: "No model prices",
           render: renderAccountModel,
         });
       }
@@ -5222,7 +5222,7 @@
       function renderAccountRouting() {
         const data = resources.account.routing;
         const target = $("account-access");
-        if (renderDataPending(target, [data], "正在加载路由权限…")) return;
+        if (renderDataPending(target, [data], "Loading routing permissions…")) return;
         target.replaceChildren(renderAccountAccess(data.value));
       }
 
@@ -5232,9 +5232,9 @@
           text: item.provider_wide
             ? credentialProviderLabel(item)
             : item.status === "missing"
-              ? item.name || "指定上游凭证当前不可用"
-              : item.provider + " · " + (item.name || "凭证不可用"),
-          tag: item.provider_wide ? "整类" : "",
+              ? item.name || "Specified upstream credential is currently unavailable"
+              : item.provider + " · " + (item.name || "Credential unavailable"),
+          tag: item.provider_wide ? "Entire provider" : "",
           iconName: credentialIcon(item),
           state: item.denied ? "deny" : state,
         });
@@ -5245,12 +5245,12 @@
           iconName: "astroid",
         }));
         if (!modelItems.length)
-          modelItems.push({ text: routingValid ? "全部模型" : "无法确定", iconName: "astroid" });
+          modelItems.push({ text: routingValid ? "All models" : "Unable to determine", iconName: "astroid" });
         for (const text of access.denied_models || [])
           if (!access.models.some((model) => model.toLowerCase() === text.toLowerCase()))
             modelItems.push({ text, state: "deny", iconName: "astroid" });
         const credentialItems = access.credentials.map((item) => accountCredentialLabel(item, "allow"));
-        if (!credentialItems.length) credentialItems.push({ text: routingValid ? "全部凭证" : "无法确定" });
+        if (!credentialItems.length) credentialItems.push({ text: routingValid ? "All credentials" : "Unable to determine" });
         for (const item of access.denied_credentials || []) {
           const denied = accountCredentialLabel(item, "deny");
           if (
@@ -5268,13 +5268,13 @@
             el(
               "div",
               { class: "auth-file-card" },
-              el("div", { class: "account-access-scope-label", text: "模型范围" }),
+              el("div", { class: "account-access-scope-label", text: "Model scope" }),
               settingsChipList(modelItems),
             ),
             el(
               "div",
               { class: "auth-file-card" },
-              el("div", { class: "account-access-scope-label", text: "凭证范围" }),
+              el("div", { class: "account-access-scope-label", text: "Credential scope" }),
               settingsChipList(credentialItems),
             ),
           ),
@@ -5296,13 +5296,13 @@
         );
         const price = candidate?.source === "none" ? null : candidate;
         const fields = [
-          ["输入", "input_per_1m"],
-          ["输出", "output_per_1m"],
+          ["Input", "input_per_1m"],
+          ["Output", "output_per_1m"],
         ];
         const longContext = price?.long_context;
         for (const [label, field] of [
-          ["缓存读", "cache_read_per_1m"],
-          ["缓存写", "cache_write_per_1m"],
+          ["Cache read", "cache_read_per_1m"],
+          ["Cache write", "cache_write_per_1m"],
         ]) {
           if (price?.[field] != null || longContext?.[field] != null) fields.push([label, field]);
         }
@@ -5339,7 +5339,7 @@
           el("b", { class: "mono account-model-name", title: model }, model),
           price
             ? el("div", { class: "account-model-price-list" }, priceRows.map(priceRow))
-            : el("span", { class: "muted small", text: "未定价，暂时无法使用" }),
+            : el("span", { class: "muted small", text: "Unpriced, temporarily unavailable" }),
         );
       }
 
@@ -5355,12 +5355,12 @@
       const analysisMetrics = { admin: "total_tokens", account: "total_tokens" };
       const DISTRIBUTION_METRICS = {
         total_tokens: {
-          label: "Token 总数",
-          option: "Token 占比",
+          label: "Total tokens",
+          option: "Token share",
           format: (row) => tokens(row.total_tokens),
         },
-        requests: { label: "请求数", option: "请求数占比", format: (row) => int(row.requests) },
-        cost_usd: { label: "总成本", option: "成本占比", format: (row) => usd(row.cost_usd) },
+        requests: { label: "Requests", option: "Request share", format: (row) => int(row.requests) },
+        cost_usd: { label: "Total cost", option: "Cost share", format: (row) => usd(row.cost_usd) },
       };
       const analysisCharts = {
         admin: { trend: null, distribution: null, rendered: null },
@@ -5389,7 +5389,7 @@
       // Replacing options also replaces tooltip callbacks with the current data.
       function updateAnalysisChart(account, kind, canvas, config, { empty = "", animate = false } = {}) {
         const charts = analysisCharts[account ? "account" : "admin"];
-        const message = empty || (typeof Chart !== "function" ? chartError || "正在加载图表…" : "");
+        const message = empty || (typeof Chart !== "function" ? chartError || "Loading chart…" : "");
         const status = canvas.parentElement.querySelector(".empty");
         canvas.classList.toggle("hidden", !!message);
         status.classList.toggle("hidden", !message);
@@ -5427,7 +5427,7 @@
         if (rest.length) {
           visible.push({
             key: "other",
-            label: "其他",
+            label: "Other",
             total_tokens: rest.reduce((sum, row) => sum + Number(row.total_tokens || 0), 0),
             requests: rest.reduce((sum, row) => sum + Number(row.requests || 0), 0),
             cost_usd: rest.reduce((sum, row) => sum + Number(row.cost_usd || 0), 0),
@@ -5441,10 +5441,10 @@
 
       function renderUsageDistributionChart(account, rows, dimension, dimensionLabel, metric, colors, animate) {
         const canvas = $(account ? "account-usage-chart" : "usage-chart");
-        canvas.setAttribute("aria-label", dimensionLabel + DISTRIBUTION_METRICS[metric].option + "环形图");
+        canvas.setAttribute("aria-label", dimensionLabel + " " + DISTRIBUTION_METRICS[metric].option + " ring chart");
         const empty = rows.some((row) => row.percent > 0)
           ? ""
-          : "当前范围内：" + DISTRIBUTION_METRICS[metric].label + "为 0";
+          : DISTRIBUTION_METRICS[metric].label + " is zero in the selected time range";
         updateAnalysisChart(
           account,
           "distribution",
@@ -5455,7 +5455,7 @@
               labels: rows.map((row) =>
                 dimension === "api_keys" && row.key !== "other"
                   ? apiKeyIdentity(row).text
-                  : row.label || row.key || "未知",
+                  : row.label || row.key || "Unknown",
               ),
               datasets: [
                 {
@@ -5506,7 +5506,7 @@
         const points = trends.total_tokens;
         if (!points.length) {
           canvas.closest(".usage-trend-card").querySelector(".usage-trend-legend").replaceChildren();
-          updateAnalysisChart(account, "trend", canvas, null, { empty: "当前时间范围内暂无趋势数据" });
+          updateAnalysisChart(account, "trend", canvas, null, { empty: "No trend data for the current timeframe" });
           return;
         }
         const values = (name) => trends[name].map((point) => Number(point.value || 0));
@@ -5514,7 +5514,7 @@
         const cacheWriteTokens = values("cache_write_tokens");
         const average = totalTokens.reduce((sum, value) => sum + value, 0) / totalTokens.length;
         const labelFormat = new Intl.DateTimeFormat(
-          "zh-CN",
+          "en-US",
           daily ? { month: "numeric", day: "numeric" } : { hour: "2-digit", minute: "2-digit", hour12: false },
         );
         const labels = points.map((point) => labelFormat.format(new Date(point.time)));
@@ -5535,16 +5535,16 @@
           barPercentage: 0.9,
         });
         const datasets = [
-          tokenDataset("输入", values("input_tokens"), colors[0]),
-          tokenDataset("输出", values("output_tokens"), colors[2]),
-          tokenDataset("缓存读", values("cache_read_tokens"), colors[1]),
+          tokenDataset("Input", values("input_tokens"), colors[0]),
+          tokenDataset("Output", values("output_tokens"), colors[2]),
+          tokenDataset("Cache read", values("cache_read_tokens"), colors[1]),
         ];
         if (cacheWriteTokens.some((value) => value > 0)) {
-          datasets.push(tokenDataset("缓存写", cacheWriteTokens, colors[4]));
+          datasets.push(tokenDataset("Cache write", cacheWriteTokens, colors[4]));
         }
         datasets.push({
           type: "line",
-          label: "请求数",
+          label: "Requests",
           data: values("requests"),
           yAxisID: "requests",
           metric: "requests",
@@ -5560,7 +5560,7 @@
         if (costs.length) {
           datasets.push({
             type: "line",
-            label: "总成本",
+            label: "Total cost",
             data: costs,
             yAxisID: "cost",
             metric: "cost",
@@ -5574,7 +5574,7 @@
         }
         datasets.push({
           type: "line",
-          label: "平均值: " + tokens(average),
+          label: "Average: " + tokens(average),
           data: totalTokens.map(() => average),
           yAxisID: "tokens",
           stack: "average",
@@ -5631,14 +5631,14 @@
                   label: (context) => {
                     const value = Number(context.raw || 0);
                     if (context.dataset.metric === "requests") {
-                      return context.dataset.label + "：" + int(value);
+                      return context.dataset.label + ": " + int(value);
                     }
                     if (context.dataset.metric === "cost") {
-                      return context.dataset.label + "：" + usd(value);
+                      return context.dataset.label + ": " + usd(value);
                     }
-                    return context.dataset.label + "：" + tokens(value);
+                    return context.dataset.label + ": " + tokens(value);
                   },
-                  footer: (items) => (items.length ? "Token 总数：" + tokens(totalTokens[items[0].dataIndex]) : ""),
+                  footer: (items) => (items.length ? "Total tokens: " + tokens(totalTokens[items[0].dataIndex]) : ""),
                 },
               },
             },
@@ -5719,7 +5719,7 @@
 
       function renderAnalysisSummary(summary, trends, daily) {
         const cost = summary.cost;
-        const averageLabel = daily ? "每日平均" : "每小时平均";
+        const averageLabel = daily ? "Daily average" : "Hourly average";
         const average = (total) => (trends.requests.length ? Number(total || 0) / trends.requests.length : 0);
         const peakCacheRate = Math.max(0, ...trends.cache_rate.map((point) => Number(point.value || 0)));
         const detail = (label, value) =>
@@ -5737,7 +5737,7 @@
               width: "600",
               height: "128",
               role: "img",
-              "aria-label": title + "趋势图",
+              "aria-label": title + " trend chart",
               "data-analysis-trend": trend,
             }),
           );
@@ -5748,47 +5748,47 @@
         const hasCacheWriteTokens = Number(summary.cache_write_tokens || 0) > 0;
         const hasCacheWriteCost = Number(cost.cache_write_usd || 0) > 0;
         const costRows = [
-          costDetail("输入", cost.input_usd),
-          costDetail("输出", cost.output_usd),
-          costDetail("缓存读", cost.cache_read_usd),
+          costDetail("Input", cost.input_usd),
+          costDetail("Output", cost.output_usd),
+          costDetail("Cache read", cost.cache_read_usd),
         ];
-        if (hasCacheWriteCost) costRows.push(costDetail("缓存写", cost.cache_write_usd));
+        if (hasCacheWriteCost) costRows.push(costDetail("Cache write", cost.cache_write_usd));
         const tokenRows = [
-          detail("输入", tokens(summary.input_tokens)),
-          detail("输出", tokens(summary.output_tokens)),
-          detail("缓存读", tokens(summary.cache_read_tokens)),
+          detail("Input", tokens(summary.input_tokens)),
+          detail("Output", tokens(summary.output_tokens)),
+          detail("Cache read", tokens(summary.cache_read_tokens)),
         ];
-        if (hasCacheWriteTokens) tokenRows.push(detail("缓存写", tokens(summary.cache_write_tokens)));
+        if (hasCacheWriteTokens) tokenRows.push(detail("Cache write", tokens(summary.cache_write_tokens)));
         return el(
           "div",
           { class: "analysis-summary-grid" },
           card(
-            "请求总数",
+            "Total requests",
             int(summary.requests),
             detail(averageLabel, int(Math.ceil(average(summary.requests)))),
             [
-              detail("成功", int(summary.succeeded)),
-              detail("失败", int(summary.failed)),
-              detail("成功率", Number(summary.success_rate || 0).toFixed(2) + "%"),
+              detail("Success", int(summary.succeeded)),
+              detail("Failure", int(summary.failed)),
+              detail("Success rate", Number(summary.success_rate || 0).toFixed(2) + "%"),
             ],
             "requests",
           ),
           card(
-            "Token 总数",
+            "Total tokens",
             tokens(summary.total_tokens),
             detail(averageLabel, tokens(Number(average(summary.total_tokens).toFixed(2)))),
             tokenRows,
             "total_tokens",
           ),
           card(
-            "缓存率",
+            "Cache hit rate",
             Number(summary.cache_rate || 0).toFixed(2) + "%",
-            detail(daily ? "按日峰值" : "按小时峰值", peakCacheRate.toFixed(2) + "%"),
-            [detail("缓存读", tokens(summary.cache_read_tokens)), detail("输入", tokens(summary.input_tokens))],
+            detail(daily ? "Daily peak" : "Hourly peak", peakCacheRate.toFixed(2) + "%"),
+            [detail("Cache read", tokens(summary.cache_read_tokens)), detail("Input", tokens(summary.input_tokens))],
             "cache_rate",
           ),
           card(
-            "总成本",
+            "Total cost",
             usd(cost.total_usd),
             detail(averageLabel, usd(average(cost.total_usd))),
             costRows,
@@ -5801,7 +5801,7 @@
         const role = account ? "account" : "admin";
         const analysis = analysisQueries[role].value;
         const target = $(account ? "account-usage-distribution" : "usage-distribution");
-        const labels = { api_keys: "API Key", models: "模型", sources: "来源" };
+        const labels = { api_keys: "API keys", models: "Models", sources: "Sources" };
         if (account || $("analysis-key").value) delete labels.api_keys;
         const dimension = labels[analysisDimensions[role]] ? analysisDimensions[role] : "models";
         const metric = analysisMetrics[role];
@@ -5812,7 +5812,7 @@
         const metricSelect = el(
           "select",
           {
-            "aria-label": "用量分布统计方式",
+            "aria-label": "Usage distribution metric",
             onchange: (event) => {
               analysisMetrics[role] = event.target.value;
               saveViewPreference(role, "analysis-metric", event.target.value);
@@ -5847,7 +5847,7 @@
               { class: "usage-distribution-heading" },
               dimension === "api_keys" && row.key !== "other"
                 ? el("span", { text: apiKeyIdentity(row).text })
-                : el("b", {}, row.label || row.key || "未知"),
+                : el("b", {}, row.label || row.key || "Unknown"),
               el("b", { class: "mono" }, row.percent.toFixed(2) + "%"),
             ),
             el("div", { class: "usage-distribution-track" }, el("i", { style: "width:" + row.percent + "%" })),
@@ -5863,7 +5863,7 @@
         target
           .querySelector(".usage-distribution-header")
           .replaceChildren(
-            el("h2", {}, "用量分布"),
+            el("h2", {}, "Usage distribution"),
             el(
               "div",
               { class: "row usage-distribution-controls" },
@@ -5891,9 +5891,9 @@
             el(
               "section",
               { class: "card usage-trend-card" },
-              el("h2", {}, "用量趋势"),
+              el("h2", {}, "Usage trend"),
               el("div", { class: "usage-trend-legend" }),
-              analysisChartPanel("usage-trend-chart", prefix + "usage-trend-chart", "用量趋势组合图"),
+              analysisChartPanel("usage-trend-chart", prefix + "usage-trend-chart", "Usage trend chart"),
             ),
             el(
               "section",
@@ -5902,10 +5902,10 @@
               el(
                 "div",
                 { class: "usage-distribution-layout" },
-                analysisChartPanel("usage-distribution-chart", prefix + "usage-chart", "用量分布环形图"),
+                analysisChartPanel("usage-distribution-chart", prefix + "usage-chart", "Usage distribution chart"),
                 el("div", { class: "usage-distribution-list" }),
               ),
-              el("div", { class: "empty usage-distribution-empty", text: "当前时间范围内暂无请求事件" }),
+              el("div", { class: "empty usage-distribution-empty", text: "No request events in the selected time range" }),
             ),
           );
           target.replaceChildren(el("div", { class: "card empty analysis-state" }), content);
@@ -5915,7 +5915,7 @@
         status.classList.toggle("hidden", !!analysis);
         content.classList.toggle("hidden", !analysis);
         if (!analysis) {
-          status.textContent = load.error ? "分析数据加载失败" : "加载中…";
+          status.textContent = load.error ? "Failed to load analysis data" : "Loading…";
           return;
         }
         const theme = window.billingTheme.current();
@@ -5953,13 +5953,13 @@
         if (typeSelect.value) types.push(typeSelect.value.slice(5));
         populateEventFilterSelect(
           typeSelect,
-          "全部错误类型 · " + int(total),
+          "All error categories · " + int(total),
           [...new Set(types)].sort(),
           (value) => "type:" + value,
-          (value) => (value || "未分类") + " · " + int(counts[value]),
+          (value) => (value || "Uncategorized") + " · " + int(counts[value]),
         );
-        populateEventFilterSelect($(prefix + "error-model"), "全部模型", filters.models);
-        populateEventFilterSelect($(prefix + "error-source"), "全部来源", filters.sources, undefined, sourceLabel);
+        populateEventFilterSelect($(prefix + "error-model"), "All models", filters.models);
+        populateEventFilterSelect($(prefix + "error-source"), "All sources", filters.sources, undefined, sourceLabel);
       }
 
       function renderErrors(account) {
@@ -5973,13 +5973,13 @@
         populateErrorFilters(view, account);
         updateFilterClearButton($(account ? "account-errors-filter-clear" : "errors-filter-clear"));
         list.renderItems(view.entries, {
-          attrs: { class: "event-list", role: "list", "aria-label": "错误事件列表" },
-          empty: "暂无错误事件",
+          attrs: { class: "event-list", role: "list", "aria-label": "Error event list" },
+          empty: "No error events",
           render: (entry) => {
             const tags = [
               el("span", {
                 class: "tag bad",
-                text: entry.status_code ? "HTTP " + entry.status_code : "失败",
+                text: entry.status_code ? "HTTP " + entry.status_code : "Failure",
               }),
             ];
             if (entry.error_type) {
@@ -5996,14 +5996,14 @@
                   "div",
                   { class: "event-request-meta" },
                   account ? null : errorEventField("API Key", apiKeyIdentity(entry).text, false),
-                  errorEventField("模型", entry.billing_model || entry.upstream_model),
-                  errorEventField("来源", sourceLabel(entry.source)),
+                  errorEventField("Model", entry.billing_model || entry.upstream_model),
+                  errorEventField("Source", sourceLabel(entry.source)),
                 ),
                 el("div", { class: "event-entry-tags" }, tags),
               ),
               el("pre", {
                 class: "event-error-body mono",
-                text: entry.body || entry.reason || "没有错误详情",
+                text: entry.body || entry.reason || "No error details",
               }),
             );
           },
@@ -6072,7 +6072,7 @@
       function resetAuthQuotaBatch(account) {
         const bulk = authUI(account).bulk;
         bulk.dataset.loading = "false";
-        setLabeledActionIcon(bulk, "refresh", "更新限额");
+        setLabeledActionIcon(bulk, "refresh", "Refresh quotas");
       }
 
       function authQuotaStorageKey(role) {
@@ -6132,7 +6132,7 @@
 
       async function fetchAuthFiles(account) {
         const result = await (account ? accountAPI("/auth-files") : plugin("GET", "/auth-files"));
-        return requireArray(result?.files, "认证文件");
+        return requireArray(result?.files, "Authentication files");
       }
 
       function updateAuthFiles(account, files) {
@@ -6226,10 +6226,10 @@
       }
 
       function compactResetAfter(seconds) {
-        if (seconds < 60) return "不到1分钟后";
-        if (seconds >= 86400) return Math.floor(seconds / 86400) + "天后";
-        if (seconds >= 3600) return Math.floor(seconds / 3600) + "小时后";
-        return Math.floor(seconds / 60) + "分钟后";
+        if (seconds < 60) return "in under a minute";
+        if (seconds >= 86400) return "in " + Math.floor(seconds / 86400) + " days";
+        if (seconds >= 3600) return "in " + Math.floor(seconds / 3600) + " hours";
+        return "in " + Math.floor(seconds / 60) + " minutes";
       }
 
       function quotaResetMeta(row) {
@@ -6244,9 +6244,9 @@
         const hasLimit = row.limit !== undefined;
         if (!hasUsed && !hasLimit) return "";
         const money = row.currency === "USD";
-        const format = (value) => (money ? usd(value) : value.toLocaleString("zh-CN", { maximumFractionDigits: 2 }));
+        const format = (value) => (money ? usd(value) : value.toLocaleString("en-US", { maximumFractionDigits: 2 }));
         if (hasUsed && hasLimit) return format(row.used) + "/" + format(row.limit);
-        return hasUsed ? "已用 " + format(row.used) : "额度 " + format(row.limit);
+        return hasUsed ? "Used " + format(row.used) : "Quota " + format(row.limit);
       }
 
       function quotaLabel(row) {
@@ -6297,7 +6297,7 @@
         const owner = account ? accountUIState : adminUIState;
         const index = file.auth_index;
         if (owner.authQuotaLoading.has(index)) {
-          return el("div", { class: "auth-file-quota" }, el("div", { class: "muted small", text: "正在更新限额…" }));
+          return el("div", { class: "auth-file-quota" }, el("div", { class: "muted small", text: "Updating quotas…" }));
         }
         const error = owner.authQuotaErrors.get(index);
         if (error)
@@ -6306,10 +6306,10 @@
         if (!result) return null;
         const summary = [];
         if (Number.isFinite(Number(result.rate_limit_reset_credits_available_count))) {
-          summary.push(el("span", { text: "主动重置次数 " + int(result.rate_limit_reset_credits_available_count) }));
+          summary.push(el("span", { text: "Manual resets available: " + int(result.rate_limit_reset_credits_available_count) }));
         }
         if (result.fetched_at)
-          summary.push(el("span", { class: "muted", text: "上次查询：" + when(result.fetched_at) }));
+          summary.push(el("span", { class: "muted", text: "Last checked: " + when(result.fetched_at) }));
         const rows = result.quota;
         return el(
           "div",
@@ -6317,7 +6317,7 @@
           summary.length ? el("div", { class: "auth-quota-summary" }, summary) : null,
           rows.length
             ? el("div", { class: "auth-quota-list" }, rows.map(renderQuotaRow))
-            : el("div", { class: "muted small", text: "上游未返回可展示的限额" }),
+            : el("div", { class: "muted small", text: "No quota information returned by the upstream service" }),
         );
       }
 
@@ -6332,11 +6332,11 @@
         ui.bulk.disabled = refreshable === 0 || ui.bulk.dataset.loading === "true";
         renderCollection(ui.body, files, {
           attrs: { class: "auth-file-grid" },
-          empty: "没有符合筛选条件的认证文件",
+          empty: "No authentication files matching the filters",
           render: (file) => {
-            const statusText = file.disabled ? "已停用" : file.unavailable ? "不可用" : "已启用";
+            const statusText = file.disabled ? "Disabled" : file.unavailable ? "Unavailable" : "Enabled";
             const statusClass = file.disabled ? "plain" : file.unavailable ? "bad" : "ok";
-            const category = AUTH_CATEGORY_LABELS[file.category] || file.category || "未知";
+            const category = AUTH_CATEGORY_LABELS[file.category] || file.category || "Unknown";
             const plan = authPlanLabel(file.category, ui.owner.authQuotas.get(file.auth_index)?.plan);
             const seenMeta = new Set();
             const meta = [category, plan].filter((value) => {
@@ -6354,10 +6354,10 @@
                 type: "button",
                 class: "auth-refresh-icon-button" + (loading ? " loading" : ""),
                 disabled: !file.quota_supported || loading || ui.bulk.dataset.loading === "true",
-                "aria-label": "更新限额",
+                "aria-label": "Refresh quota",
                 title: file.quota_supported
-                  ? "更新限额"
-                  : file.quota_unavailable_reason || "该认证文件类型暂不支持限额查询",
+                  ? "Refresh quota"
+                  : file.quota_unavailable_reason || "Quota lookup is not supported for this authentication-file type",
                 onclick: () => guard(() => refreshAuthQuota(file, account)),
               },
               actionIcon("refresh"),
@@ -6377,8 +6377,8 @@
                     { class: "auth-file-identity" },
                     el("div", {
                       class: "auth-file-email-title",
-                      title: file.email || "未提供邮箱",
-                      text: file.email || "未提供邮箱",
+                      title: file.email || "No email provided",
+                      text: file.email || "No email provided",
                     }),
                     el(
                       "div",
@@ -6416,8 +6416,8 @@
           const path = "/auth-files/quota?auth_index=" + encodeURIComponent(file.auth_index);
           const opts = { timeoutMS: AUTH_QUOTA_TIMEOUT_MS };
           const result = account ? await accountAPI(path, opts) : await plugin("GET", path, null, opts);
-          requireObject(result, "上游限额");
-          requireArray(result.quota, "上游限额");
+          requireObject(result, "Upstream quota");
+          requireArray(result.quota, "Upstream quota");
           if (authQuotaCacheCurrent(account, owner, generation, file.auth_index))
             owner.authQuotas.set(file.auth_index, result);
         } catch (error) {
@@ -6454,7 +6454,7 @@
         );
         if (!files.length || ui.bulk.dataset.loading === "true") return;
         ui.bulk.dataset.loading = "true";
-        const progress = el("span", { text: "更新中 0 / " + files.length });
+        const progress = el("span", { text: "Updating 0 / " + files.length });
         ui.bulk.removeAttribute("aria-label");
         ui.bulk.replaceChildren(actionIcon("refresh"), progress);
         renderAuthFiles(account);
@@ -6464,7 +6464,7 @@
           const worker = async () => {
             while (next < files.length && generation === authQuotaGeneration[role]) {
               await loadAuthQuota(files[next++], account);
-              progress.textContent = "更新中 " + ++completed + " / " + files.length;
+              progress.textContent = "Updating " + ++completed + " / " + files.length;
             }
           };
           await settleLoads(Array.from({ length: Math.min(AUTH_QUOTA_BATCH_CONCURRENCY, files.length) }, worker));
@@ -6487,7 +6487,7 @@
         const preview = String(view.preview || "");
         const candidate = String(view.label || "");
         const label = candidate && candidate !== preview && candidate !== scope ? candidate : "";
-        const primary = label || preview || (scope ? "unknown" : "未归属");
+        const primary = label || preview || (scope ? "unknown" : "Unassigned");
         const secondary = label ? preview : "";
         return { primary, secondary, text: secondary ? primary + " · " + secondary : primary };
       }
@@ -6527,7 +6527,7 @@
           input.select();
           if (!document.execCommand("copy")) throw new Error();
         } catch (_) {
-          throw new Error("复制失败，请检查剪贴板权限");
+          throw new Error("Copy failed; check clipboard permissions");
         } finally {
           input.remove();
           previousFocus?.focus({ preventScroll: true });
@@ -6547,14 +6547,14 @@
               break;
             }
           }
-          if (!key) throw new Error("API Key 已不存在，请刷新列表");
+          if (!key) throw new Error("API key no longer exists; refresh the list");
           await copyText(key);
           button.classList.add("copied");
-          setActionIcon(button, "check", "已复制");
+          setActionIcon(button, "check", "Copied");
           setTimeout(() => {
             if (!button.isConnected) return;
             button.classList.remove("copied");
-            setActionIcon(button, "copy", "复制 API Key");
+            setActionIcon(button, "copy", "Copy API Key");
           }, 2000);
         } finally {
           button.disabled = false;
@@ -6563,14 +6563,14 @@
 
       async function saveConcurrency(view, raw) {
         const text = String(raw ?? "").trim();
-        if (!/^\d+$/.test(text)) throw new Error("并发限制必须是 0 到 10000 之间的整数");
+        if (!/^\d+$/.test(text)) throw new Error("The concurrency limit must be an integer between 0 and 10000");
         const limit = Number(text);
         if (!Number.isSafeInteger(limit) || limit < 0 || limit > 10000) {
-          throw new Error("并发限制必须是 0 到 10000 之间的整数");
+          throw new Error("The concurrency limit must be an integer between 0 and 10000");
         }
         await submitKeyChange(view.scope, async () => {
           await mutateAdmin("POST", "/keys/concurrency", { scope: view.scope, concurrency_limit: limit });
-          notify(limit ? "并发限制已更新为 " + limit : "已取消并发限制");
+          notify(limit ? "Concurrency limit updated to " + limit : "Concurrency limit removed");
         });
       }
 
@@ -6590,7 +6590,7 @@
       function renderKeys() {
         if (currentRole !== "admin" || activeTab(false) !== "keys") return false;
         closeKeyRouteTooltip();
-        if (renderDataPending($("keys-body"), [resources.admin.keys], "正在加载…", "empty section-loading")) return;
+        if (renderDataPending($("keys-body"), [resources.admin.keys], "Loading…", "empty section-loading")) return;
         const plans = resources.admin.plans.value;
         const filter = $("key-filter").value.trim().toLowerCase();
         const keys = resources.admin.keys.value
@@ -6605,7 +6605,7 @@
                 .includes(filter),
           );
         renderCollection($("keys-body"), keys, {
-          headers: ["API Key", "订阅计划", "路由规则", "并发限制", "订阅额度", "状态", "操作"],
+          headers: ["API key", "Subscription plan", "Routing rules", "Concurrency limit", "Subscription quota", "Status", "Actions"],
           render: (view) => {
             const deleted = !!view.deleted_at;
             const saving = adminUIState.keySubmissions.has(view.scope);
@@ -6615,8 +6615,8 @@
               {
                 name: "plan_id",
                 disabled: deleted || saving || !plans,
-                title: !plans ? resources.admin.plans.error || "正在加载订阅计划…" : null,
-                "aria-label": name + " 的订阅计划",
+                title: !plans ? resources.admin.plans.error || "Loading subscription plans…" : null,
+                "aria-label": name + " subscription plan",
                 onchange: (event) =>
                   guard(async () => {
                     const planID = event.target.value;
@@ -6624,11 +6624,11 @@
                     await submitKeyChange(view.scope, async () => {
                       if (planID) await mutateAdmin("POST", "/keys/bind", { scope: view.scope, plan_id: planID });
                       else await mutateAdmin("POST", "/keys/unbind", { scope: view.scope });
-                      notify("订阅计划已更新");
+                      notify("Subscription plan updated");
                     });
                   }),
               },
-              el("option", { value: "", text: "不限制" }),
+              el("option", { value: "", text: "Unlimited" }),
               view.plan_id && !(plans || []).some((plan) => plan.id === view.plan_id)
                 ? el("option", { value: view.plan_id, selected: true, text: view.plan_name || view.plan_id })
                 : null,
@@ -6646,17 +6646,17 @@
             const concurrencySelect = el(
               "select",
               {
-                "aria-label": name + " 的最大并发请求数",
+                "aria-label": name + " maximum concurrent requests",
                 disabled: deleted || saving,
-                title: "最大并发请求数；0 表示不限制",
+                title: "Maximum concurrent requests; 0 means unlimited.",
                 onchange: (event) =>
                   guard(async () => {
                     const value = event.target.value;
                     event.target.value = String(currentConcurrencyLimit);
                     if (value === CUSTOM_CONCURRENCY) {
                       openActionDialog(
-                        "设置并发限制",
-                        "请输入 0 到 10000 的整数，0 表示不限制。",
+                        "Set concurrency limit",
+                        "Enter an integer from 0 to 10000; 0 means unlimited.",
                         String(currentConcurrencyLimit),
                         (raw) => saveConcurrency(view, raw),
                       );
@@ -6669,16 +6669,16 @@
                 el("option", {
                   value: String(limit),
                   selected: limit === currentConcurrencyLimit,
-                  text: limit === 0 ? "不限制" : String(limit),
+                  text: limit === 0 ? "Unlimited" : String(limit),
                 }),
               ),
-              el("option", { value: CUSTOM_CONCURRENCY, text: "手动输入…" }),
+              el("option", { value: CUSTOM_CONCURRENCY, text: "Manual entry…" }),
             );
             const concurrency = el(
               "div",
               { class: "concurrency-editor" },
               el("span", { class: "native-select" }, concurrencySelect),
-              el("span", { class: "small muted", text: "当前 " + int(view.current_concurrency) }),
+              el("span", { class: "small muted", text: "Current " + int(view.current_concurrency) }),
             );
 
             return el(
@@ -6696,13 +6696,13 @@
                         class: "key-copy-button link",
                         type: "button",
                         disabled: deleted || !view.in_config,
-                        title: "复制 API Key",
-                        "aria-label": "复制 API Key",
+                        title: "Copy API Key",
+                        "aria-label": "Copy API Key",
                         onclick: (event) => guard(() => copyAPIKey(event.currentTarget, view)),
                       },
                       actionIcon("copy"),
                     ),
-                    !deleted && !view.in_config ? " · 仅用量记录" : null,
+                    !deleted && !view.in_config ? " · Usage tracking only" : null,
                   ],
                 }),
               ),
@@ -6716,14 +6716,14 @@
                 deleted
                   ? el("span", {
                       class: "tag plain",
-                      text: "已删除",
-                      title: "从 CPA 配置中删除于 " + new Date(view.deleted_at).toLocaleString(),
+                      text: "Removed",
+                      title: "Removed from the CPA configuration on " + new Date(view.deleted_at).toLocaleString(),
                     })
                   : view.blocked
-                    ? el("span", { class: "tag bad", text: "额度用尽" })
+                    ? el("span", { class: "tag bad", text: "Quota exhausted" })
                     : el("span", {
                         class: "tag " + (view.unlimited ? "plain" : "ok"),
-                        text: view.unlimited ? "不限制" : "正常",
+                        text: view.unlimited ? "Unlimited" : "Healthy",
                       }),
               ),
               el(
@@ -6731,28 +6731,28 @@
                 { class: "small" },
                 el("button", {
                   class: "link",
-                  text: "重置",
+                  text: "Reset",
                   disabled: deleted || view.unlimited,
                   onclick: () =>
                     openActionDialog(
-                      "重置订阅额度？",
+                      "Reset subscription quota?",
                       view.windows[0]?.cycle_anchor_at
-                        ? "清零所有窗口的消费，周期重置时间保持不变。"
-                        : "所有额度周期将结束，下一次放行会开启新周期。",
+                        ? "Clear usage in every quota window without changing scheduled reset times."
+                        : "All quota cycles will end; the next admitted request will start new cycles.",
                       undefined,
                       async () => {
                         await mutateAdmin("POST", "/keys/reset", { mode: "all", scopes: [view.scope] });
-                        notify("订阅额度已重置");
+                        notify("Subscription quota reset");
                       },
                     ),
                 }),
                 el("button", {
                   class: "link",
-                  text: "备注",
+                  text: "Note",
                   onclick: () =>
-                    openActionDialog("备注", name, keyDirectory.resolve(view).label || "", async (label) => {
+                    openActionDialog("Note", name, keyDirectory.resolve(view).label || "", async (label) => {
                       await mutateAdmin("POST", "/keys/label", { scope: view.scope, label });
-                      notify("已保存备注");
+                      notify("Saved note");
                     }),
                 }),
               ),
@@ -6762,17 +6762,17 @@
       }
 
       function credentialLabel(item) {
-        if (item.source === "auth-files") return item.provider + " · " + (item.display_name || "未提供邮箱");
+        if (item.source === "auth-files") return item.provider + " · " + (item.display_name || "No email provided");
         return item.provider + " · " + item.display_name;
       }
 
       function boundCredentialLabel(ref, labels) {
         const credential = (resources.admin.credentials.value || []).find((item) => item.ref === ref);
-        return (credential && credentialLabel(credential)) || labels?.[ref] || "指定上游凭证 · " + ref.slice(-8);
+        return (credential && credentialLabel(credential)) || labels?.[ref] || "Specified upstream credential · " + ref.slice(-8);
       }
 
       function credentialSourceLabel(source) {
-        return source === "auth-files" ? "认证文件" : "AI 供应商";
+        return source === "auth-files" ? "Authentication files" : "AI provider";
       }
 
       function credentialProviderLabel(item) {
@@ -6794,7 +6794,7 @@
       function compareCredentials(a, b) {
         return (
           credentialSourceRank(a) - credentialSourceRank(b) ||
-          credentialLabel(a).localeCompare(credentialLabel(b), "zh-CN")
+          credentialLabel(a).localeCompare(credentialLabel(b), "en-US")
         );
       }
 
@@ -6807,7 +6807,7 @@
         const names = bindings.route_ids
           .map((id) => ({
             iconName: "route",
-            text: view.route_names[id] || (Object.hasOwn(view.route_names, id) ? id : "路由规则已不存在"),
+            text: view.route_names[id] || (Object.hasOwn(view.route_names, id) ? id : "Routing rule no longer exists"),
           }))
           .concat(routingDimensionChips(bindings, "credential", view.credential_labels))
           .concat(routingDimensionChips(bindings, "model", view.credential_labels));
@@ -6840,12 +6840,12 @@
             },
             ...(names.length
               ? names.slice(0, 3).map((entry) => el("div", { class: "key-route-line" }, settingsChipList([entry])))
-              : [el("div", { class: "key-route-line muted", text: "全部路由" })]),
+              : [el("div", { class: "key-route-line muted", text: "All routes" })]),
             names.length > 3
               ? el("div", {
                   class: "key-route-more",
                   text: "…",
-                  "aria-label": "还有 " + (names.length - 3) + " 项",
+                  "aria-label": "Plus " + (names.length - 3) + " items",
                 })
               : null,
           ),
@@ -6855,20 +6855,20 @@
             el("button", {
               type: "button",
               class: "link key-route-clear",
-              text: "清空",
+              text: "Clear",
               disabled: disabled || !names.length,
-              "aria-label": "清空 " + apiKeyIdentity(view).primary + " 的路由规则",
+              "aria-label": "Clear " + apiKeyIdentity(view).primary + " routing rules",
               onclick: () =>
                 guard(() => {
                   closeKeyRouteTooltip();
                   return openActionDialog(
-                    "清空「" + apiKeyIdentity(view).primary + "」的路由规则？",
-                    "将解除这个 API Key 绑定的全部路由规则，以及直接设置的模型、凭证黑白名单限制。",
+                    "Clear “" + apiKeyIdentity(view).primary + "” routing rules?",
+                    "This removes all routing-rule bindings and direct model or credential allow/deny rules from this API key.",
                     undefined,
                     () =>
                       submitKeyChange(view.scope, async () => {
                         await mutateAdmin("PUT", "/keys/routes", { scope: view.scope, bindings: {} });
-                        notify("API Key 路由规则已清空");
+                        notify("API key routing rules cleared");
                       }),
                   );
                 }),
@@ -6876,9 +6876,9 @@
             el("button", {
               type: "button",
               class: "link key-route-edit",
-              text: "编辑",
+              text: "Edit",
               disabled,
-              "aria-label": "编辑 " + apiKeyIdentity(view).primary + " 的路由规则",
+              "aria-label": "Edit " + apiKeyIdentity(view).primary + " routing rules",
               onclick: () => guard(() => editKeyRoutes(view)),
             }),
           ),
@@ -6913,7 +6913,7 @@
         keyRouteTooltipAnchor = anchor;
         anchor.setAttribute("aria-describedby", tooltip.id);
         tooltip.replaceChildren(
-          el("div", { class: "key-route-tooltip-heading", text: "完整路由规则 · " + entries.length + " 项" }),
+          el("div", { class: "key-route-tooltip-heading", text: "Routing rules · " + entries.length + " items" }),
           ...entries.map((entry) => settingsChipList([entry])),
         );
         tooltip.style.maxHeight = "";
@@ -6966,7 +6966,7 @@
         closeKeyRouteTooltip();
         openEditor("route-picker", "route", (data) => {
           const key = data.keys.find((entry) => entry.scope === view.scope);
-          if (!key || key.deleted_at) throw new Error("API Key 已不存在，请刷新列表");
+          if (!key || key.deleted_at) throw new Error("API key no longer exists; refresh the list");
           keyRouteSelection = {
             scope: view.scope,
             routeIDs: new Set(key.route_bindings.route_ids),
@@ -7059,16 +7059,16 @@
         if (selection.routeIDs) {
           const routes = data.routes.map((route) => ({ id: route.id, name: route.name || route.id }));
           for (const id of selection.routeIDs) {
-            if (!routes.some((route) => route.id === id)) routes.push({ id, name: "路由规则已不存在：" + id });
+            if (!routes.some((route) => route.id === id)) routes.push({ id, name: "Routing rule no longer exists: " + id });
           }
           const choices = routes
             .filter((route) => matchesTerm(route.name, term))
             .map((route) => ({ kind: "route", value: route.id, label: route.name }));
-          groups.push(["routes", "路由规则", choices]);
+          groups.push(["routes", "Routing rules", choices]);
         }
         groups.push(
-          ["credentials", "上游凭证", routeCredentialChoices(selection, data.credentials, term)],
-          ["models", "模型", routeModelChoices(selection, data.models, term)],
+          ["credentials", "Upstream credentials", routeCredentialChoices(selection, data.credentials, term)],
+          ["models", "Models", routeModelChoices(selection, data.models, term)],
         );
         return groups;
       }
@@ -7127,7 +7127,7 @@
               {
                 type: "button",
                 class: "routing-section-toggle",
-                "aria-label": (expanded ? "收起" : "展开") + title,
+                "aria-label": (expanded ? "Collapse " : "Expand ") + title,
                 "aria-expanded": String(expanded),
                 "data-routing-focus": "section:" + kind,
               },
@@ -7142,7 +7142,7 @@
                     saveViewPreference("admin", selection.preference, checked);
                     rerender();
                   },
-                  "仅显示启用的上游凭证",
+                  "Show only enabled upstream credentials",
                 )
               : null,
             el("span", { class: "routing-section-count", text: selected + "/" + options.length }),
@@ -7151,7 +7151,7 @@
             ? el(
                 "div",
                 {},
-                ...(options.length ? options : [el("div", { class: "routing-empty", text: "没有可选的" + title })]),
+                ...(options.length ? options : [el("div", { class: "routing-empty", text: "No " + title.toLowerCase() + " available" })]),
               )
             : null,
         );
@@ -7170,7 +7170,7 @@
               onchange: (event) => onChange(event.target.checked),
             }),
           }),
-          el("span", { text: "仅启用" }),
+          el("span", { text: "Enabled only" }),
         );
       }
 
@@ -7186,7 +7186,7 @@
               ...(rule[prefix + "credential_providers"] || []).map((item) => ({
                 text: credentialProviderLabel(item),
                 state,
-                tag: "整类",
+                tag: "Entire provider",
                 iconName: credentialIcon(item),
               })),
             );
@@ -7248,8 +7248,8 @@
             el(
               "div",
               { class: "row settings-entry-actions" },
-              el("button", { class: "link", text: "编辑", onclick: onEdit }),
-              el("button", { class: "link danger", text: "删除", onclick: onDelete }),
+              el("button", { class: "link", text: "Edit", onclick: onEdit }),
+              el("button", { class: "link danger", text: "Delete", onclick: onDelete }),
             ),
           ),
           el("div", { class: "settings-entry-fields" }, fields),
@@ -7259,14 +7259,14 @@
       function boundKeyField(keys) {
         const chips = keys.map((key) => ({
           text: apiKeyIdentity(key).text,
-          tag: key.deleted_at ? "已删除" : "",
+          tag: key.deleted_at ? "Removed" : "",
         }));
-        return settingsEntryField("已绑定 Key", settingsChipList(chips, "—"));
+        return settingsEntryField("Bound API keys", settingsChipList(chips, "—"));
       }
 
       function bindingSummary(keys) {
         const deleted = keys.filter((key) => key.deleted_at).length;
-        return keys.length + " 个 API Key" + (deleted ? "（其中 " + deleted + " 个已删除）" : "");
+        return keys.length + " API keys" + (deleted ? " (including " + deleted + " deleted)" : "");
       }
 
       function renderPlans() {
@@ -7274,7 +7274,7 @@
           renderDataPending(
             $("plans-body"),
             [resources.admin.plans, resources.admin.keys],
-            "正在加载…",
+            "Loading…",
             "empty section-loading",
           )
         )
@@ -7285,20 +7285,20 @@
         }));
         renderCollection($("plans-body"), plans, {
           attrs: { class: "event-list settings-card-list", role: "list" },
-          empty: "暂无订阅计划",
+          empty: "No subscription plans",
           render: ({ plan, boundKeys }) => {
             const name = plan.name || plan.id;
             const windows = plan.windows.map((window) => {
               const quotas = settingsChipList(
                 QUOTA_DIMENSIONS.filter((metric) => window[metric.key] > 0).map((metric) => ({
                   text: metric.format(window[metric.key]) + (metric.planUnit ? " " + metric.planUnit : ""),
-                  title: metric.label + "：" + metric.exact(window[metric.key]),
+                  title: metric.label + ": " + metric.exact(window[metric.key]),
                 })),
               );
               if (window.cycle_anchor_at)
                 quotas.append(el("span", {
                   class: "small muted",
-                  text: "下次重置：" + when(nextCycleStart(window)),
+                  text: "Next reset: " + when(nextCycleStart(window)),
                 }));
               const field = settingsEntryField(window.name + " · " + periodLabel(window.period_seconds), quotas);
               field.classList.add("plan-window-summary");
@@ -7308,8 +7308,8 @@
               name,
               [
                 settingsEntryField(
-                  "周期模式",
-                  el("span", { text: plan.windows[0]?.cycle_anchor_at ? "统一周期" : "独立周期" }),
+                  "Cycle mode",
+                  el("span", { text: plan.windows[0]?.cycle_anchor_at ? "Unified cycle" : "Independent cycle" }),
                 ),
                 ...windows,
                 boundKeyField(boundKeys),
@@ -7317,17 +7317,17 @@
               () => editPlan(plan),
               () =>
                 openActionDialog(
-                  "删除订阅计划「" + name + "」？",
+                  "Delete subscription plan “" + name + "”?",
                   boundKeys.length
-                    ? "将解除 " +
+                    ? "This will unbind " +
                         bindingSummary(boundKeys) +
-                        " 的套餐绑定。解除后不再限制套餐额度。" +
-                        (boundKeys.some((key) => key.deleted_at) ? "已删除 Key 重新加入时同样生效。" : "")
+                        " from this plan. Those keys will no longer have plan quotas." +
+                        (boundKeys.some((key) => key.deleted_at) ? " Deleted keys will remain unbound if they are added again." : "")
                     : "",
                   undefined,
                   async () => {
                     await mutateAdmin("DELETE", "/plans?id=" + encodeURIComponent(plan.id));
-                    notify("订阅计划已删除");
+                    notify("Subscription plan deleted");
                   },
                 ),
             );
@@ -7335,14 +7335,14 @@
         });
       }
 
-      function renderDataPending(target, sources, message = "加载中…", className = "empty") {
+      function renderDataPending(target, sources, message = "Loading…", className = "empty") {
         const missing = sources.filter((source) => source.value === null);
         if (!missing.length) return false;
         // The page notice owns error details and retries for resource groups.
         target.replaceChildren(
           el("div", {
             class: className,
-            text: missing.some((source) => source.error) ? "数据加载失败" : message,
+            text: missing.some((source) => source.error) ? "Data loading failed" : message,
           }),
         );
         return true;
@@ -7353,7 +7353,7 @@
           renderDataPending(
             $("routes-body"),
             [resources.admin.routes, resources.admin.keys],
-            "正在加载…",
+            "Loading…",
             "empty section-loading",
           )
         )
@@ -7364,11 +7364,11 @@
         }));
         renderCollection($("routes-body"), routes, {
           attrs: { class: "event-list settings-card-list", role: "list" },
-          empty: "暂无路由规则",
+          empty: "No routing rules",
           render: ({ route, boundKeys }) => {
             const fields = [
-              ["model", "模型范围", "全部模型", "astroid"],
-              ["credential", "凭证范围", "全部凭证", "key"],
+              ["model", "Model scope", "All models", "astroid"],
+              ["credential", "Credential scope", "All credentials", "key"],
             ].map(([kind, label, fallback, iconName]) => {
               const items = routingDimensionChips(route.rule, kind, route.credential_labels);
               if (items.length && !items.some((item) => item.state === "allow"))
@@ -7382,18 +7382,18 @@
               () => editRoute(route),
               () =>
                 openActionDialog(
-                  "删除路由规则「" + name + "」？",
+                  "Delete routing rule “" + name + "”?",
                   boundKeys.length
-                    ? "将从 " +
+                    ? "This will remove the rule from " +
                         bindingSummary(boundKeys) +
-                        " 的绑定中解除此规则；其中 " +
+                        "; " +
                         (route.fully_unrestricted_keys || 0) +
-                        " 个未删除 Key 将不再受模型和凭证限制。已删除 Key 重新加入后按剩余绑定执行。"
-                    : "此操作无法撤销。",
+                        " active keys will become unrestricted if they have no remaining bindings. Deleted keys will use any remaining bindings if added again."
+                    : "This action cannot be undone.",
                   undefined,
                   async () => {
                     await mutateAdmin("DELETE", "/routes?id=" + encodeURIComponent(route.id));
-                    notify("路由规则已删除");
+                    notify("Routing rule deleted");
                   },
                 ),
             );
@@ -7487,16 +7487,16 @@
         const { kind, value, label, iconName, badge, note } = item;
         const state = routeChoiceState(selection, kind, value);
         const next = { none: "allow", allow: "deny", deny: "none" }[state];
-        const names = { none: "未选择", allow: "白名单", deny: "黑名单" };
+        const names = { none: "Not selected", allow: "Whitelist", deny: "Blacklist" };
         const key = kind + ":" + (kind === "provider" ? value.source + ":" + value.provider : value);
         const title =
           (kind === "credential" && iconName
             ? credentialSourceLabel(item.source) + " · "
             : "") +
           label +
-          "：" +
+          ": " +
           names[state] +
-          "；点击切换为" +
+          "; click to switch to " +
           names[next];
         return el(
           "button",
@@ -7516,7 +7516,7 @@
           checkboxControl({ state }),
           iconName ? actionIcon(iconName) : null,
           el("span", { class: "route-choice-name" + (kind === "model" ? " mono" : ""), text: label }),
-          kind === "provider" ? el("span", { class: "tag warn", text: "整类" }) : null,
+          kind === "provider" ? el("span", { class: "tag warn", text: "Entire provider" }) : null,
           badge ? el("span", { class: "tag plain", text: badge }) : null,
           note ? el("span", { class: "route-choice-note", text: note }) : null,
         );
@@ -7528,14 +7528,14 @@
           .filter(
             (item) =>
               (!selection.enabledOnly || item.available || routeChoiceState(selection, "provider", item) !== "none") &&
-              matchesTerm(credentialProviderLabel(item) + " 整类", term),
+              matchesTerm(credentialProviderLabel(item) + " Entire provider", term),
           )
           .map((item) => ({
             kind: "provider",
             value: item,
             label: credentialProviderLabel(item),
             iconName: credentialIcon(item),
-            badge: item.available ? "" : "无可用",
+            badge: item.available ? "" : "Unavailable",
           }));
         for (const item of credentials
           .filter(
@@ -7550,7 +7550,7 @@
             label: credentialLabel(item),
             source: item.source,
             iconName: credentialIcon(item),
-            badge: item.disabled ? "已停用" : item.unavailable ? "无可用" : "",
+            badge: item.disabled ? "Disabled" : item.unavailable ? "Unavailable" : "",
           });
         }
         for (const ref of selectedRouteValues(selection, "credential")) {
@@ -7558,9 +7558,9 @@
             options.push({
               kind: "credential",
               value: ref,
-              label: "凭证已不存在",
+              label: "Credential no longer exists",
               iconName: "key",
-              badge: "无可用",
+              badge: "Unavailable",
             });
         }
         return options;
@@ -7580,7 +7580,7 @@
             value: model,
             label: model,
             iconName: "astroid",
-            note: retired.includes(model) ? "不在 CPA 模型列表中" : "",
+            note: retired.includes(model) ? "Not in the CPA model list" : "",
           }));
       }
 
@@ -7590,7 +7590,7 @@
           (key) => !key.deleted_at || (routeID && key.route_bindings.route_ids.includes(routeID)),
         );
         if (!keys.length) {
-          list.replaceChildren(el("div", { class: "empty", text: "暂无 API Key" }));
+          list.replaceChildren(el("div", { class: "empty", text: "No API keys" }));
           return;
         }
         list.replaceChildren(
@@ -7602,7 +7602,7 @@
               checkboxControl({ input: el("input", { type: "checkbox", value: key.scope, checked }) }),
               renderAPIKeyIdentity(key),
               key.deleted_at
-                ? el("span", { class: "tag plain", text: "已删除", title: "可取消勾选以解除绑定" })
+                ? el("span", { class: "tag plain", text: "Removed", title: "Uncheck to unbind" })
                 : null,
             );
           }),
@@ -7620,10 +7620,10 @@
         const id = route?.id;
         openEditor("route-dialog", "route", (data) => {
           const current = id ? data.routes.find((entry) => entry.id === id) : null;
-          if (id && !current) throw new Error("路由规则已不存在，请关闭后刷新列表");
-          $("route-dialog-title").textContent = current ? "编辑路由规则：" + (current.name || id) : "新建路由规则";
+          if (id && !current) throw new Error("The routing rule no longer exists, please close and refresh the list");
+          $("route-dialog-title").textContent = current ? "Edit routing rule: " + (current.name || id) : "New routing rule";
           $("route-id").value = id || "";
-          $("route-save").textContent = current ? "保存" : "创建";
+          $("route-save").textContent = current ? "Save" : "Create";
           $("route-name").value = current?.name || "";
           $("route-rule-search").value = "";
           routeRuleSelection = routingEditorState(current?.rule, "route-credential-enabled-only");
@@ -7636,13 +7636,13 @@
       function priceSourceTag(source) {
         switch (source) {
           case "custom":
-            return el("span", { class: "tag warn", text: "自定义" });
+            return el("span", { class: "tag warn", text: "Custom" });
           case "builtin":
-            return el("span", { class: "tag ok", text: "内置" });
+            return el("span", { class: "tag ok", text: "Built-in" });
           case "reference":
-            return el("span", { class: "tag ok", text: "参考价" });
+            return el("span", { class: "tag ok", text: "Reference price" });
           default:
-            return el("span", { class: "tag plain", text: "未定价" });
+            return el("span", { class: "tag plain", text: "Not priced" });
         }
       }
 
@@ -7684,7 +7684,7 @@
       }
 
       function renderPriceTable() {
-        if (renderDataPending($("prices-body"), [resources.admin.catalog], "正在加载模型价格…")) return;
+        if (renderDataPending($("prices-body"), [resources.admin.catalog], "Loading model prices…")) return;
         const filter = $("price-filter").value.trim().toLowerCase();
         const rows = resources.admin.catalog.value.prices
           .filter((row) => !filter || row.model_id.toLowerCase().includes(filter))
@@ -7697,11 +7697,11 @@
               "td",
               { class: "mono" },
               row.model_id,
-              row.in_models === false ? el("div", { class: "muted small", text: "不在 CPA 模型列表中" }) : null,
+              row.in_models === false ? el("div", { class: "muted small", text: "Not in the CPA model list" }) : null,
               row.custom_price_model_id && row.custom_price_model_id !== row.model_id
                 ? el("div", {
                     class: "muted small",
-                    text: "沿用 " + row.custom_price_model_id + " 的自定义价",
+                    text: "Inherited from " + row.custom_price_model_id + " custom price",
                   })
                 : null,
             ),
@@ -7713,10 +7713,10 @@
             el(
               "td",
               { class: "small" },
-              el("button", { class: "link", text: "编辑", onclick: () => editPrice(row) }),
+              el("button", { class: "link", text: "Edit", onclick: () => editPrice(row) }),
               el("button", {
                 class: "link danger",
-                text: "删除",
+                text: "Delete",
                 disabled: row.source !== "custom",
                 onclick: () => deleteCustomPrice(row),
               }),
@@ -7724,13 +7724,13 @@
           );
         };
         const headers = [
-          "模型",
-          { label: "输入 / 1M Token", num: true },
-          { label: "输出 / 1M Token", num: true },
-          { label: "缓存读 / 1M Token", num: true },
-          { label: "缓存写 / 1M Token", num: true },
-          "来源",
-          "操作",
+          "Model",
+          { label: "Input / 1M tokens", num: true },
+          { label: "Output / 1M tokens", num: true },
+          { label: "Cache read / 1M tokens", num: true },
+          { label: "Cache write / 1M tokens", num: true },
+          "Source",
+          "Actions",
         ];
         renderCollection($("prices-body"), rows, {
           headers,
@@ -7740,48 +7740,48 @@
 
       function costTierText(cost) {
         const threshold = tokenThreshold(cost.threshold_input_tokens);
-        return cost.long_context ? "长上下文 >" + threshold : "标准上下文 ≤" + threshold;
+        return cost.long_context ? "Long context >" + threshold : "Standard context ≤" + threshold;
       }
 
       function showCostTooltip(anchor, cost, hasCacheWrite) {
         const tooltip = $("cost-tooltip");
         const rows = [
-          ["未缓存输入", cost.uncached_input_tokens, cost.applied_input_per_1m, cost.uncached_input_usd],
-          ["缓存读", cost.cache_read_tokens, cost.applied_cache_read_per_1m, cost.cache_read_usd],
+          ["Uncached input", cost.uncached_input_tokens, cost.applied_input_per_1m, cost.uncached_input_usd],
+          ["Cache read", cost.cache_read_tokens, cost.applied_cache_read_per_1m, cost.cache_read_usd],
           ...(hasCacheWrite
-            ? [["缓存写", cost.cache_write_tokens, cost.applied_cache_write_per_1m, cost.cache_write_usd]]
+            ? [["Cache write", cost.cache_write_tokens, cost.applied_cache_write_per_1m, cost.cache_write_usd]]
             : []),
-          ["输出", cost.billed_output_tokens, cost.applied_output_per_1m, cost.output_usd],
+          ["Output", cost.billed_output_tokens, cost.applied_output_per_1m, cost.output_usd],
         ];
         tooltip.replaceChildren(
-          el("div", { class: "cost-tooltip-title", text: "成本明细" }),
+          el("div", { class: "cost-tooltip-title", text: "Cost breakdown" }),
           ...(cost.tiered
-            ? [el("div", { class: "cost-tooltip-summary" }, el("span", {}, "档位"), el("b", {}, costTierText(cost)))]
+            ? [el("div", { class: "cost-tooltip-summary" }, el("span", {}, "Tier"), el("b", {}, costTierText(cost)))]
             : []),
           ...(cost.multiplier === 2.5
             ? [
                 el(
                   "div",
                   { class: "cost-tooltip-summary" },
-                  el("span", {}, "计费倍率"),
+                  el("span", {}, "Billing multiplier"),
                   el("b", {}, "2.5× · Codex Fast mode"),
                 ),
-                el("div", { class: "cost-tooltip-summary" }, "以下单价和金额已包含倍率"),
+                el("div", { class: "cost-tooltip-summary" }, "Unit prices and amounts below include the multiplier"),
               ]
             : []),
           el(
             "div",
             { class: "cost-tooltip-grid" },
-            el("span", { class: "cost-tooltip-head" }, "项目"),
-            el("span", { class: "cost-tooltip-head num" }, "Token / 单价"),
-            el("span", { class: "cost-tooltip-head num" }, "金额"),
+            el("span", { class: "cost-tooltip-head" }, "Component"),
+            el("span", { class: "cost-tooltip-head num" }, "Tokens / unit price"),
+            el("span", { class: "cost-tooltip-head num" }, "Amount"),
             rows.flatMap(([name, tokenCount, price, amount]) => [
               el("span", {}, name),
               el("span", { class: "num" }, exactTokens(tokenCount) + " × " + usd(price) + " / 1M"),
               el("span", { class: "num" }, usd(amount)),
             ]),
           ),
-          el("div", { class: "cost-tooltip-total" }, el("span", {}, "总金额"), el("span", {}, usd(cost.total_usd))),
+          el("div", { class: "cost-tooltip-total" }, el("span", {}, "Total amount"), el("span", {}, usd(cost.total_usd))),
         );
         tooltip.classList.add("show");
         tooltip.setAttribute("aria-hidden", "false");
@@ -7810,9 +7810,9 @@
       }
 
       const REQUEST_EVENT_STATUS_OPTIONS = {
-        "": { label: "全部结果", count: "all" },
-        false: { label: "成功", count: "normal" },
-        true: { label: "失败", count: "failed" },
+        "": { label: "All outcomes", count: "all" },
+        false: { label: "Success", count: "normal" },
+        true: { label: "Failure", count: "failed" },
       };
 
       // Counts cover the whole field/time selection and ignore the status choice,
@@ -7859,8 +7859,8 @@
       function populateRequestEventFilters(filters, account) {
         if (!filters) return;
         const prefix = account ? "account-request-event" : "request-event";
-        populateEventFilterSelect($(prefix + "-model"), "全部模型", filters.models);
-        populateEventFilterSelect($(prefix + "-source"), "全部来源", filters.sources, undefined, sourceLabel);
+        populateEventFilterSelect($(prefix + "-model"), "All models", filters.models);
+        populateEventFilterSelect($(prefix + "-source"), "All sources", filters.sources, undefined, sourceLabel);
       }
 
       function readEventKeys(reload) {
@@ -7869,7 +7869,7 @@
           JSON.stringify(sharedTimeRanges.admin),
           async () => {
             const revision = keyDirectory.beginRead();
-            const keys = requireArray(await plugin("GET", "/events/keys?" + new URLSearchParams(range)), "事件 Key");
+            const keys = requireArray(await plugin("GET", "/events/keys?" + new URLSearchParams(range)), "Event Key");
             return keyDirectory.receive(keys, revision);
           },
           reload,
@@ -7882,10 +7882,10 @@
         const select = $("analysis-key");
         const selected = select.value;
         renderSelectOptions(select, [
-          { value: "", text: "全部 API Key" },
+          { value: "", text: "All API Keys" },
           ...keys.map((key) => ({
             value: key.scope,
-            text: apiKeyIdentity(key).text + (key.deleted_at ? "（已删除）" : ""),
+            text: apiKeyIdentity(key).text + (key.deleted_at ? " (removed)" : ""),
           })),
           ...(selected && !keys.some((key) => key.scope === selected)
             ? [
@@ -7919,11 +7919,11 @@
 
       function timeRangeLabel(range) {
         const rolling = rollingTimeMode(range.mode);
-        if (rolling) return "最近 " + rolling.value + (rolling.unit === "hour" ? " 小时" : " 天");
+        if (rolling) return "Last " + rolling.value + (rolling.unit === "hour" ? " hours" : " days");
         if (range.mode !== "custom") return SHARED_TIME_LABELS[range.mode];
         const options = { year: "numeric", month: "2-digit", day: "2-digit" };
         if (range.unit !== "day") Object.assign(options, { hour: "2-digit", minute: "2-digit", hour12: false });
-        const format = (value) => new Date(value).toLocaleString("zh-CN", options);
+        const format = (value) => new Date(value).toLocaleString("en-US", options);
         const end = new Date(new Date(range.to).getTime() - 1);
         if (range.unit === "hour") end.setMinutes(0, 0, 0);
         return format(range.from) + " – " + format(end);
@@ -7971,7 +7971,7 @@
         const monthStart = new Date(month.getFullYear(), month.getMonth(), 1);
         const nextMonth = new Date(month.getFullYear(), month.getMonth() + 1, 1);
         const grid = el("div", { class: "calendar-grid" });
-        for (const name of ["日", "一", "二", "三", "四", "五", "六"])
+        for (const name of ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"])
           grid.append(el("span", { class: "small muted", text: name }));
         const first = shiftLocalDay(monthStart.getTime(), -monthStart.getDay());
         for (let i = 0; i < 42; i++) {
@@ -7983,16 +7983,16 @@
               day >= start && day <= end ? "in-range" : "",
               new Date(day).getMonth() !== month.getMonth() ? "outside-month" : ""].filter(Boolean).join(" "),
             disabled: day < min || day > max,
-            "aria-label": new Date(day).toLocaleDateString("zh-CN"), "aria-pressed": String(selected),
+            "aria-label": new Date(day).toLocaleDateString("en-US"), "aria-pressed": String(selected),
             text: String(new Date(day).getDate()), onclick: () => onSelect(day),
           }));
         }
         return el("div", { class: "calendar-picker" },
           el("div", { class: "row spread" },
-            el("button", { type: "button", class: "link small", text: "上一月", disabled: monthStart.getTime() <= min,
+            el("button", { type: "button", class: "link small", text: "Previous month", disabled: monthStart.getTime() <= min,
               onclick: () => onMonthChange(new Date(month.getFullYear(), month.getMonth() - 1, 1)) }),
-            el("span", { class: "small", text: month.toLocaleDateString("zh-CN", { year: "numeric", month: "long" }) }),
-            el("button", { type: "button", class: "link small", text: "下一月", disabled: nextMonth.getTime() > max,
+            el("span", { class: "small", text: month.toLocaleDateString("en-US", { year: "numeric", month: "long" }) }),
+            el("button", { type: "button", class: "link small", text: "Next month", disabled: nextMonth.getTime() > max,
               onclick: () => onMonthChange(nextMonth) }),
           ), grid,
         );
@@ -8022,7 +8022,7 @@
         };
         const format = (value) =>
           new Date(value).toLocaleString(
-            "zh-CN",
+            "en-US",
             custom.unit === "day"
               ? { year: "numeric", month: "short", day: "numeric" }
               : { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false },
@@ -8047,13 +8047,13 @@
           content.append(
             el(
               "div",
-              { class: "time-range-options time-range-units", role: "group", "aria-label": "自定义单位" },
+              { class: "time-range-options time-range-units", role: "group", "aria-label": "Custom unit" },
               ["hour", "day"].map((unit) =>
                 el("button", {
                   type: "button",
                   class: unit === custom.unit ? "active" : "",
                   "aria-pressed": String(unit === custom.unit),
-                  text: unit === "hour" ? "小时" : "天",
+                  text: unit === "hour" ? "Hours" : "Days",
                   onclick: () => {
                     if (unit === custom.unit) return;
                     draft.custom = defaultCustomTimeRange(draft, unit);
@@ -8068,8 +8068,8 @@
             el(
               "div",
               { class: "row spread" },
-              el("button", { type: "button", class: "link small", text: "返回", onclick: pickerCancel }),
-              el("span", { class: "small", text: custom.unit === "day" ? "选择日期" : "选择小时" }),
+              el("button", { type: "button", class: "link small", text: "Back", onclick: pickerCancel }),
+              el("span", { class: "small", text: custom.unit === "day" ? "Select date" : "Select hour" }),
               el("span", { class: "small muted", text: Intl.DateTimeFormat().resolvedOptions().timeZone }),
             ),
           );
@@ -8083,7 +8083,7 @@
               {
                 type: "button",
                 class: draft.view !== "summary" && draft.endpoint === endpoint ? "active" : "",
-                "aria-label": endpoint === "start" ? "选择开始时间" : "选择结束时间",
+                "aria-label": endpoint === "start" ? "Choose a start time" : "Choose an end time",
                 onclick: () => {
                   if (draft.view === "summary") draft.snapshot = { ...custom };
                   draft.endpoint = endpoint;
@@ -8093,12 +8093,12 @@
                   redraw();
                 },
               },
-              el("span", { class: "small muted", text: endpoint === "start" ? "开始时间" : "结束时间" }),
+              el("span", { class: "small muted", text: endpoint === "start" ? "Start time" : "End time" }),
               el("span", { text: format(custom[endpoint]) }),
               draft.view === "summary"
                 ? el("span", {
                     class: "small muted",
-                    text: endpoint === "end" && custom.start === custom.end ? "与开始时间相同" : "点击修改",
+                    text: endpoint === "end" && custom.start === custom.end ? "Same as start" : "Click to change",
                   })
                 : null,
             ),
@@ -8108,7 +8108,7 @@
           endpoints.insertBefore(el("span", { class: "muted", "aria-hidden": "true", text: "→" }), endpoints.lastChild);
         content.append(endpoints);
         if (custom.unit === "day")
-          content.append(el("div", { class: "small muted", text: "可选择最近 365 天内的日期" }));
+          content.append(el("div", { class: "small muted", text: "Choose any date from the last 365 days" }));
         if (draft.view === "day") {
           content.append(renderMonthCalendar({
             month: draft.month, start: custom.start, end: custom.end, min: draft.firstDay, max: draft.today,
@@ -8136,7 +8136,7 @@
                 el(
                   "div",
                   {},
-                  el("div", { class: "small muted", text: endpoint === "start" ? "开始时间" : "结束时间" }),
+                  el("div", { class: "small muted", text: endpoint === "start" ? "Start time" : "End time" }),
                   el(
                     "div",
                     { class: "time-range-hour-list time-range-options" },
@@ -8155,7 +8155,7 @@
                           },
                         },
                         el("span", {
-                          text: new Date(hour).toLocaleDateString("zh-CN", {
+                          text: new Date(hour).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
                           }),
@@ -8163,8 +8163,8 @@
                         el("span", {
                           text:
                             endpoint === "end" && index === 23
-                              ? "现在"
-                              : new Date(hour).toLocaleTimeString("zh-CN", {
+                              ? "Now"
+                              : new Date(hour).toLocaleTimeString("en-US", {
                                   hour: "2-digit",
                                   minute: "2-digit",
                                   hour12: false,
@@ -8187,7 +8187,7 @@
             el(
               "div",
               { class: "row spread small muted" },
-              el("span", { text: "共 " + count + (custom.unit === "hour" ? " 小时" : " 天") }),
+              el("span", { text: "Total " + count + (custom.unit === "hour" ? " hours" : " days") }),
               el("span", { text: Intl.DateTimeFormat().resolvedOptions().timeZone }),
             ),
           );
@@ -8204,10 +8204,10 @@
               { class: "row picker-actions" },
               el("button", {
                 type: "button",
-                text: "取消",
+                text: "Cancel",
                 onclick: draft.view === "summary" ? () => closeSharedTimePopover(account, true) : pickerCancel,
               }),
-              el("button", { type: "button", class: "primary", text: "应用", onclick: apply }),
+              el("button", { type: "button", class: "primary", text: "Apply", onclick: apply }),
             ),
           ),
         );
@@ -8222,12 +8222,12 @@
           el(
             "div",
             { class: "row spread time-range-heading" },
-            el("span", { text: "时间范围" }),
+            el("span", { text: "Time range" }),
             el("span", { class: "time-range-current", text: timeRangeLabel(sharedTimeRanges[role]) }),
           ),
           el(
             "div",
-            { class: "time-range-options time-range-modes", role: "group", "aria-label": "时间范围模式" },
+            { class: "time-range-options time-range-modes", role: "group", "aria-label": "Time range mode" },
             Object.entries(SHARED_TIME_LABELS).map(([mode, label]) =>
               el("button", {
                 type: "button",
@@ -8266,7 +8266,7 @@
           const unit = draft.mode;
           const min = unit === "hour" ? 5 : 1,
             max = unit === "hour" ? 24 : 30;
-          const label = unit === "hour" ? " 小时" : " 天";
+          const label = unit === "hour" ? " hours" : " days";
           const value = el("b", { text: draft[unit] + label });
           let activePointer = null;
           const commit = () => {
@@ -8285,7 +8285,7 @@
             step: 1,
             value: draft[unit],
             style: "--range-progress:" + ((draft[unit] - min) / (max - min)) * 100 + "%",
-            "aria-label": "最近" + label.trim(),
+            "aria-label": "Last " + label.trim(),
             oninput: (event) => {
               draft[unit] = Number(event.target.value);
               value.textContent = draft[unit] + label;
@@ -8312,7 +8312,7 @@
             el(
               "div",
               { class: "time-range-rolling" },
-              el("div", { class: "row spread small" }, el("span", { class: "muted", text: "最近时间范围" }), value),
+              el("div", { class: "row spread small" }, el("span", { class: "muted", text: "Rolling range" }), value),
               el(
                 "div",
                 { class: "range-control" },
@@ -8338,7 +8338,7 @@
               el("span", { class: "small", text: SHARED_TIME_LABELS[draft.mode] }),
               el("span", {
                 class: "small muted",
-                text: draft.mode === "today" ? "00:00 → 现在" : "00:00 → 24:00",
+                text: draft.mode === "today" ? "00:00 → Now" : "00:00 → 24:00",
               }),
             ),
           );
@@ -8477,7 +8477,7 @@
         const button = $(account ? "account-events-export" : "events-export");
         if (button.disabled) return;
         button.disabled = true;
-        setLabeledActionIcon(button, "download", "正在导出…");
+        setLabeledActionIcon(button, "download", "Exporting…");
         const view = PAGED_LIST_VIEWS[kind];
         try {
           const selection = pagedListSelection(kind, account);
@@ -8493,10 +8493,10 @@
           const stamp = new Date().toISOString().replaceAll(":", "-").slice(0, 19);
           const name = "cpa-key-billing-" + (account ? "account-" : "") + view.tab + "-";
           downloadCSV(name + stamp + ".csv", eventCSV(entries, kind, account));
-          notify("已导出 " + int(entries.length) + " 条" + view.label);
+          notify("Exported " + int(entries.length) + " " + view.label.toLowerCase());
         } finally {
           button.disabled = false;
-          setLabeledActionIcon(button, "download", "导出");
+          setLabeledActionIcon(button, "download", "Export");
           renderPage();
         }
       }
@@ -8524,7 +8524,7 @@
         const renderRow = (entry) => {
           const cost = entry.cost;
           const costNote = [
-            cost.tiered ? (cost.long_context ? "长上下文" : "标准") : "",
+            cost.tiered ? (cost.long_context ? "Long context" : "Standard") : "",
             cost.multiplier === 2.5 ? "x2.5" : "",
           ]
             .filter(Boolean)
@@ -8550,16 +8550,16 @@
               "td",
               { class: "small" },
               el("div", { class: "request-event-cell-line mono" }, billingModel),
-              showUpstreamModel ? el("div", { class: "request-event-cell-line muted" }, "上游 " + upstreamModel) : null,
+              showUpstreamModel ? el("div", { class: "request-event-cell-line muted" }, "Upstream " + upstreamModel) : null,
             ),
             el(
               "td",
               { class: "small" },
-              el("div", { class: "request-event-cell-line mono" }, entry.executor_type || "执行器未知"),
+              el("div", { class: "request-event-cell-line mono" }, entry.executor_type || "Unknown executor"),
               el(
                 "div",
                 { class: "request-event-source muted", title: sourceLabel(entry.source) || null },
-                sourceLabel(entry.source) || "来源未知",
+                sourceLabel(entry.source) || "Source unknown",
               ),
             ),
             el(
@@ -8571,7 +8571,7 @@
             el(
               "td",
               {},
-              el("span", { class: "tag " + (entry.failed ? "bad" : "ok"), text: entry.failed ? "失败" : "成功" }),
+              el("span", { class: "tag " + (entry.failed ? "bad" : "ok"), text: entry.failed ? "Failure" : "Success" }),
             ),
             el(
               "td",
@@ -8579,7 +8579,7 @@
               el("div", {}, tps === null ? "—" : tps.toFixed(1) + " t/s"),
               el(
                 "div",
-                { class: "muted small", title: hasTTFT ? "首字延迟 · 总延迟" : "总延迟" },
+                { class: "muted small", title: hasTTFT ? "Time to first token · Total latency" : "Total latency" },
                 hasTTFT ? latency(entry.ttft_ms) + " · " + latency(entry.latency_ms) : latency(entry.latency_ms),
               ),
             ),
@@ -8596,7 +8596,7 @@
               { class: "num" },
               el("div", {}, tokens(output)),
               measured && entry.reasoning_tokens
-                ? el("div", { class: "muted small" }, "推理 " + exactTokens(entry.reasoning_tokens))
+                ? el("div", { class: "muted small" }, "Reasoning " + exactTokens(entry.reasoning_tokens))
                 : null,
             ),
             el(
@@ -8611,7 +8611,7 @@
                       {
                         class: "cost-value",
                         tabindex: "0",
-                        "aria-label": "查看成本明细",
+                        "aria-label": "View cost breakdown",
                         onmouseenter: (event) => showCostTooltip(event.currentTarget, cost, hasCacheWrite),
                         onmouseleave: hideCostTooltip,
                         onfocus: (event) => showCostTooltip(event.currentTarget, cost, hasCacheWrite),
@@ -8629,26 +8629,26 @@
         list.renderItems(entries, {
           render: renderRow,
           headers: [
-            "时间",
+            "Time",
             ...(account ? [] : ["API Key"]),
-            "模型",
-            "执行器 / 来源",
-            "推理 / 速度",
-            "结果",
-            { label: "TPS / 延迟", num: true },
-            { label: "输入", num: true },
-            { label: "缓存读", num: true },
-            ...(hasCacheWrite ? [{ label: "缓存写", num: true }] : []),
-            { label: "输出", num: true },
-            { label: "成本", num: true },
+            "Model",
+            "Executor / Source",
+            "Reasoning / service tier",
+            "Outcome",
+            { label: "TPS / Latency", num: true },
+            { label: "Input", num: true },
+            { label: "Cache read", num: true },
+            ...(hasCacheWrite ? [{ label: "Cache write", num: true }] : []),
+            { label: "Output", num: true },
+            { label: "Cost", num: true },
           ],
         });
       }
 
       const pluginLogLevels = {
-        debug: { label: "调试", class: "tag plain" },
-        error: { label: "错误", class: "tag bad" },
-        info: { label: "信息", class: "tag info" },
+        debug: { label: "Debug", class: "tag plain" },
+        error: { label: "Error", class: "tag bad" },
+        info: { label: "Info", class: "tag info" },
       };
 
       function errorEventField(label, value, mono = true) {
@@ -8689,15 +8689,15 @@
         };
         const levelSelect = $("plugin-log-level");
         for (const option of levelSelect.options) {
-          const label = option.value === "all" ? "全部级别" : pluginLogLevels[option.value].label;
+          const label = option.value === "all" ? "All log levels" : pluginLogLevels[option.value].label;
           const text = label + " · " + int(counts[option.value]);
           if (option.textContent !== text) option.textContent = text;
         }
         const total = counts[levelSelect.value] || 0;
         note.textContent = loadedCountText(pluginLogs.length, total, list.complete);
         list.renderItems(searched, {
-          attrs: { class: "event-list", role: "list", "aria-label": "插件日志列表" },
-          empty: pluginLogs.length ? "已加载日志中没有匹配项" : "暂无插件日志",
+          attrs: { class: "event-list", role: "list", "aria-label": "Plugin log list" },
+          empty: pluginLogs.length ? "No matches in loaded logs" : "No plugin logs",
           render: (pluginLog) => {
             const level = pluginLogLevels[pluginLog.level] || pluginLogLevels.info;
             return el(
@@ -8721,23 +8721,23 @@
         try {
           const row = JSON.parse(message.slice(6));
           const model =
-            row.model_result === "deny" ? "拒绝" : row.model_result === "configuration_error" ? "配置错误" : "允许";
+            row.model_result === "deny" ? "Denied" : row.model_result === "configuration_error" ? "Configuration error" : "Allowed";
           const credential =
             row.credential_result === "selected"
-              ? "上游凭证：" + (sourceLabel(row.selected_credential) || "未知")
+              ? "Upstream credential: " + (sourceLabel(row.selected_credential) || "Unknown")
               : row.credential_result === "no_match"
-                ? "上游凭证：无符合条件的可用凭证"
+                ? "Upstream credentials: No qualifying credentials available"
                 : row.credential_result === "not_reached"
-                  ? "上游凭证：未进入选择阶段"
+                  ? "Upstream credential: selection was not reached"
                   : row.credential_result === "not_observed"
-                    ? "上游凭证：未观察到选择结果"
+                    ? "Upstream credential: selection was not observed"
                     : row.credential_result === "configuration_error"
-                      ? "上游凭证：配置错误"
-                      : "上游凭证：全部上游凭证";
+                      ? "Upstream credentials: configuration error"
+                      : "Upstream credentials: unrestricted";
           const outcome =
-            { succeeded: "成功", failed: "失败", rejected: "已拒绝", canceled: "已取消" }[row.outcome] ||
+            { succeeded: "Success", failed: "Failure", rejected: "Rejected", canceled: "Canceled" }[row.outcome] ||
             row.outcome ||
-            "未知";
+            "Unknown";
           const id = String(pluginLog.id);
           return el(
             "details",
@@ -8757,10 +8757,10 @@
               el(
                 "span",
                 { class: "row" },
-                el("span", { text: "API Key：" + sourceLabel(row.key || "未知") }),
-                el("span", { text: "模型：" + (row.model || "未知") + "（" + model + "）" }),
+                el("span", { text: "API Key: " + sourceLabel(row.key || "Unknown") }),
+                el("span", { text: "Model: " + (row.model || "Unknown") + " (" + model + ")" }),
                 el("span", { text: credential }),
-                el("span", { text: "请求结果：" + outcome }),
+                el("span", { text: "Request result: " + outcome }),
               ),
             ),
             el("pre", {}, JSON.stringify(row, null, 2)),
@@ -8776,17 +8776,17 @@
       }
 
       function quotaWindowResetLabel(row, showCountdown) {
-        if (!row.started) return "未开始";
+        if (!row.started) return "Not started";
         const resetAt = new Date(row.end_at);
         const remaining = (resetAt.getTime() - Date.now()) / 1000;
         return (
           compactResetDate(resetAt) +
-          (showCountdown ? " · " + (remaining <= 0 ? "已到期" : compactResetAfter(remaining)) : "")
+          (showCountdown ? " · " + (remaining <= 0 ? "Expired" : compactResetAfter(remaining)) : "")
         );
       }
 
       function renderQuotaWindows(view, account = false) {
-        if (view.unlimited) return el("span", { class: "muted", text: "不限制" });
+        if (view.unlimited) return el("span", { class: "muted", text: "Unlimited" });
         return el(
           "div",
           { class: "quota-windows" },
@@ -8796,7 +8796,7 @@
             const reset = el("span", {
               class: "muted",
               text: quotaWindowResetLabel(window, account),
-              title: window.started ? when(window.end_at) + " 重置" : null,
+              title: window.started ? "Resets at " + when(window.end_at) : null,
             });
             return el(
               "div",
@@ -8822,9 +8822,9 @@
                       text: metric.format(balance.remaining) + "/" + metric.format(balance.limit),
                       title:
                         metric.label +
-                        " · 剩余 " +
+                        " · Remaining " +
                         metric.exact(balance.remaining) +
-                        " · 已用 " +
+                        " · Used " +
                         metric.exact(balance.used) +
                         "/" +
                         metric.exact(balance.limit),
@@ -8836,7 +8836,7 @@
                     {
                       class: "bar",
                       role: "progressbar",
-                      "aria-label": window.name + " · " + metric.label + "剩余额度",
+                      "aria-label": window.name + " · " + metric.label + " remaining quota",
                       "aria-valuemin": "0",
                       "aria-valuemax": "100",
                       "aria-valuenow": String(Math.round(quota.percent)),
@@ -8942,9 +8942,9 @@
           delete input.dataset.timestamp;
           delete input.dataset.automatic;
         });
-        const popover = el("div", { class: "date-time-popover", popover: "auto", role: "dialog", "aria-label": "选择日期和时间" });
+        const popover = el("div", { class: "date-time-popover", popover: "auto", role: "dialog", "aria-label": "Select date and time" });
         const button = el("button", {
-          type: "button", class: "icon-action", "aria-label": "选择日期和时间", "aria-haspopup": "dialog", "aria-expanded": "false",
+          type: "button", class: "icon-action", "aria-label": "Select date and time", "aria-haspopup": "dialog", "aria-expanded": "false",
           onclick: () => {
             if (popover.matches(":popover-open")) return popover.hidePopover();
             const limits = getLimits();
@@ -8967,21 +8967,21 @@
             };
             const clock = [date.getHours(), date.getMinutes(), date.getSeconds()].map((value, index) =>
               el("input", { type: "number", min: "0", max: index ? "59" : "23", step: "1", required: true,
-                value: String(value).padStart(2, "0"), "aria-label": ["时", "分", "秒"][index] }),
+                value: String(value).padStart(2, "0"), "aria-label": ["Hour", "Minute", "Second"][index] }),
             );
             const error = el("div", { class: "field-error small", role: "alert" });
             popover.replaceChildren(calendar,
               el("div", { class: "date-time-clock" }, clock.map((field, index) =>
-                el("div", { class: "field" }, el("span", { text: ["时", "分", "秒"][index] }), field))),
+                el("div", { class: "field" }, el("span", { text: ["Hour", "Minute", "Second"][index] }), field))),
               error,
               el("div", { class: "row picker-actions" },
-                el("button", { type: "button", text: "取消", onclick: () => { popover.hidePopover(); button.focus(); } }),
-                el("button", { type: "button", class: "primary", text: "确定", onclick: () => {
+                el("button", { type: "button", text: "Cancel", onclick: () => { popover.hidePopover(); button.focus(); } }),
+                el("button", { type: "button", class: "primary", text: "Confirm", onclick: () => {
                   for (const field of clock) field.removeAttribute("aria-invalid");
                   const invalid = clock.find((field) => !field.validity.valid);
                   if (invalid) {
                     invalid.setAttribute("aria-invalid", "true");
-                    error.textContent = "小时须为 0–23，分钟和秒须为 0–59";
+                    error.textContent = "Hours must be 0–23; minutes and seconds must be 0–59.";
                     invalid.focus();
                     return;
                   }
@@ -9021,9 +9021,9 @@
         const seconds = planWindowPeriod(row);
         let message = "";
         if (!seconds)
-          message = "周期须为正整数";
+          message = "Cycle must be a positive integer";
         else if (Array.from($("plan-windows").children).some((other) => other !== row && planWindowPeriod(other) === seconds))
-          message = "周期与其他窗口重复";
+          message = "Cycle duplicates another window";
         setPlanFieldError(row.querySelector('[name="window_period"]'), message);
         return !message;
       }
@@ -9044,10 +9044,10 @@
           } else {
             const date = dateTimeValue(input);
             const now = Date.now();
-            if (!date) message = "请输入有效时间（yyyy/MM/dd HH:mm:ss）";
-            else if (!seconds) message = "请先设置有效的重置周期";
-            else if (date.getTime() <= now) message = "下个周期开始时间必须晚于当前时间";
-            else if (date.getTime() > now + seconds * 1000) message = "下个周期开始时间不能超过当前时间加一个周期";
+            if (!date) message = "Please enter a valid time (yyyy/MM/dd HH:mm:ss)";
+            else if (!seconds) message = "Please set a valid reset period first";
+            else if (date.getTime() <= now) message = "The next cycle start time must be later than the current time";
+            else if (date.getTime() > now + seconds * 1000) message = "The start time of the next cycle cannot exceed the current time plus one cycle";
             else anchor = date.toISOString().replace(".000Z", "Z");
           }
         }
@@ -9074,7 +9074,7 @@
         });
         setDateTimeValue(anchorInput, quotaWindow.cycle_anchor_at ? nextCycleStart(quotaWindow) : null);
         anchorInput.defaultValue = anchorInput.value;
-        const scheduleField = field("下个周期开始时间", dateTimeControl(anchorInput, () => {
+        const scheduleField = field("Next cycle start time", dateTimeControl(anchorInput, () => {
           const seconds = planWindowPeriod(row);
           if (!validatePlanPeriod(row)) {
             row.querySelector('[name="window_period"]').focus();
@@ -9084,9 +9084,9 @@
           return { min, max: min + seconds * 1000, initial: suggestedCycleStart(seconds, min) };
         }), "plan-window-schedule");
         row.append(
-          field("窗口名称", el("input", { name: "window_name", value: quotaWindow.name || "", required: true })),
+          field("Window name", el("input", { name: "window_name", value: quotaWindow.name || "", required: true })),
           field(
-            "重置周期",
+            "Reset cycle",
             el(
               "div",
               { class: "period-input" },
@@ -9111,7 +9111,7 @@
                 { class: "native-select" },
                 el(
                   "select",
-                  { name: "window_unit", "aria-label": "周期单位" },
+                  { name: "window_unit", "aria-label": "Cycle unit" },
                   PERIOD_UNITS.map(([value, label]) =>
                     el("option", { value: String(value), selected: value === unit, text: label }),
                   ),
@@ -9125,8 +9125,8 @@
             {
               type: "button",
               class: "icon-action window-delete",
-              "aria-label": "删除窗口",
-              title: "删除窗口",
+              "aria-label": "Delete Window",
+              title: "Delete Window",
               onclick: () => {
                 row.remove();
                 syncPlanWindows();
@@ -9151,9 +9151,9 @@
                 min: "0",
                 step: metric.key === "amount_usd" ? "any" : "1",
                 value: quotaWindow[metric.key] || "",
-                placeholder: "不限制",
+                placeholder: "Unlimited",
               });
-              return field(metric.label + (metric.unit ? "（" + metric.unit + "）" : ""), input);
+              return field(metric.label + (metric.unit ? "(" + metric.unit + ")" : ""), input);
             }),
           ),
         );
@@ -9166,7 +9166,7 @@
         const list = $("plan-key-list");
         const keys = data.keys.filter((key) => !key.deleted_at || (planID && key.plan_id === planID));
         if (!keys.length) {
-          list.replaceChildren(el("div", { class: "empty", text: "暂无 API Key" }));
+          list.replaceChildren(el("div", { class: "empty", text: "No API keys" }));
           return;
         }
         list.replaceChildren(
@@ -9186,10 +9186,10 @@
               }),
               renderAPIKeyIdentity(key),
               key.deleted_at
-                ? el("span", { class: "tag plain", text: "已删除", title: "可取消勾选以解除绑定" })
+                ? el("span", { class: "tag plain", text: "Removed", title: "Uncheck to unbind" })
                 : null,
               owner
-                ? el("span", { class: "muted small", text: "已绑定「" + (owner.name || owner.id) + "」" })
+                ? el("span", { class: "muted small", text: "Bound to “" + (owner.name || owner.id) + "”" })
                 : null,
             );
           }),
@@ -9200,10 +9200,10 @@
         const id = plan?.id;
         openEditor("plan-dialog", "plan", (data) => {
           const current = id ? data.plans.find((entry) => entry.id === id) : null;
-          if (id && !current) throw new Error("订阅计划已不存在，请关闭后刷新列表");
-          $("plan-dialog-title").textContent = current ? "编辑订阅计划：" + (current.name || id) : "新建订阅计划";
+          if (id && !current) throw new Error("Subscription plan no longer exists, please close and refresh the list");
+          $("plan-dialog-title").textContent = current ? "Edit subscription plan:" + (current.name || id) : "New subscription plan";
           $("plan-id").value = id || "";
-          $("plan-save").textContent = current ? "保存" : "创建";
+          $("plan-save").textContent = current ? "Save" : "Create";
           $("plan-name").value = current?.name || "";
           $("plan-cycle-mode").value = current?.windows[0]?.cycle_anchor_at ? "unified" : "independent";
           $("plan-windows").replaceChildren();
@@ -9237,18 +9237,18 @@
 
           const seconds = planWindowPeriod(row);
           if (!name || new TextEncoder().encode(name).length > 128)
-            invalid(nameInput, "名称不能为空且不能超过 128 字节");
-          else if (names.has(name.toLowerCase())) invalid(nameInput, "窗口名称重复");
+            invalid(nameInput, "Name cannot be empty and cannot exceed 128 bytes");
+          else if (names.has(name.toLowerCase())) invalid(nameInput, "Duplicate window name");
           names.add(name.toLowerCase());
           for (const metric of QUOTA_DIMENSIONS) {
             const input = row.querySelector('[name="' + metric.key + '"]');
             const value = input.value === "" && !input.validity.badInput ? 0 : input.valueAsNumber;
-            if (!Number.isFinite(value) || value < 0) invalid(input, "请输入有效额度");
-            else if (metric.key !== "amount_usd" && !Number.isSafeInteger(value)) invalid(input, "请输入有效整数");
+            if (!Number.isFinite(value) || value < 0) invalid(input, "Please enter a valid limit");
+            else if (metric.key !== "amount_usd" && !Number.isSafeInteger(value)) invalid(input, "Please enter a valid integer");
             limits[metric.key] = value;
           }
           if (Object.values(limits).every((value) => value === 0))
-            invalid(row.querySelector('[name="amount_usd"]'), "至少设置一种额度");
+            invalid(row.querySelector('[name="amount_usd"]'), "Configure at least one limit");
           if (!validatePlanPeriod(row)) firstInvalid ||= periodInput;
           const anchor = validatePlanAnchor(row);
           const anchorInput = row.querySelector('[name="window_anchor"]');
@@ -9280,12 +9280,12 @@
         const input = $(id);
         // Check badInput before treating an empty value as an omitted field.
         // Browsers can expose an invalid numeric entry as an empty string.
-        if (!input.reportValidity()) throw new Error("请检查模型定价中的数值");
+        if (!input.reportValidity()) throw new Error("Please check the values in the model pricing");
         if (input.value.trim() === "") return emptyValue;
         const value = input.valueAsNumber;
         if (!Number.isFinite(value) || value < 0) {
           input.focus();
-          throw new Error("价格必须是有效的非负数");
+          throw new Error("The price must be a valid non-negative number");
         }
         return value;
       }
@@ -9306,20 +9306,20 @@
       }
 
       function referencePriceText(row) {
-        const prices = ["输入 " + usd(row.input_per_1m), "输出 " + usd(row.output_per_1m)];
+        const prices = ["Input " + usd(row.input_per_1m), "Output " + usd(row.output_per_1m)];
         if (row.cache_read_per_1m !== null && row.cache_read_per_1m !== undefined) {
-          prices.push("缓存读 " + usd(row.cache_read_per_1m));
+          prices.push("Cache read " + usd(row.cache_read_per_1m));
         }
         if (row.cache_write_per_1m !== null && row.cache_write_per_1m !== undefined) {
-          prices.push("缓存写 " + usd(row.cache_write_per_1m));
+          prices.push("Cache write " + usd(row.cache_write_per_1m));
         }
         if (row.long_context) {
           prices.push(
             ">" +
               tokenThreshold(row.long_context.threshold_input_tokens) +
-              " 阶梯：输入 " +
+              " Ladder: Input " +
               usd(row.long_context.input_per_1m) +
-              " · 输出 " +
+              " · Output " +
               usd(row.long_context.output_per_1m),
           );
         }
@@ -9333,7 +9333,7 @@
       function renderPriceReferences(prices) {
         const results = $("price-reference-results");
         if (!prices.length) {
-          results.replaceChildren(el("div", { class: "price-reference-empty", text: "未找到参考价" }));
+          results.replaceChildren(el("div", { class: "price-reference-empty", text: "Reference price not found" }));
           return;
         }
         results.replaceChildren(
@@ -9363,11 +9363,11 @@
         const request = ++priceReferenceRequest;
         if (!query) {
           $("price-reference-results").replaceChildren(
-            el("div", { class: "price-reference-empty", text: "输入模型名称搜索" }),
+            el("div", { class: "price-reference-empty", text: "Enter a model name to search reference pricing" }),
           );
           return;
         }
-        $("price-reference-results").replaceChildren(el("div", { class: "price-reference-empty", text: "正在搜索…" }));
+        $("price-reference-results").replaceChildren(el("div", { class: "price-reference-empty", text: "Searching…" }));
         try {
           const result = await plugin("GET", "/prices/reference?q=" + encodeURIComponent(query) + "&limit=20");
           if (request === priceReferenceRequest) renderPriceReferences(result.prices || []);
@@ -9379,7 +9379,7 @@
               return;
             }
             $("price-reference-results").replaceChildren(
-              el("div", { class: "price-reference-empty", text: "搜索参考价失败：" + (err.message || err) }),
+              el("div", { class: "price-reference-empty", text: "Reference-price search failed: " + (err.message || err) }),
             );
           }
         }
@@ -9388,8 +9388,8 @@
       function editPrice(row) {
         const modelID = row.model_id;
         openEditor("price-dialog", null, () => {
-          $("price-dialog-title").textContent = modelID ? "编辑模型定价" : "新增模型定价";
-          $("price-save").textContent = "保存";
+          $("price-dialog-title").textContent = modelID ? "Edit model pricing" : "Add model pricing";
+          $("price-save").textContent = "Save";
           $("price-model").value = row.custom_price_model_id || modelID;
           $("price-model").readOnly = !!modelID;
           fillPriceFields(row);
@@ -9410,7 +9410,7 @@
               typeof item.alias !== "string",
           )
         )
-          throw new Error("CPAMP 备注列表格式无效");
+          throw new Error("Invalid CPAMP note-list format");
         const keys = await fetchConfiguredAPIKeys();
         const scopes = new Map();
         for (const key of keys) {
@@ -9436,17 +9436,17 @@
           }
         } catch (err) {
           if (err instanceof AuthError || err instanceof StaleRequestError) throw err;
-          throw new Error("已导入 " + imported + " 条备注，导入中断：" + (err.message || err));
+          throw new Error("Imported " + imported + " notes, import interrupted:" + (err.message || err));
         } finally {
           if (imported && generation === sessionGeneration) renderPage();
         }
         const skipped = result.items.length - imported - unchanged;
         notify(
-          "已导入 " +
+          "Imported " +
             imported +
-            " 条备注" +
-            (unchanged ? "，" + unchanged + " 条备注未变化" : "") +
-            (skipped ? "，跳过 " + skipped + " 条无法匹配的备注" : ""),
+            " notes" +
+            (unchanged ? ", " + unchanged + " notes unchanged" : "") +
+            (skipped ? ", Skipped " + skipped + " unmatched notes" : ""),
         );
       }
 
@@ -9456,7 +9456,7 @@
         let key = $("gate-key").value.trim();
         if (!key) key = await recalledCredential(role);
         if (!key) {
-          $("gate-error").textContent = role === "account" ? "请输入 API Key" : "请输入管理密钥";
+          $("gate-error").textContent = role === "account" ? "Enter an API key" : "Please enter the management key";
           $("gate-error").className = "notice err show";
           return;
         }
@@ -9469,14 +9469,14 @@
             await saveCredential(role, key, $("gate-remember").checked);
           } catch (err) {
             if (generation !== sessionGeneration) return;
-            const message = "已登录，登录状态未保存：" + (err.message || err);
+            const message = "Signed in, but the credential could not be saved: " + (err.message || err);
             notify(message, "err");
           }
           $("gate-key").value = "";
         } catch (err) {
           if (generation !== sessionGeneration || err instanceof StaleRequestError) return;
           if (err instanceof AuthError) await fail(err);
-          else showGate(role, "登录失败：" + (err.message || err));
+          else showGate(role, "Sign-in failed: " + (err.message || err));
         } finally {
           $("gate-submit").disabled = false;
         }
@@ -9532,7 +9532,7 @@
       function updateThemeButtons() {
         const dark = window.billingTheme?.current() === "dark";
         document.querySelectorAll('[data-page-action="theme"]').forEach((button) => {
-          setActionIcon(button, dark ? "sun" : "moon", dark ? "切换到浅色主题" : "切换到深色主题");
+          setActionIcon(button, dark ? "sun" : "moon", dark ? "Switch to light theme" : "Switch to dark theme");
         });
       }
 
@@ -9543,7 +9543,7 @@
       }
 
       for (const button of document.querySelectorAll('[data-page-action="refresh"]')) {
-        setActionIcon(button, "refresh", "刷新");
+        setActionIcon(button, "refresh", "Refresh");
         button.onclick = () => refreshPage();
       }
       document.querySelectorAll('[data-page-action="theme"]').forEach((button) => {
@@ -9552,7 +9552,7 @@
         };
       });
       document.querySelectorAll('[data-page-action="logout"]').forEach((button) => {
-        setActionIcon(button, "logout", "退出登录");
+        setActionIcon(button, "logout", "Log out");
         button.onclick = () =>
           guard(async () => {
             const role = currentRole || loginMode;
@@ -9571,7 +9571,7 @@
           : "";
         for (const button of document.querySelectorAll('[data-page-action="refresh"]')) {
           button.disabled = !!page?.task;
-          button.title = button.ariaLabel = label ? "刷新" + label : "刷新";
+          button.title = button.ariaLabel = label ? "Refresh " + label : "Refresh";
         }
       }
 
@@ -9616,7 +9616,7 @@
       for (const account of [false, true]) {
         const ui = authUI(account);
         const role = account ? "account" : "admin";
-        setLabeledActionIcon(ui.bulk, "refresh", "更新限额");
+        setLabeledActionIcon(ui.bulk, "refresh", "Refresh quotas");
         ui.enabledOnly.addEventListener("change", () => {
           saveChoice(role, ui.enabledOnly.id);
           renderAuthFiles(account);
@@ -9699,10 +9699,10 @@
           if (
             affected.length &&
             !(await openActionDialog(
-              "更新额度周期？",
-              "以下窗口的消费将清零，并按新的周期设置生效：" +
-                affected.map((quotaWindow) => quotaWindow.name).join("、") +
-                "。所有绑定 Key 均受影响，包括已删除 Key。",
+              "Update quota cycles?",
+              "Usage in these windows will be cleared and the new cycle settings applied: " +
+                affected.map((quotaWindow) => quotaWindow.name).join(", ") +
+                ". All bound API keys are affected, including deleted keys.",
             ))
           )
             return false;
@@ -9713,7 +9713,7 @@
           if (id && !Object.keys(plan).length) return;
           if (id) await mutateAdmin("PATCH", "/plans", { id, ...plan });
           else await mutateAdmin("POST", "/plans", plan);
-          notify(id ? "订阅计划已保存" : "订阅计划已创建");
+          notify(id ? "Subscription plan saved" : "Subscription plan created");
         });
 
       $("key-route-tooltip").addEventListener("pointerenter", () => clearTimeout(keyRouteTooltipTimer));
@@ -9744,7 +9744,7 @@
             scope: keyRouteSelection.scope,
             bindings: { route_ids: [...keyRouteSelection.routeIDs], ...routingPayload(keyRouteSelection) },
           });
-          notify("API Key 路由规则已保存");
+          notify("API key routing rules saved");
         });
       $("route-picker-clear").onclick = () => {
         keyRouteSelection.routeIDs.clear();
@@ -9777,7 +9777,7 @@
       $("route-save").onclick = () =>
         submitEditor("route-dialog", async (editor) => {
           const name = $("route-name").value.trim();
-          if (!name) throw new Error("请输入规则名称");
+          if (!name) throw new Error("Please enter a rule name");
           const id = $("route-id").value;
           const rule = routingPayload(routeRuleSelection);
           const scopes = selectedKeyScopes("route-key-list");
@@ -9787,10 +9787,10 @@
             if (
               route?.bound_key_count &&
               !(await openActionDialog(
-                "保存路由规则？",
-                "保存后将更新所选 Key 的绑定及规则。" +
+                "Save routing rule?",
+                "Saving updates the selected API keys and their routing rules. " +
                   (route.deleted_key_count
-                    ? "已删除 Key 也会按本次勾选结果保留或解除绑定；保留绑定的 Key 重新加入时使用更新后的规则。"
+                    ? "Deleted keys will also be retained or unbound according to the result of this check; the updated rules will be used when the retained bound keys are rejoined."
                     : ""),
               ))
             )
@@ -9802,7 +9802,7 @@
             if (!Object.keys(data).length) return;
             await mutateAdmin("PATCH", "/routes", { id, ...data });
           } else await mutateAdmin("POST", "/routes", data);
-          notify(id ? "路由规则已保存" : "路由规则已创建");
+          notify(id ? "Routing rule saved" : "Routing rule created");
         });
 
       $("plugin-log-filter").addEventListener("input", () => {
@@ -9816,12 +9816,12 @@
       });
       $("plugin-logs-clear").onclick = () =>
         openActionDialog(
-          "清空全部插件日志？",
-          "该操作只清除插件自身的运行记录，不影响计费数据，且无法恢复。",
+          "Clear all plugin logs?",
+          "This permanently clears plugin runtime logs. Billing data is not affected.",
           undefined,
           async () => {
             const result = await mutateAdmin("DELETE", "/plugin-logs");
-            notify("已清空 " + result.cleared + " 条插件日志");
+            notify("Cleared " + result.cleared + " plugin logs");
           },
         );
       for (const account of [false, true]) {
@@ -9840,7 +9840,7 @@
           $(prefix + "errors-filter-clear"),
         );
         const exportButton = $(account ? "account-events-export" : "events-export");
-        setLabeledActionIcon(exportButton, "download", "导出");
+        setLabeledActionIcon(exportButton, "download", "Export");
         exportButton.onclick = () =>
           guard(() => exportEvents(activeTab(account) === "errors" ? "errors" : "events", account));
         bindSharedTimeControls(account);
@@ -9873,19 +9873,19 @@
       });
       $("keys-import-labels").onclick = () =>
         openActionDialog(
-          "导入 CPAMP 备注？",
-          "将导入 CPAMP 的 API Key 备注，并覆盖匹配 API Key 的现有备注。无法匹配的备注将跳过。确定继续？",
+          "Import CPAMP notes?",
+          "CPAMP API key notes will overwrite notes for matching keys. Unmatched notes will be skipped. Continue?",
           undefined,
           importCPAMPLabels,
         );
       $("keys-reset-all").onclick = () =>
         openActionDialog(
-          "重置全员订阅额度？",
-          "清零所有未删除且绑定计划的 API Key 的消费。统一周期保持原重置时间，独立周期在下一次放行时重新开始。",
+          "Reset every subscriber's quota?",
+          "Clear usage for every active API key bound to a plan. Unified cycles keep their scheduled reset times; independent cycles restart on the next admitted request.",
           undefined,
           async () => {
             const result = await mutateAdmin("POST", "/keys/reset", { mode: "global" });
-            notify(result.keys ? "已重置 " + result.keys + " 个 API Key 的额度" : "没有需要重置的额度");
+            notify(result.keys ? "Reset " + result.keys + " API key quotas" : "No quotas need resetting.");
           },
         );
       $("price-filter").addEventListener("input", renderPriceTable);
@@ -9906,10 +9906,10 @@
       });
       function deleteCustomPrice(row) {
         const model = row.custom_price_model_id || row.model_id;
-        const message = "删除 " + model + " 的自定义价后，使用该定价的模型将改用参考价。若无参考价，将无法使用。";
-        openActionDialog("删除自定义价？", message, undefined, async () => {
+        const message = "Delete " + model + " custom pricing? Models using it will fall back to reference pricing and will be unavailable if no reference price exists.";
+        openActionDialog("Delete custom price?", message, undefined, async () => {
           await mutateAdmin("DELETE", "/prices?model_id=" + encodeURIComponent(model));
-          notify("已删除自定义价");
+          notify("Custom price removed");
         });
       }
 
@@ -9917,7 +9917,7 @@
       $("price-save").onclick = () =>
         submitEditor("price-dialog", async () => {
           const model = $("price-model").value.trim();
-          if (!model) throw new Error("请输入模型 ID");
+          if (!model) throw new Error("Please enter the model ID");
           const price = {
             model_id: model,
             input_per_1m: priceNumber("price-in"),
@@ -9927,7 +9927,7 @@
           };
           if ($("price-tiered").checked) {
             const threshold = priceNumber("price-tier-threshold");
-            if (!Number.isSafeInteger(threshold) || threshold <= 0) throw new Error("长上下文阈值必须是有效的正整数");
+            if (!Number.isSafeInteger(threshold) || threshold <= 0) throw new Error("Long-context threshold must be a valid positive integer");
             price.long_context = {
               threshold_input_tokens: threshold,
               input_per_1m: priceNumber("price-tier-in"),
@@ -9937,7 +9937,7 @@
             };
           }
           await mutateAdmin("PUT", "/prices", price);
-          notify("已保存 " + model + " 的定价");
+          notify("Saved " + model + " pricing");
         });
       $("price-reference-refresh").onclick = () =>
         guard(async () => {
@@ -9945,7 +9945,7 @@
           button.disabled = true;
           try {
             const result = await mutateAdmin("POST", "/prices/reference/refresh", null, { timeoutMS: 45000 });
-            notify(result.changed ? "参考价已更新" : "参考价已是最新");
+            notify(result.changed ? "Reference prices updated" : "Reference prices are already current.");
           } finally {
             button.disabled = false;
           }
@@ -9978,7 +9978,7 @@
           else await startAdmin(saved);
         } catch (err) {
           if (err instanceof AuthError) await fail(err);
-          else showGate(loginMode, "登录失败：" + (err.message || err));
+          else showGate(loginMode, "Sign-in failed: " + (err.message || err));
         }
       })();
     </script>

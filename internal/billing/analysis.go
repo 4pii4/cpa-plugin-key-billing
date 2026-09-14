@@ -66,7 +66,7 @@ func (s *Store) Analysis(query RequestEventQuery) (AnalysisView, error) {
 	now := s.Now()
 	from, to := effectiveAnalysisRange(query, now)
 	if !from.Before(to) {
-		return AnalysisView{}, invalidf("分析范围不在当前请求事件保留期内")
+		return AnalysisView{}, invalidf("Analysis range is outside the retained request-event data")
 	}
 	query.From, query.To = from, to
 	view, err := withRepository(s, func(repo Repository) (AnalysisView, error) {
