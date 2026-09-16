@@ -2047,6 +2047,7 @@
           width: 100%;
           min-width: 0;
         }
+        .auth-filter-bar .labeled-icon-button { grid-column: 1 / -1; width: 100%; }
         .key-toolbar-buttons .toggle-filter { width: auto; }
         .auth-file-grid { grid-template-columns: 1fr; }
         .section-actions.event-card-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -2718,6 +2719,10 @@
                   <input id="auth-enabled-only" type="checkbox" role="switch" checked />
                   <span>Enabled only</span>
                 </label>
+                <label class="toggle-filter">
+                  <input id="auth-obfuscate-emails" type="checkbox" role="switch" />
+                  <span>Obfuscate emails</span>
+                </label>
                 <span class="native-select">
                   <select id="auth-provider" aria-label="Filter by authentication provider">
                     <option value="">All categories</option>
@@ -2903,6 +2908,10 @@
                   <label class="toggle-filter">
                     <input id="account-auth-enabled-only" type="checkbox" role="switch" checked />
                     <span>Enabled only</span>
+                  </label>
+                  <label class="toggle-filter">
+                    <input id="account-auth-obfuscate-emails" type="checkbox" role="switch" />
+                    <span>Obfuscate emails</span>
                   </label>
                   <span class="native-select">
                     <select id="account-auth-provider" aria-label="Filter by authentication provider">
@@ -3778,6 +3787,7 @@
           restoreChoice(role, prefix + id, "", true);
         restoreChoice(role, prefix + "request-event-status", "");
         restoreChoice(role, prefix + "auth-enabled-only", true);
+        restoreChoice(role, prefix + "auth-obfuscate-emails", false);
         restoreChoice(role, prefix + "auth-provider", "");
         if (!account) {
           restoreChoice(role, "analysis-key", "", true);
@@ -6051,6 +6061,7 @@
           files: resources[account ? "account" : "admin"].authFiles,
           body: $(prefix + "-files-body"),
           enabledOnly: $(prefix + "-enabled-only"),
+          obfuscateEmails: $(prefix + "-obfuscate-emails"),
           provider: $(prefix + "-provider"),
           search: $(prefix + "-search"),
           bulk: $(prefix + "-refresh-filtered"),
@@ -6193,6 +6204,21 @@
           if (known) return known;
         }
         return plan;
+      }
+
+      function obfuscatedEmail(value) {
+        const email = String(value || "").trim();
+        if (!email) return "No email provided";
+        const separator = email.lastIndexOf("@");
+        if (separator <= 0 || separator === email.length - 1) return "••••••••";
+        const local = email.slice(0, separator);
+        const domain = email.slice(separator + 1);
+        const suffixAt = domain.lastIndexOf(".");
+        const domainName = suffixAt > 0 ? domain.slice(0, suffixAt) : domain;
+        const suffix = suffixAt > 0 ? domain.slice(suffixAt) : "";
+        const localPrefix = local.slice(0, Math.min(2, local.length));
+        const domainPrefix = domainName.slice(0, 1);
+        return localPrefix + "••••@" + domainPrefix + "••••" + suffix;
       }
 
       function filteredAuthFiles(account) {
@@ -6338,6 +6364,9 @@
             const statusClass = file.disabled ? "plain" : file.unavailable ? "bad" : "ok";
             const category = AUTH_CATEGORY_LABELS[file.category] || file.category || "Unknown";
             const plan = authPlanLabel(file.category, ui.owner.authQuotas.get(file.auth_index)?.plan);
+            const email = ui.obfuscateEmails.checked
+              ? obfuscatedEmail(file.email)
+              : file.email || "No email provided";
             const seenMeta = new Set();
             const meta = [category, plan].filter((value) => {
               const key = String(value || "")
@@ -6377,8 +6406,8 @@
                     { class: "auth-file-identity" },
                     el("div", {
                       class: "auth-file-email-title",
-                      title: file.email || "No email provided",
-                      text: file.email || "No email provided",
+                      title: email,
+                      text: email,
                     }),
                     el(
                       "div",
@@ -9619,6 +9648,10 @@
         setLabeledActionIcon(ui.bulk, "refresh", "Refresh quotas");
         ui.enabledOnly.addEventListener("change", () => {
           saveChoice(role, ui.enabledOnly.id);
+          renderAuthFiles(account);
+        });
+        ui.obfuscateEmails.addEventListener("change", () => {
+          saveChoice(role, ui.obfuscateEmails.id);
           renderAuthFiles(account);
         });
         ui.provider.addEventListener("change", () => {
