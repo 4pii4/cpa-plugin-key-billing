@@ -4,8 +4,10 @@
 
 ### Frontend
 
+- Added an administrator action to consume an available Codex reset credit and immediately refresh the authentication file's quota.
 - Added a persistent email-obfuscation toggle to administrator and account authentication-file views while preserving email search.
 - Masked authentication-file hover text and kept the expanded filter controls usable on narrow screens.
+- Normalized separator spacing in display labels and fixed route-tooltip sizing in Safari.
 
 ## v1.3.11
 

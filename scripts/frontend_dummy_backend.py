@@ -1277,6 +1277,8 @@ def payload_for(path, query):
                    and (not before or entry["id"] < before)]
         return {"entries": entries[:limit], "level_counts": counts,
                 "next_before_id": entries[limit - 1]["id"] if len(entries) > limit else 0}
+    if path == "/v0/management/auth-files":
+        return {"files": [{**item, "type": item["category"], "id_token": {"chatgpt_account_id": "dummy-" + item["auth_index"]}} for item in AUTH_FILES]}
     if path == f"{API_BASE}/auth-files":
         return {"files": AUTH_FILES}
     if path == f"{API_BASE}/auth-files/quota":
@@ -1460,7 +1462,23 @@ class Handler(BaseHTTPRequestHandler):
             self.mutation_view = json.loads(request_body or b"{}")
             request_body = json.dumps(self.mutation_view.get("data") or {}).encode()
         route = self.command, parsed.path
-        if route == ("DELETE", f"{API_BASE}/plugin-logs"):
+        if route == ("POST", "/v0/management/api-call"):
+            body = json.loads(request_body or b"{}")
+            auth_index = body.get("auth_index", "")
+            auth_file = next((item for item in AUTH_FILES if item["auth_index"] == auth_index), None)
+            quota = AUTH_FILE_QUOTAS.get(auth_index)
+            if body.get("method") != "POST" or body.get("url") != "https://chatgpt.com/backend-api/wham/rate-limit-reset-credits/consume":
+                self.send_json(400, {"error": {"message": "dummy backend: unsupported api-call"}})
+            elif auth_file is None or quota is None or auth_file["category"] != "codex":
+                self.send_json(404, {"error": {"message": "Codex authentication file does not exist"}})
+            elif quota.get("rate_limit_reset_credits_available_count", 0) <= 0:
+                self.send_json(200, {"status_code": 409, "body": '{"error":{"message":"No reset credits available"}}'})
+            else:
+                quota["rate_limit_reset_credits_available_count"] -= 1
+                for row in quota["quota"]:
+                    row["remaining_percent"] = 100
+                self.send_json(200, {"status_code": 204, "body": ""})
+        elif route == ("DELETE", f"{API_BASE}/plugin-logs"):
             cleared = len(PLUGIN_LOGS)
             PLUGIN_LOGS.clear()
             self.send_json(200, {"cleared": cleared})

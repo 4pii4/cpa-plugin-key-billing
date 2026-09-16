@@ -15,6 +15,15 @@ Source paths are relative to this repository's root:
 - **Frontend regression scripts:** Store JavaScript scripts used with `playwright-cli` for browser regression testing in a temporary directory, never in the project's `scripts/` directory.
 - **Billing changes:** Run `scripts/e2e_cpa_billing.sh v7.2.143` after modifying any billing behavior, including usage parsing, pricing, quota enforcement, or failure reporting.
 
+## UI Formatting
+
+- Use `scripts/format_ui.mjs` for `internal/plugin/ui.html`; do not run plain Prettier on that file, since it expands intentionally compact code.
+- Requires Node.js 20+ and npm. Install the pinned development-only dependencies with `npm ci --prefix scripts` after checkout or a lockfile change.
+- Format with `node scripts/format_ui.mjs`. Check without writing with `node scripts/format_ui.mjs --check` (exit status 1 means changes are needed or validation failed). The default target is resolved relative to the script, independently of the working directory.
+- Keep 2-space indentation, useful blank lines, and multi-statement blocks. Short CSS rules, HTML elements, and JavaScript expressions or single-statement blocks are kept on one line where practical, using roughly 140 characters as a guide rather than minifying.
+- The formatter checks JavaScript ASTs, CSS structure, and HTML display text before writing. If validation fails, inspect the unsupported formatting case; do not bypass the check or change application behavior just to make formatting pass.
+- After changing the formatter, run `npm test --prefix scripts` and verify that a second format pass leaves `ui.html` unchanged. The desktop/narrow-screen browser checks above still apply to UI formatting changes.
+
 ## Architecture Invariants
 
 - Implement every plugin feature within CLIProxyAPI's existing capabilities. Do not propose or rely on CLIProxyAPI modifications as part of the plugin implementation.
