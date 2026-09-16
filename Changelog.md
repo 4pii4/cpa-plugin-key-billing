@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.3.12
+
+### Frontend
+
+- Added a persistent email-obfuscation toggle to administrator and account authentication-file views while preserving email search.
+- Masked authentication-file hover text and kept the expanded filter controls usable on narrow screens.
+
 ## v1.3.11
 
 ### Backend
