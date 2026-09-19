@@ -415,6 +415,10 @@ AUTH_FILE_CREDENTIAL_REFS = {
 
 for auth_file in AUTH_FILES:
     auth_file["cache_revision"] = iso(NOW - timedelta(minutes=5))
+    if auth_file["category"] == "codex":
+        auth_file["routing_ref"] = AUTH_FILE_CREDENTIAL_REFS[auth_file["auth_index"]]
+
+CODEX_ROUTING = {"settings": {"enabled": False, "roles": {}}, "last_hook_at": "0001-01-01T00:00:00Z", "last_pool": ""}
 
 AUTH_CATEGORY_ORDER = {"claude": 0, "antigravity": 1, "codex": 2, "xai": 3, "kimi": 4}
 AUTH_FILES.sort(
@@ -1281,6 +1285,8 @@ def payload_for(path, query):
         return {"files": [{**item, "type": item["category"], "id_token": {"chatgpt_account_id": "dummy-" + item["auth_index"]}} for item in AUTH_FILES]}
     if path == f"{API_BASE}/auth-files":
         return {"files": AUTH_FILES}
+    if path == f"{API_BASE}/codex-routing":
+        return CODEX_ROUTING
     if path == f"{API_BASE}/auth-files/quota":
         return auth_file_quota(query)
     if path == f"{API_BASE}/prices/reference":
@@ -1462,7 +1468,10 @@ class Handler(BaseHTTPRequestHandler):
             self.mutation_view = json.loads(request_body or b"{}")
             request_body = json.dumps(self.mutation_view.get("data") or {}).encode()
         route = self.command, parsed.path
-        if route == ("POST", "/v0/management/api-call"):
+        if route == ("PUT", f"{API_BASE}/codex-routing"):
+            CODEX_ROUTING["settings"] = json.loads(request_body or b"{}")
+            self.send_json(200, CODEX_ROUTING)
+        elif route == ("POST", "/v0/management/api-call"):
             body = json.loads(request_body or b"{}")
             auth_index = body.get("auth_index", "")
             auth_file = next((item for item in AUTH_FILES if item["auth_index"] == auth_index), None)

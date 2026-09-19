@@ -92,6 +92,12 @@ jobs:
       - name: Run vet
         run: go vet ./...
 
+      - name: Check UI formatting and behavior
+        run: |
+          npm ci --prefix scripts
+          node scripts/format_ui.mjs --check
+          npm test --prefix scripts
+
       - name: Check embedded UI JavaScript
         run: |
           ui_script="$RUNNER_TEMP/cpa-key-billing-ui.js"

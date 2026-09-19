@@ -1,5 +1,24 @@
 # Changelog
 
+## v1.3.13
+
+### Upgrade notes
+
+- Back up the database before upgrading. Schema 15 adds persistent Codex routing settings; restore the backup before downgrading.
+- Enable **Plus first, Pro reserve** on Auth file. Participating Codex accounts must share the same CPA priority; host cooldowns, pinned accounts, model eligibility, and scheduler-hook availability still apply.
+
+### Backend
+
+- Added plugin-owned Codex account selection: eligible Plus accounts first, other plans next, Pro 20x reserve last, with per-account pool overrides.
+- Added separate ordinary, Spark, and code-review quota tracking, live failure feedback, bounded recovery probes, and protection against overlapping refreshes, old usage reports, credential replacement, and clock changes.
+- Keep quota snapshots process-local and optional: routing works without an open browser, and stale exhaustion cannot permanently strand an eligible account.
+
+### Frontend
+
+- Added an administrator routing toggle, per-account primary/reserve selectors, and scheduler-hook status to Auth file.
+- Moved Analysis to the first tab and made it the default landing page in administrator and account views, while preserving saved routes and deep links.
+- Shortened navigation, headings, and controls, including Auth file, Requests, Errors, and Mask emails.
+
 ## v1.3.12
 
 ### Frontend

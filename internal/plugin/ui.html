@@ -2134,11 +2134,11 @@
         <div class="page-tabs-row">
           <div class="tabs-scroll">
             <div class="tabs">
-              <button data-tab="keys" class="active">API Key</button>
-              <button data-tab="analysis">Analysis</button>
-              <button data-tab="request-events">Request events</button>
-              <button data-tab="errors">Error events</button>
-              <button data-tab="auth-files">Authentication files</button>
+              <button data-tab="analysis" class="active">Analysis</button>
+              <button data-tab="keys">Keys</button>
+              <button data-tab="request-events">Requests</button>
+              <button data-tab="errors">Errors</button>
+              <button data-tab="auth-files">Auth file</button>
               <button data-tab="settings">Settings</button>
             </div>
           </div>
@@ -2163,7 +2163,7 @@
         <div id="shared-time-backdrop" class="time-range-backdrop hidden"></div>
 
         <div id="admin-data-status" class="notice err" role="status"></div>
-        <section id="tab-keys">
+        <section id="tab-keys" class="hidden">
           <div class="card">
             <div class="row spread section-toolbar">
               <h2>API keys</h2>
@@ -2186,18 +2186,15 @@
           </div>
         </section>
 
-        <section id="tab-analysis" class="hidden"><div id="analysis-body"></div></section>
+        <section id="tab-analysis"><div id="analysis-body"></div></section>
 
         <section id="tab-plans" class="hidden">
           <div class="card">
-            <div class="row spread settings-section-header">
-              <h2>Subscription plans</h2>
-              <button id="plan-new" type="button">New subscription plan</button>
-            </div>
+            <div class="row spread settings-section-header"> <h2>Plans</h2> <button id="plan-new" type="button">New plan</button> </div>
             <div id="plans-body"></div>
           </div>
           <dialog id="plan-dialog" class="settings-dialog plan-dialog">
-            <h2 id="plan-dialog-title">New subscription plan</h2>
+            <h2 id="plan-dialog-title">New plan</h2>
             <div class="editor-state notice hidden"></div>
             <input id="plan-id" type="hidden" />
             <div class="plan-details">
@@ -2228,7 +2225,7 @@
         <section id="tab-routes" class="hidden">
           <div class="card">
             <div class="row spread settings-section-header">
-              <h2>Routing rules</h2>
+              <h2>Routes</h2>
               <button id="route-new" type="button">New routing rule</button>
             </div>
             <div id="routes-body"></div>
@@ -2238,7 +2235,7 @@
             <div class="editor-state notice hidden"></div>
             <input id="route-id" type="hidden" />
             <div class="route-form-toolbar">
-              <label class="field"> Rule name <input id="route-name" placeholder="Codex authentication files" /> </label>
+              <label class="field"> Rule name <input id="route-name" placeholder="Codex auth files" /> </label>
               <label class="field">
                 Filter <input id="route-rule-search" type="search" placeholder="Search for models or credentials" />
               </label>
@@ -2278,7 +2275,7 @@
         <section id="tab-request-events" class="hidden">
           <div class="card event-list-card">
             <div class="row spread section-toolbar">
-              <h2>Request events</h2>
+              <h2>Requests</h2>
               <div class="row section-actions event-card-actions">
                 <span class="native-select">
                   <select id="request-event-model" aria-label="Filter by model"> <option value="">All models</option> </select>
@@ -2304,7 +2301,7 @@
         <section id="tab-errors" class="hidden">
           <div class="card event-list-card">
             <div class="row spread section-toolbar">
-              <h2>Error events</h2>
+              <h2>Errors</h2>
               <div class="row section-actions event-card-actions">
                 <span class="native-select">
                   <select id="error-model" aria-label="Filter by model"> <option value="">All models</option> </select>
@@ -2324,9 +2321,18 @@
         </section>
 
         <section id="tab-auth-files" class="hidden">
+          <div class="card" id="codex-routing-panel">
+            <div class="row spread section-toolbar">
+              <h2>Codex routing</h2>
+              <label class="toggle-filter"><input id="codex-routing-enabled" type="checkbox" role="switch" disabled /><span>Plus first, Pro reserve</span></label>
+            </div>
+            <p class="muted small">Codex accounts: Plus → other plans → Pro 20x reserve. Override pools below. Other providers and API keys are unchanged.</p>
+            <p class="muted small">Stale quota: retry within 2 min, one probe per account/window every 30 sec. CPA eligibility, pins, and cooldowns still apply. Keep accounts at the same CPA priority.</p>
+            <p id="codex-routing-status" class="muted small" role="status">Loading routing settings…</p>
+          </div>
           <div class="card">
             <div class="row spread section-toolbar">
-              <h2>Authentication files</h2>
+              <h2>Auth file</h2>
               <div class="row section-actions auth-filter-bar">
                 <label class="toggle-filter">
                   <input id="auth-enabled-only" type="checkbox" role="switch" checked />
@@ -2334,7 +2340,7 @@
                 </label>
                 <label class="toggle-filter">
                   <input id="auth-obfuscate-emails" type="checkbox" role="switch" />
-                  <span>Obfuscate emails</span>
+                  <span>Mask emails</span>
                 </label>
                 <span class="native-select">
                   <select id="auth-provider" aria-label="Filter by authentication provider">
@@ -2346,7 +2352,7 @@
                     <option value="kimi">Kimi</option>
                   </select>
                 </span>
-                <input id="auth-search" type="search" placeholder="Search authentication files" autocomplete="off" />
+                <input id="auth-search" type="search" placeholder="Search auth files" autocomplete="off" />
                 <button id="auth-refresh-filtered" class="labeled-icon-button" type="button">Refresh quotas</button>
               </div>
             </div>
@@ -2357,7 +2363,7 @@
         <section id="tab-plugin-logs" class="hidden">
           <div class="card event-list-card plugin-log-card">
             <div class="row spread section-toolbar">
-              <h2>Plugin logs</h2>
+              <h2>Logs</h2>
               <div class="row section-actions">
                 <span class="native-select">
                   <select id="plugin-log-level" aria-label="Filter by level">
@@ -2395,11 +2401,11 @@
           <div class="page-tabs-row">
             <div class="tabs-scroll">
               <nav class="tabs" aria-label="API key views">
-                <button type="button" class="active" data-account-tab="subscription">Subscription</button>
-                <button type="button" data-account-tab="analysis">Analysis</button>
-                <button type="button" data-account-tab="request-events">Request events</button>
-                <button type="button" data-account-tab="errors">Error events</button>
-                <button type="button" data-account-tab="auth-files">Authentication files</button>
+                <button type="button" class="active" data-account-tab="analysis">Analysis</button>
+                <button type="button" data-account-tab="subscription">Subscription</button>
+                <button type="button" data-account-tab="request-events">Requests</button>
+                <button type="button" data-account-tab="errors">Errors</button>
+                <button type="button" data-account-tab="auth-files">Auth file</button>
               </nav>
             </div>
             <div class="page-tab-actions hidden">
@@ -2429,7 +2435,7 @@
             <button type="button" class="icon-action tab-refresh" data-page-action="refresh" aria-label="Refresh"></button>
           </div>
           <div id="account-shared-time-backdrop" class="time-range-backdrop hidden"></div>
-          <section id="account-tab-subscription">
+          <section id="account-tab-subscription" class="hidden">
             <div class="stats account-subscription-stats">
               <div class="card account-plan">
                 <div class="row spread">
@@ -2447,11 +2453,11 @@
             <div class="card" id="account-access-card"> <h2>Access</h2> <div id="account-access"></div> </div>
             <div class="card"> <h2>Model pricing</h2> <div id="account-models" class="account-models"></div> </div>
           </section>
-          <section id="account-tab-analysis" class="hidden"><div id="account-analysis-body"></div></section>
+          <section id="account-tab-analysis"><div id="account-analysis-body"></div></section>
           <section id="account-tab-request-events" class="hidden">
             <div class="card event-list-card">
               <div class="row spread section-toolbar">
-                <h2>Request events</h2>
+                <h2>Requests</h2>
                 <div class="row section-actions event-card-actions">
                   <span class="native-select">
                     <select id="account-request-event-model" aria-label="Filter by model"> <option value="">All models</option> </select>
@@ -2476,7 +2482,7 @@
           <section id="account-tab-errors" class="hidden">
             <div class="card event-list-card">
               <div class="row spread section-toolbar">
-                <h2>Error events</h2>
+                <h2>Errors</h2>
                 <div class="row section-actions event-card-actions">
                   <span class="native-select"> <select id="account-error-model"> <option value="">All models</option> </select> </span>
                   <span class="native-select"> <select id="account-error-source"> <option value="">All sources</option> </select> </span>
@@ -2495,7 +2501,7 @@
           <section id="account-tab-auth-files" class="hidden">
             <div class="card">
               <div class="row spread section-toolbar">
-                <h2>Authentication files</h2>
+                <h2>Auth file</h2>
                 <div class="row section-actions auth-filter-bar">
                   <label class="toggle-filter">
                     <input id="account-auth-enabled-only" type="checkbox" role="switch" checked />
@@ -2503,7 +2509,7 @@
                   </label>
                   <label class="toggle-filter">
                     <input id="account-auth-obfuscate-emails" type="checkbox" role="switch" />
-                    <span>Obfuscate emails</span>
+                    <span>Mask emails</span>
                   </label>
                   <span class="native-select">
                     <select id="account-auth-provider" aria-label="Filter by authentication provider">
@@ -2515,7 +2521,7 @@
                       <option value="kimi">Kimi</option>
                     </select>
                   </span>
-                  <input id="account-auth-search" type="search" placeholder="Search authentication files" autocomplete="off" />
+                  <input id="account-auth-search" type="search" placeholder="Search auth files" autocomplete="off" />
                   <button id="account-auth-refresh-filtered" class="labeled-icon-button" type="button">Refresh quotas</button>
                 </div>
               </div>
@@ -2528,7 +2534,7 @@
     <footer class="page-footer">
       <span>© 2026 <a href="https://github.com/4pii4/cpa-plugin-key-billing" target="_blank" rel="noopener noreferrer">CPA Key Billing</a></span>
       <span>&thinsp;·&thinsp;<a href="https://github.com/4pii4/cpa-plugin-key-billing/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">License</a></span>
-      <span>&thinsp;·&thinsp;Version: v1.3.12</span>
+      <span>&thinsp;·&thinsp;Version: v1.3.13</span>
     </footer>
 
     <div id="notice" class="notice" popover="manual"></div>
@@ -2639,14 +2645,14 @@
 
       const embedded = window.parent !== window;
       document.body.classList.toggle("embedded", embedded);
-      const ADMIN_TAB_IDS = ["keys", "analysis", "request-events", "errors", "auth-files", "settings"];
-      const ACCOUNT_TAB_IDS = ["subscription", "analysis", "request-events", "errors", "auth-files"];
+      const ADMIN_TAB_IDS = ["analysis", "keys", "request-events", "errors", "auth-files", "settings"];
+      const ACCOUNT_TAB_IDS = ["analysis", "subscription", "request-events", "errors", "auth-files"];
       const PAGE_ROUTE_KEY = "cpa-key-billing.route.v1." + (embedded ? "embedded" : "standalone");
 
       function parsePageRoute(value) {
         const [role, tab] = value.split("/");
-        if (role === "account") return { role, tab: ACCOUNT_TAB_IDS.includes(tab) ? tab : "subscription" };
-        if (role === "admin") return { role, tab: ADMIN_TAB_IDS.includes(tab) ? tab : "keys" };
+        if (role === "account") return { role, tab: ACCOUNT_TAB_IDS.includes(tab) ? tab : ACCOUNT_TAB_IDS[0] };
+        if (role === "admin") return { role, tab: ADMIN_TAB_IDS.includes(tab) ? tab : ADMIN_TAB_IDS[0] };
         return null;
       }
 
@@ -2657,7 +2663,7 @@
           const stored = parsePageRoute(sessionStorage.getItem(PAGE_ROUTE_KEY) || "");
           if (stored) return stored;
         } catch (_) {}
-        return { role: "admin", tab: "keys" };
+        return { role: "admin", tab: ADMIN_TAB_IDS[0] };
       }
 
       function writePageRoute(role, tab) {
@@ -2679,7 +2685,7 @@
       let accountUIState = emptyAuthQuotaState();
       const authQuotaGeneration = { admin: 0, account: 0 };
       const credentialScope = { admin: "", account: "" };
-      let accountTab = initialRoute.role === "account" ? initialRoute.tab : "subscription";
+      let accountTab = initialRoute.role === "account" ? initialRoute.tab : ACCOUNT_TAB_IDS[0];
 
       function openCredentialDB() {
         return new Promise((resolve, reject) => {
@@ -2802,7 +2808,8 @@
           models: "Model Directory",
           catalog: "Model pricing",
           priceStatus: "Reference price status",
-          authFiles: "Authentication files"
+          authFiles: "Auth file",
+          codexRouting: "Codex routing"
         }),
         account: dataEntries({
           profile: "Account profile",
@@ -2810,7 +2817,7 @@
           routing: "Access",
           models: "Model Directory",
           catalog: "Model pricing",
-          authFiles: "Authentication files"
+          authFiles: "Auth file"
         })
       };
       // Key metadata is shared by configuration, event queries, and analysis.
@@ -2854,7 +2861,7 @@
         admin: {
           configuration: { names: ["keys", "plans", "routes", "credentials", "models"], syncErrors: [] },
           pricing: { names: ["catalog", "priceStatus"], after: "configuration" },
-          authFiles: { names: ["authFiles"] }
+          authFiles: { names: ["authFiles", "codexRouting"] }
         },
         account: {
           ...Object.fromEntries(Object.keys(resources.account).map((name) => [name, { names: [name] }])),
@@ -2918,7 +2925,7 @@
       const PAGED_LIST_VIEWS = {
         events: {
           tab: "request-events",
-          label: "Request events",
+          label: "Requests",
           scrollers: ["request-events-body", "account-request-events-body"],
           timed: true,
           keyed: true,
@@ -2928,7 +2935,7 @@
         },
         errors: {
           tab: "errors",
-          label: "Error events",
+          label: "Errors",
           scrollers: ["errors-body", "account-errors-body"],
           timed: true,
           keyed: true,
@@ -3608,7 +3615,7 @@
         const ticket = ++loginModeRequest;
         loginMode = mode === "account" ? "account" : "admin";
         const route = pageRoute();
-        const tab = route.role === loginMode ? route.tab : loginMode === "account" ? "subscription" : "keys";
+        const tab = route.role === loginMode ? route.tab : loginMode === "account" ? ACCOUNT_TAB_IDS[0] : ADMIN_TAB_IDS[0];
         writePageRoute(loginMode, tab);
         const account = loginMode === "account";
         $("gate-mode-admin").classList.toggle("active", !account);
@@ -4089,7 +4096,7 @@
       }
 
       function activeTab(account) {
-        return account ? accountTab : document.querySelector(".tabs button[data-tab].active")?.dataset.tab || "keys";
+        return account ? accountTab : document.querySelector(".tabs button[data-tab].active")?.dataset.tab || ADMIN_TAB_IDS[0];
       }
 
       const TAB_BARS = Array.from(document.querySelectorAll(".tabs-scroll > .tabs"));
@@ -4199,7 +4206,12 @@
               read("catalog", () => fetchCatalog(false)),
               read("priceStatus", async () => requireObject(await plugin("GET", "/prices/reference/status"), "Reference price status"))
             ]);
-          } else { await read("authFiles", () => fetchAuthFiles(false)); }
+          } else {
+            await settleLoads([
+              read("authFiles", () => fetchAuthFiles(false)),
+              read("codexRouting", async () => requireObject(await plugin("GET", "/codex-routing"), "Codex routing"))
+            ]);
+          }
           if (generation !== sessionGeneration) throw new StaleRequestError();
           if (account && name !== "profile" && !resources.account.profile.value?.tracked) return;
           if (values.keys) values.keys = keyDirectory.receive(values.keys, identityRevision);
@@ -4278,7 +4290,7 @@
           analysis: { query: "analysis", sections: [] },
           "request-events": { query: "events", sections: [keyedSection(["events"], () => renderRequestEvents(account))] },
           errors: { query: "errors", sections: [keyedSection(["errors"], () => renderErrors(account))] },
-          "auth-files": { sections: [section(["authFiles"], () => renderAuthFiles(account))] }
+          "auth-files": { sections: [section(account ? ["authFiles"] : ["authFiles", "codexRouting"], () => renderAuthFiles(account))] }
         };
         if (account) {
           result.subscription = {
@@ -4411,7 +4423,7 @@
         if (generation !== sessionGeneration) throw new StaleRequestError();
         restoreRolePreferences("admin");
         const route = pageRoute();
-        setAdminTab(route.role === "admin" ? route.tab : "keys");
+        setAdminTab(route.role === "admin" ? route.tab : ADMIN_TAB_IDS[0]);
         $("gate").classList.add("hidden");
         $("account-app").classList.add("hidden");
         $("app").classList.remove("hidden");
@@ -4434,13 +4446,13 @@
         $("account-app").classList.remove("hidden");
         $("account-identity").textContent = previewCredential(key);
         const route = pageRoute();
-        setAccountTab(route.role === "account" ? route.tab : "subscription");
+        setAccountTab(route.role === "account" ? route.tab : ACCOUNT_TAB_IDS[0]);
         await loadPage(true).catch(fail);
         schedulePageTabLayout();
       }
 
       function setAccountTab(tab) {
-        accountTab = ACCOUNT_TAB_IDS.includes(tab) ? tab : "subscription";
+        accountTab = ACCOUNT_TAB_IDS.includes(tab) ? tab : ACCOUNT_TAB_IDS[0];
         writePageRoute("account", accountTab);
         document.querySelectorAll("[data-account-tab]").forEach((button) => {
           const active = button.dataset.accountTab === accountTab;
@@ -5336,7 +5348,7 @@
 
       async function fetchAuthFiles(account) {
         const result = await (account ? accountAPI("/auth-files") : plugin("GET", "/auth-files"));
-        return requireArray(result?.files, "Authentication files");
+        return requireArray(result?.files, "Auth file");
       }
 
       function updateAuthFiles(account, files) {
@@ -5530,7 +5542,84 @@
         );
       }
 
+      let codexRoutingSaving = false;
+
+      function renderCodexRouting() {
+        const entry = resources.admin.codexRouting;
+        const toggle = $("codex-routing-enabled");
+        toggle.disabled = codexRoutingSaving || !entry.value || !!entry.error;
+        toggle.checked = !!entry.value?.settings?.enabled;
+        const hook = entry.value?.last_hook_at;
+        $("codex-routing-status").textContent =
+          entry.error ||
+          (codexRoutingSaving
+            ? "Saving…"
+            : !entry.value
+              ? "Loading routing settings…"
+              : !toggle.checked
+                ? "Disabled — CPA selects accounts normally."
+                : hook && !hook.startsWith("0001-")
+                  ? "Last hook: " + when(hook) + " · Pool: " + (entry.value.last_pool || "none") + "."
+                  : "Enabled — awaiting Codex traffic. Hook not yet confirmed.");
+      }
+
+      async function saveCodexRouting(change) {
+        if (codexRoutingSaving || !resources.admin.codexRouting.value) return;
+        const generation = sessionGeneration;
+        const previous = resources.admin.codexRouting.value.settings;
+        codexRoutingSaving = true;
+        renderAuthFiles(false);
+        try {
+          const settings = { ...previous, roles: { ...(previous.roles || {}) } };
+          change(settings);
+          const value = await plugin("PUT", "/codex-routing", settings, { command: true });
+          if (generation !== sessionGeneration) throw new StaleRequestError();
+          Object.assign(resources.admin.codexRouting, { value, error: "" });
+        } finally {
+          codexRoutingSaving = false;
+          if (generation === sessionGeneration) renderAuthFiles(false);
+        }
+      }
+
+      $("codex-routing-enabled").onchange = (event) => {
+        const enabled = event.target.checked;
+        guard(() => saveCodexRouting((settings) => { settings.enabled = enabled; }));
+      };
+
+      function codexRoleControl(file) {
+        if (!file.routing_ref || file.category !== "codex") return null;
+        const entry = resources.admin.codexRouting;
+        const current = entry.value?.settings?.roles?.[file.routing_ref] || "auto";
+        const select = el(
+          "select",
+          {
+            "aria-label": "Codex routing pool",
+            disabled: codexRoutingSaving || !entry.value || !!entry.error,
+            onchange: (event) => {
+              const value = event.target.value;
+              guard(() =>
+                saveCodexRouting((settings) => {
+                  if (value === "auto") delete settings.roles[file.routing_ref]; else settings.roles[file.routing_ref] = value;
+                })
+              );
+            }
+          },
+          [
+            ["auto", "Auto by plan"],
+            ["primary", "Primary"],
+            ["reserve", "Reserve"]
+          ].map(([value, text]) => el("option", { value, text, selected: value === current }))
+        );
+        return el(
+          "div",
+          { class: "row auth-file-quota" },
+          el("span", { class: "small muted", text: "Routing pool" }),
+          el("span", { class: "native-select" }, select)
+        );
+      }
+
       function renderAuthFiles(account) {
+        if (!account) renderCodexRouting();
         const ui = authUI(account);
         if (renderDataPending(ui.body, [ui.files])) {
           ui.bulk.disabled = true;
@@ -5541,7 +5630,7 @@
         ui.bulk.disabled = refreshable === 0 || ui.bulk.dataset.loading === "true";
         renderCollection(ui.body, files, {
           attrs: { class: "auth-file-grid" },
-          empty: "No authentication files matching the filters",
+          empty: "No matching auth files",
           render: (file) => {
             const statusText = file.disabled ? "Disabled" : file.unavailable ? "Unavailable" : "Enabled";
             const statusClass = file.disabled ? "plain" : file.unavailable ? "bad" : "ok";
@@ -5565,7 +5654,7 @@
                 "aria-label": "Refresh quota",
                 title: file.quota_supported
                   ? "Refresh quota"
-                  : file.quota_unavailable_reason || "Quota lookup is not supported for this authentication-file type",
+                  : file.quota_unavailable_reason || "Quota lookup is not supported for this auth-file type",
                 onclick: () => guard(() => refreshAuthQuota(file, account))
               },
               actionIcon("refresh")
@@ -5589,7 +5678,8 @@
                 ),
                 el("div", { class: "auth-file-actions" }, el("span", { class: "tag " + statusClass, text: statusText }), refreshButton)
               ),
-              renderAuthFileQuota(file, account)
+              renderAuthFileQuota(file, account),
+              account ? null : codexRoleControl(file)
             );
           }
         });
@@ -5616,7 +5706,7 @@
           undefined,
           async () => {
             if (!authQuotaCacheCurrent(false, owner, generation, index) || !canResetAuthQuota(file)) {
-              throw new Error("The authentication file or quota state changed. Close this dialog, refresh the quota, and try again.");
+              throw new Error("The auth file or quota state changed. Close this dialog, refresh the quota, and try again.");
             }
             owner.authQuotaLoading.add(index);
             owner.authQuotas.delete(index);
@@ -5626,9 +5716,9 @@
             let reset = false;
             try {
               const files = await api("GET", "/v0/management/auth-files", null, { raw: true });
-              const auth = requireArray(files?.files, "Authentication files").find((item) => item.auth_index === index);
+              const auth = requireArray(files?.files, "Auth file").find((item) => item.auth_index === index);
               if (!auth || auth.type !== "codex" || auth.disabled || auth.name !== file.name) {
-                throw new Error("The authentication file changed. Refresh the authentication-file list and try again.");
+                throw new Error("The auth file changed. Refresh the auth-file list and try again.");
               }
               if (!authQuotaCacheCurrent(false, owner, generation, index)) throw new StaleRequestError();
               const header = {
@@ -6033,7 +6123,7 @@
         );
       }
 
-      function credentialSourceLabel(source) { return source === "auth-files" ? "Authentication files" : "AI provider"; }
+      function credentialSourceLabel(source) { return source === "auth-files" ? "Auth file" : "AI provider"; }
 
       function credentialProviderLabel(item) {
         return displayLabel(credentialSourceLabel(item.source) + DISPLAY_SEPARATOR + item.provider);
@@ -8331,7 +8421,7 @@
         openEditor("plan-dialog", "plan", (data) => {
           const current = id ? data.plans.find((entry) => entry.id === id) : null;
           if (id && !current) throw new Error("Subscription plan no longer exists, please close and refresh the list");
-          $("plan-dialog-title").textContent = current ? "Edit subscription plan:" + (current.name || id) : "New subscription plan";
+          $("plan-dialog-title").textContent = current ? "Edit plan: " + (current.name || id) : "New plan";
           $("plan-id").value = id || "";
           $("plan-save").textContent = current ? "Save" : "Create";
           $("plan-name").value = current?.name || "";
@@ -8735,7 +8825,7 @@
       const TABS = Array.from(document.querySelectorAll(".tabs button[data-tab]"));
       function setAdminTab(name) {
         if (editors.get($("route-picker"))?.saving) return;
-        const selected = ADMIN_TAB_IDS.includes(name) ? name : "keys";
+        const selected = ADMIN_TAB_IDS.includes(name) ? name : ADMIN_TAB_IDS[0];
         if (selected !== "keys") $("route-picker").close();
         writePageRoute("admin", selected);
         for (const tab of TABS) {

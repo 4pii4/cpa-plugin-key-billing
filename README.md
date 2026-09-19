@@ -16,6 +16,7 @@
 - Supports long-context **tiered pricing** based on an input-token threshold
 - Sets a **maximum concurrent request count** for each API key
 - Binds **routing rules** to each API key to restrict model access and upstream credentials
+- Prioritizes **Codex Plus accounts before a Pro 20x reserve**, with plugin-owned account pools and bounded quota-recovery probes
 - Retrieves reference model prices from [models.dev](https://models.dev/)
 - Ships fallback prices for common CPA model aliases so fresh installations can bill them immediately
 
@@ -45,7 +46,19 @@ flowchart TB
     F --> G["normalize tokens and bill<br/>update period consumption"]
 ```
 
-The plugin integrates with CLIProxyAPI's request path through synchronous RPC methods. Admission and credential scheduling perform only local state lookups and rule evaluation: they do no network I/O and never copy or parse upstream responses. Usage recording and billing happen through `usage.handle` after the upstream call. The plugin creates no background goroutines, timers, or asynchronous refresh jobs, so its resource footprint is small and its request-path overhead is limited to lightweight local checks.
+The plugin integrates with CLIProxyAPI's request path through synchronous RPC methods. Admission and credential scheduling perform local state lookups and rule evaluation; the optional Codex router also reads the local host credential inventory at most once every 30 seconds. Neither performs provider HTTP requests or parses model responses. Usage recording and billing happen through `usage.handle` after the upstream call. The plugin creates no background goroutines, timers, or asynchronous refresh jobs.
+
+### Codex Plus-first / reserve routing
+
+On the administrator **Auth file** page, enable **Plus first, Pro reserve**. The setting is off by default and lives in this plugin's database, not CPA's configuration. Automatic classification uses CPA's `plan_type` attribute and fresh quota-query plan information: Plus is primary, Pro/Pro 20x is reserve, and unknown/other plans sit between them. Use the per-account **Routing pool** selector to explicitly protect your reserve or assign a primary account. The plugin returns a concrete account selection even when API-key routing rules are unrestricted, overriding CPA's normal selector for eligible Codex-account-only pools. Accounts within a pool share traffic using their positive CPA weights; all usable primary quota is preferred over reserve quota.
+
+- Only Codex authentication-file accounts participate. Other providers, configured API keys, mixed-provider pools, and nested plugin model calls retain their existing behavior. Existing credential access rules always apply.
+- The policy works without an open browser. `usage.handle` supplies actual failures/successes, while **Refresh quotas** enriches the server's process-local evidence with 5-hour, weekly, and model-specific windows. Browser/session-storage values are never trusted for routing. Spark and code-review limits are kept separate. Reported limits apply to reserve accounts too; a missing weekly window is not invented.
+- Exhausted quota evidence is rechecked by an actual model request after its reported reset or after two minutes, whichever comes first. A generic 429 uses a 30-second cooldown. Recovery probes are limited to one per account/window every 30 seconds and expire even if completion feedback is lost. Healthy Plus accounts take precedence again after fresh successful evidence. Failed quota refreshes do not erase evidence; overlapping responses, old request reports, and changed credential revisions cannot overwrite newer state. No background polling or automatic reset-credit spending occurs.
+- **Host boundary:** CPA supplies only its eligible, highest-priority candidate tier. Keep participating accounts at the same CPA priority. The plugin cannot override disabled accounts, zero weights, model incompatibility, hard cooldowns, pinned credentials, an earlier scheduler plugin, or a host execution path that does not invoke `scheduler.pick` (including Home mode on CPA 7.2.143). The page reports whether a Codex scheduler call has actually been observed; refresh the page status after traffic. Stale plugin evidence cannot hold an account indefinitely, but a CPA cooldown still can prevent its recovery probe.
+- Settings and fingerprint-based role overrides survive restarts. Quota snapshots and probe leases deliberately do not. Schema 15 adds the settings table; back up the database before upgrading, and restore that backup before downgrading.
+
+Administrator API: `GET /v0/management/plugins/cpa-key-billing/codex-routing` returns `settings`, `last_hook_at`, and `last_pool`. `PUT` the settings object `{ "enabled": true, "roles": { "sha256:…": "reserve" } }` to save; roles may be `primary` or `reserve`, and omitting a fingerprint restores automatic classification. Codex entries in the administrator `/auth-files` response expose their `routing_ref`. API-key self-service users cannot edit this policy.
 
 ## Requirements
 
