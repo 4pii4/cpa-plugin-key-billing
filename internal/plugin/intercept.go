@@ -183,6 +183,7 @@ func (a *App) handleUsage(raw []byte) ([]byte, error) {
 		return OKEnvelope(struct{}{})
 	}
 	scope := billing.CallerScope(record.APIKey)
+	a.observeCodexUsage(record)
 	var recordError billing.RequestError
 	if record.Failed {
 		failure := usageFailureDetails(record.Failure)

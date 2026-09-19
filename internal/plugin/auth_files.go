@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"cpa-key-billing/internal/billing"
 )
 
 const (
@@ -41,6 +43,7 @@ type hostAuthFile struct {
 }
 
 type authFileView struct {
+	RoutingRef     string `json:"routing_ref,omitempty"`
 	AuthIndex      string `json:"auth_index"`
 	Name           string `json:"name"`
 	Category       string `json:"category"`
@@ -89,6 +92,7 @@ type quotaRow struct {
 }
 
 type authQuotaResponse struct {
+	codexLimits                         map[string]codexQuotaLimit
 	AuthRevision                        string     `json:"auth_revision,omitempty"`
 	FetchedAt                           time.Time  `json:"fetched_at"`
 	Plan                                string     `json:"plan,omitempty"`
@@ -181,8 +185,13 @@ func (a *App) listAuthFiles(access viewAccess) ([]authFileView, error) {
 		}
 		category := authCategory(file.Type)
 		quotaSupported, quotaReason := authQuotaAvailability(file, category)
+		routingRef := ""
+		if !access.APIKey && isCodexAccount(file) {
+			routingRef = billing.CredentialFingerprint(file.ID)
+		}
 		views = append(views, authFileView{
-			AuthIndex: file.AuthIndex, Name: file.Name, Category: category, Email: cleanText(file.Email),
+			RoutingRef: routingRef,
+			AuthIndex:  file.AuthIndex, Name: file.Name, Category: category, Email: cleanText(file.Email),
 			Disabled: file.Disabled, Unavailable: file.Unavailable,
 			QuotaSupported: quotaSupported, QuotaReason: quotaReason, CacheRevision: authFileRevision(file),
 		})
@@ -275,6 +284,11 @@ func authCategoryOrder(category string) int {
 }
 
 func (a *App) fetchAuthQuota(callbackID string, file hostAuthFile, provider string) (authQuotaResponse, error) {
+	var routingState *codexAccount
+	var routingSequence uint64
+	if provider == "codex" {
+		routingState, routingSequence = a.beginCodexQuota(file)
+	}
 	raw, errGet := a.hostCaller(hostAuthGet, map[string]string{"auth_index": file.AuthIndex})
 	if errGet != nil {
 		return authQuotaResponse{}, fmt.Errorf("read auth file: %w", errGet)
@@ -324,6 +338,9 @@ func (a *App) fetchAuthQuota(callbackID string, file hostAuthFile, provider stri
 	}
 	if err != nil {
 		return result, err
+	}
+	if provider == "codex" {
+		a.finishCodexQuota(routingState, routingSequence, result)
 	}
 	return result, nil
 }
@@ -401,6 +418,7 @@ func (a *App) fetchCodexQuota(callbackID, token, accountID string, result *authQ
 	if plan := firstString(object, "plan_type", "planType"); plan != "" {
 		result.Plan = normalizeCodexPlan(plan)
 	}
+	result.codexLimits = parseCodexRoutingQuota(object, result.FetchedAt)
 	appendCodexRateLimit(result, "", objectMap(object, "rate_limit", "rateLimit"))
 	appendCodexRateLimit(result, "Code Review ", objectMap(object, "code_review_rate_limit", "codeReviewRateLimit"))
 	for _, raw := range objectSlice(object, "additional_rate_limits", "additionalRateLimits") {

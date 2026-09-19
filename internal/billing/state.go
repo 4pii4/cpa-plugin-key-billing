@@ -12,6 +12,7 @@ type State struct {
 	Keys              map[string]*KeyState
 	Routes            []Route
 	ConfigCredentials map[string]ConfigCredential
+	CodexRouting      CodexRouting
 }
 
 type ConfigCredential struct {

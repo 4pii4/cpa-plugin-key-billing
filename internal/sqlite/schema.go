@@ -26,7 +26,12 @@ var indexes = map[string][]index{
 }
 
 // Time columns use Unix nanoseconds; JSON cycles use UTC RFC3339Nano.
-const schema = `
+const codexRoutingSchema = `CREATE TABLE codex_routing (
+	id INTEGER PRIMARY KEY CHECK (id = 1),
+	settings_json TEXT NOT NULL
+);`
+
+const schema = codexRoutingSchema + `
 CREATE TABLE api_keys (
 	scope                 TEXT    PRIMARY KEY,
 	preview               TEXT    NOT NULL DEFAULT '',

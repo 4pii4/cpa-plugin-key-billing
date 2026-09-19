@@ -150,9 +150,6 @@ func (a *App) pickCredential(raw []byte) ([]byte, error) {
 	}
 	a.observeCandidates(req.Candidates)
 	scope := metadataString(req.Options.Metadata, MetadataCallerScope)
-	if scope == "" {
-		return OKEnvelope(SchedulerPickResponse{Handled: false})
-	}
 	requestedModel := metadataString(req.Options.Metadata, MetadataRequestedModel)
 	if requestedModel == "" {
 		requestedModel = req.Model
@@ -161,17 +158,23 @@ func (a *App) pickCredential(raw []byte) ([]byte, error) {
 	if decision.ConfigurationError != "" {
 		return ErrorEnvelope("routing_configuration_error", decision.ConfigurationError, http.StatusServiceUnavailable), nil
 	}
-	if !decision.RestrictsCredentials() {
-		return OKEnvelope(SchedulerPickResponse{Handled: false})
-	}
 	allowed := make([]SchedulerAuthCandidate, 0, len(req.Candidates))
 	for _, candidate := range req.Candidates {
-		if candidateAllowed(candidate, decision) {
+		if !decision.RestrictsCredentials() || candidateAllowed(candidate, decision) {
 			allowed = append(allowed, candidate)
 		}
 	}
 	if len(allowed) == 0 {
+		if !decision.RestrictsCredentials() {
+			return OKEnvelope(SchedulerPickResponse{Handled: false})
+		}
 		return ErrorEnvelope("no_routed_credential", noRoutedCredentialMessage, http.StatusServiceUnavailable), nil
+	}
+	if id, handled := a.pickCodexCredential(scope, req.Model, routingPoolKey(decision.Model, decision), allowed); handled {
+		if id == "" {
+			return ErrorEnvelope("codex_quota_unavailable", "Codex accounts are exhausted or awaiting a recovery probe; retry shortly", http.StatusServiceUnavailable), nil
+		}
+		return OKEnvelope(SchedulerPickResponse{AuthID: id, Handled: true})
 	}
 	if len(allowed) == len(req.Candidates) {
 		return OKEnvelope(SchedulerPickResponse{Handled: false})

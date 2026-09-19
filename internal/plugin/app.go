@@ -21,6 +21,7 @@ type App struct {
 	credentialsByRawID    map[string]string
 	credentialRefsByIndex map[string]string
 	scheduler             subsetScheduler
+	codexRouter           codexRouter
 	pending               map[string]pendingRouteLog
 	pendingSequence       uint64
 }
@@ -123,6 +124,7 @@ func (a *App) configure(raw []byte) error {
 	}(); errConfigure != nil {
 		return errConfigure
 	}
+	a.codexRouter.reset()
 	// Refresh records its result; a download failure does not disable custom prices.
 	_, _ = a.store.EnsureReferencePrices()
 	return nil

@@ -1210,6 +1210,13 @@ run_target() {
   fi
   log_step "Plugin registered and enabled"
 
+  management_call GET "$port" "/v0/management/plugins/cpa-key-billing/codex-routing" >"$runtime_dir/codex-routing.json"
+  jq -e '.settings.enabled == false and .settings.roles == {}' "$runtime_dir/codex-routing.json" >/dev/null
+  management_call PUT "$port" "/v0/management/plugins/cpa-key-billing/codex-routing" \
+    -H "Content-Type: application/json" --data '{"enabled":true,"roles":{}}' >"$runtime_dir/codex-routing.json"
+  jq -e '.settings.enabled == true' "$runtime_dir/codex-routing.json" >/dev/null
+  log_step "Codex priority policy enabled; API-key and non-Codex routes must remain unchanged"
+
   assert_headless_price_admission "$port" "$runtime_dir"
   account_call "$port" "/v1/models" >"$runtime_dir/models.json"
   jq -er '.data[].id' "$runtime_dir/models.json" >"$runtime_dir/model-ids.txt"

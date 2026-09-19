@@ -46,6 +46,7 @@ const (
 	routePluginLogs             = "/plugin-logs"
 	routeAuthFiles              = "/auth-files"
 	routeAuthQuota              = "/auth-files/quota"
+	routeCodexRouting           = "/codex-routing"
 )
 
 type managementEndpoint struct {
@@ -54,6 +55,8 @@ type managementEndpoint struct {
 }
 
 var managementEndpoints = []managementEndpoint{
+	{http.MethodGet, routeCodexRouting, "View Codex priority routing", (*App).codexRoutingStatus},
+	{http.MethodPut, routeCodexRouting, "Update Codex priority routing", (*App).putCodexRouting},
 	{http.MethodGet, routeKeys, "View API key status", func(a *App, _ ManagementRequest) ManagementResponse {
 		return JSONResponse(http.StatusOK, map[string]any{"keys": a.keyRows()})
 	}},
