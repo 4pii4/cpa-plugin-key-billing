@@ -965,6 +965,19 @@ PLUGIN_LOGS = [
     },
 ]
 
+CYBER_POLICY = {
+    "settings": {"enabled": True, "base_delay_seconds": 900},
+    "bans": [{
+        "scope": KEYS[1]["scope"],
+        "preview": KEYS[1]["preview"],
+        "label": KEYS[1]["label"],
+        "consecutive": 2,
+        "blocked_until": iso(NOW + timedelta(minutes=35)),
+        "last_detected_at": iso(NOW - timedelta(minutes=1)),
+        "remaining_seconds": 2100,
+    }],
+}
+
 
 def seed_paginated_history():
     """Provide multiple real pages of synthetic history in the default preview."""
@@ -1287,6 +1300,8 @@ def payload_for(path, query):
         return {"files": AUTH_FILES}
     if path == f"{API_BASE}/codex-routing":
         return CODEX_ROUTING
+    if path == f"{API_BASE}/cyber-policy":
+        return CYBER_POLICY
     if path == f"{API_BASE}/auth-files/quota":
         return auth_file_quota(query)
     if path == f"{API_BASE}/prices/reference":
@@ -1471,6 +1486,22 @@ class Handler(BaseHTTPRequestHandler):
         if route == ("PUT", f"{API_BASE}/codex-routing"):
             CODEX_ROUTING["settings"] = json.loads(request_body or b"{}")
             self.send_json(200, CODEX_ROUTING)
+        elif route == ("PUT", f"{API_BASE}/cyber-policy"):
+            settings = json.loads(request_body or b"{}")
+            seconds = settings.get("base_delay_seconds", 0)
+            if not isinstance(seconds, int) or seconds < 1 or seconds > 30 * 86400:
+                self.send_json(400, {"error": {"message": "Base delay must be between 1 second and 30 days"}})
+                return
+            CYBER_POLICY["settings"] = {
+                "enabled": bool(settings.get("enabled")),
+                "base_delay_seconds": seconds,
+            }
+            self.send_json(200, CYBER_POLICY)
+        elif route == ("DELETE", f"{API_BASE}/cyber-policy"):
+            scope = parse_qs(parsed.query).get("scope", [""])[0]
+            before = len(CYBER_POLICY["bans"])
+            CYBER_POLICY["bans"] = [ban for ban in CYBER_POLICY["bans"] if ban["scope"] != scope]
+            self.send_json(200, {"cleared": len(CYBER_POLICY["bans"]) != before, "status": CYBER_POLICY})
         elif route == ("POST", "/v0/management/api-call"):
             body = json.loads(request_body or b"{}")
             auth_index = body.get("auth_index", "")

@@ -154,8 +154,8 @@ func TestFreshSchemaVersionAndTables(t *testing.T) {
 		t.Fatalf("schema version = %d, err = %v", version, err)
 	}
 	want := map[string]bool{
-		"codex_routing": true,
-		"api_keys":      true, "routes": true, "plans": true,
+		"codex_routing": true, "cyber_policy": true,
+		"api_keys": true, "routes": true, "plans": true,
 		"prices": true, "request_events": true, "config_credentials": true,
 		"request_errors": true, "plugin_logs": true, "reference_prices_metadata": true, "reference_prices": true,
 	}

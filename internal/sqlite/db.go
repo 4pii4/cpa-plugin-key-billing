@@ -15,7 +15,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-const schemaVersion = 15
+const schemaVersion = 16
 
 type DB struct {
 	db   *sql.DB
@@ -71,6 +71,11 @@ func (d *DB) initSchema(tx *sql.Tx) error {
 	case 14:
 		if _, err := tx.Exec(codexRoutingSchema); err != nil {
 			return fmt.Errorf("migrate Codex routing settings: %w", err)
+		}
+		fallthrough
+	case 15:
+		if _, err := tx.Exec(cyberPolicySchema); err != nil {
+			return fmt.Errorf("migrate cyber-policy cooldown state: %w", err)
 		}
 	case schemaVersion:
 		return nil

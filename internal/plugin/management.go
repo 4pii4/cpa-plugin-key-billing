@@ -47,6 +47,7 @@ const (
 	routeAuthFiles              = "/auth-files"
 	routeAuthQuota              = "/auth-files/quota"
 	routeCodexRouting           = "/codex-routing"
+	routeCyberPolicy            = "/cyber-policy"
 )
 
 type managementEndpoint struct {
@@ -57,6 +58,9 @@ type managementEndpoint struct {
 var managementEndpoints = []managementEndpoint{
 	{http.MethodGet, routeCodexRouting, "View Codex priority routing", (*App).codexRoutingStatus},
 	{http.MethodPut, routeCodexRouting, "Update Codex priority routing", (*App).putCodexRouting},
+	{http.MethodGet, routeCyberPolicy, "View cyber-policy cooldowns", (*App).cyberPolicyStatus},
+	{http.MethodPut, routeCyberPolicy, "Update cyber-policy cooldown settings", (*App).putCyberPolicy},
+	{http.MethodDelete, routeCyberPolicy, "Clear an API key cyber-policy cooldown", (*App).clearCyberPolicyBan},
 	{http.MethodGet, routeKeys, "View API key status", func(a *App, _ ManagementRequest) ManagementResponse {
 		return JSONResponse(http.StatusOK, map[string]any{"keys": a.keyRows()})
 	}},

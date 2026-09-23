@@ -5,6 +5,9 @@ import vm from "node:vm";
 
 const html = readFileSync(new URL("../internal/plugin/ui.html", import.meta.url), "utf8");
 const routeCode = html.slice(html.indexOf("const ADMIN_TAB_IDS ="), html.indexOf("const initialRoute = pageRoute();"));
+const emailCode =
+  html.slice(html.indexOf("function obfuscatedEmail"), html.indexOf("function filteredAuthFiles")) +
+  html.slice(html.indexOf("const EMAIL_PATTERN"), html.indexOf("function displayText"));
 
 function routes(hash = "", saved = "") {
   return vm.runInNewContext(`(() => { ${routeCode}; return { parsePageRoute, pageRoute, ADMIN_TAB_IDS, ACCOUNT_TAB_IDS }; })()`, {
@@ -12,6 +15,12 @@ function routes(hash = "", saved = "") {
     location: { hash },
     sessionStorage: { getItem: () => saved }
   });
+}
+
+function displayLabel(value, masked) {
+  return vm.runInNewContext(
+    `(() => { const DISPLAY_SEPARATOR = "\\u2009·\\u2009"; let maskEmailAddresses = ${masked}; ${emailCode}; return displayLabel(${JSON.stringify(value)}); })()`
+  );
 }
 
 test("Analysis is first in both navigation bars and route lists", () => {
@@ -52,5 +61,28 @@ test("Auth labels stay compact in both views", () => {
   assert.equal(html.includes("Authentication files"), false);
   assert.equal(html.includes("Obfuscate emails"), false);
   assert.equal((html.match(/<span>Mask emails<\/span>/g) || []).length, 2);
+  assert.equal(html.includes("auth-obfuscate-emails"), false);
+  assert.equal((html.match(/data-email-mask-toggle/g) || []).length, 4);
   assert.equal((html.match(/placeholder="Search auth files"/g) || []).length, 2);
+});
+
+test("Global email privacy and cyber cooldown controls live outside the auth tab", () => {
+  const adminHeader = html.slice(html.indexOf('<header class="head app-header">'), html.indexOf('<div class="page-tabs-row">'));
+  assert.match(adminHeader, /data-email-mask-toggle/);
+  const authSection = html.slice(html.indexOf('<section id="tab-auth-files"'), html.indexOf('<section id="tab-plugin-logs"'));
+  assert.doesNotMatch(authSection, /email-mask|Mask emails/);
+  assert.match(html, /<section id="tab-cyber-policy" class="hidden">/);
+  assert.match(html, /id="cyber-policy-enabled"/);
+  assert.match(html, /id="cyber-policy-delay"/);
+  assert.match(html, /text: "Clear cooldown"/);
+});
+
+test("Global email privacy masks email-bearing labels without changing source values", () => {
+  const value = "codex · dev-team@example.com";
+  assert.equal(displayLabel(value, false), "codex · dev-team@example.com");
+  assert.equal(displayLabel(value, true), "codex · de••••@e••••.com");
+  assert.equal(displayLabel('{"email":"platform@example.com"}', true), '{"email":"pl••••@e••••.com"}');
+  assert.match(html, /name === "text"\) node\.textContent = displayLabel\(value\)/);
+  assert.match(html, /\["title", "aria-label"\]\.includes\(name\) \? displayLabel\(value\) : value/);
+  assert.match(html, /matchesTerm\(rawCredentialLabel\(item\), term\)/);
 });

@@ -31,7 +31,12 @@ const codexRoutingSchema = `CREATE TABLE codex_routing (
 	settings_json TEXT NOT NULL
 );`
 
-const schema = codexRoutingSchema + `
+const cyberPolicySchema = `CREATE TABLE cyber_policy (
+	id INTEGER PRIMARY KEY CHECK (id = 1),
+	state_json TEXT NOT NULL
+);`
+
+const schema = codexRoutingSchema + cyberPolicySchema + `
 CREATE TABLE api_keys (
 	scope                 TEXT    PRIMARY KEY,
 	preview               TEXT    NOT NULL DEFAULT '',

@@ -771,6 +771,8 @@
       .gate-submit { width: 100%; min-height: 42px; margin-top: 4px; font-size: 14px; font-weight: 600; }
       .app-header { justify-content: space-between; padding-right: 0; }
       .app-title { display: flex; align-items: center; gap: 10px; min-width: 0; flex-wrap: wrap; }
+      .app-header-controls { display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; }
+      .global-email-mask { background: var(--bg-primary); }
       .standalone-actions {
         display: inline-flex;
         align-items: center;
@@ -1299,6 +1301,11 @@
       .selection-list label > .tag { flex: none; }
       .settings-entry-value { flex: 1; min-width: 0; color: var(--text-primary); }
       .settings-chip-list { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; min-width: 0; }
+      .cyber-policy-controls { display: flex; align-items: end; flex-wrap: wrap; gap: 10px; }
+      .cyber-policy-controls .field { min-width: 140px; }
+      .cyber-policy-duration { display: grid; grid-template-columns: minmax(90px, 1fr) minmax(110px, auto); gap: 7px; }
+      .cyber-policy-duration input { width: 100%; }
+      .cyber-policy-description { max-width: 900px; }
       .lucide-icon { display: block; flex: none; width: 1em; height: 1em; }
       .lucide-chevron-icon { display: block; width: 14px; height: 14px; stroke-width: 2.5; transition: transform 0.15s ease; }
       .settings-chip {
@@ -1782,7 +1789,7 @@
         .auth-filter-bar input[type="search"],
         .auth-filter-bar .native-select,
         .auth-filter-bar select,
-        .toggle-filter:not(.compact-toggle) {
+        .auth-filter-bar .toggle-filter:not(.compact-toggle) {
           width: 100%;
           min-width: 0;
         }
@@ -1826,12 +1833,15 @@
           padding: 4px;
           border-radius: 14px;
         }
+        .app-header-controls { flex: 0 0 auto; }
         .standalone-actions .icon-action { width: 36px; height: 36px; min-width: 36px; min-height: 36px; }
       }
       @media (max-width: 520px) {
         body:not(.embedded) #account-identity { display: none; }
         body:not(.embedded) .app-header, body:not(.embedded) .app-header .app-title { gap: 7px; }
         body:not(.embedded) .standalone-actions .icon-action { width: 34px; height: 34px; min-width: 34px; min-height: 34px; }
+        .global-email-mask { padding-inline: 8px; }
+        .global-email-mask span { display: none; }
       }
       .shared-time-filter { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex: 0 1 auto; min-width: 0; }
       .shared-time-filter > .native-select { flex: 0 1 auto; max-width: 320px; }
@@ -2124,10 +2134,16 @@
       <main id="app" class="hidden">
         <header class="head app-header">
           <div class="app-title"><h1>API Key Billing</h1></div>
-          <div class="standalone-actions" aria-label="Page actions">
-            <button type="button" class="icon-action" data-page-action="refresh" aria-label="Refresh"></button>
-            <button type="button" class="icon-action" data-page-action="theme" aria-label="Switch theme"></button>
-            <button type="button" class="icon-action" data-page-action="logout" aria-label="Log out"></button>
+          <div class="app-header-controls">
+            <label class="toggle-filter global-email-mask" title="Mask email addresses everywhere in this console">
+              <input type="checkbox" role="switch" data-email-mask-toggle />
+              <span>Mask emails</span>
+            </label>
+            <div class="standalone-actions" aria-label="Page actions">
+              <button type="button" class="icon-action" data-page-action="refresh" aria-label="Refresh"></button>
+              <button type="button" class="icon-action" data-page-action="theme" aria-label="Switch theme"></button>
+              <button type="button" class="icon-action" data-page-action="logout" aria-label="Log out"></button>
+            </div>
           </div>
         </header>
 
@@ -2187,6 +2203,40 @@
         </section>
 
         <section id="tab-analysis"><div id="analysis-body"></div></section>
+
+        <section id="tab-cyber-policy" class="hidden">
+          <div class="card">
+            <div class="row spread settings-section-header">
+              <div>
+                <h2>Cyber-policy cooldown</h2>
+                <p class="muted small cyber-policy-description">Pause a CPA billing API key after an upstream <span class="mono">cyber_policy</span> error. Consecutive detections double the delay, up to 30 days.</p>
+              </div>
+              <label class="toggle-filter">
+                <input id="cyber-policy-enabled" type="checkbox" role="switch" disabled />
+                <span>Enabled</span>
+              </label>
+            </div>
+            <div class="cyber-policy-controls">
+              <label class="field">
+                Base delay
+                <span class="cyber-policy-duration">
+                  <input id="cyber-policy-delay" type="number" min="1" step="1" inputmode="numeric" />
+                  <span class="native-select">
+                    <select id="cyber-policy-delay-unit" aria-label="Base delay unit">
+                      <option value="1">Seconds</option>
+                      <option value="60">Minutes</option>
+                      <option value="3600">Hours</option>
+                      <option value="86400">Days</option>
+                    </select>
+                  </span>
+                </span>
+              </label>
+              <button id="cyber-policy-save" type="button">Save delay</button>
+              <span id="cyber-policy-status" class="muted small" role="status"></span>
+            </div>
+            <div id="cyber-policy-bans"></div>
+          </div>
+        </section>
 
         <section id="tab-plans" class="hidden">
           <div class="card">
@@ -2338,10 +2388,6 @@
                   <input id="auth-enabled-only" type="checkbox" role="switch" checked />
                   <span>Enabled only</span>
                 </label>
-                <label class="toggle-filter">
-                  <input id="auth-obfuscate-emails" type="checkbox" role="switch" />
-                  <span>Mask emails</span>
-                </label>
                 <span class="native-select">
                   <select id="auth-provider" aria-label="Filter by authentication provider">
                     <option value="">All categories</option>
@@ -2386,10 +2432,16 @@
       <main id="account-app" class="hidden">
         <header class="head app-header">
           <div class="app-title"> <h1>API key usage</h1> <span id="account-identity" class="muted mono"></span> </div>
-          <div class="standalone-actions" aria-label="Page actions">
-            <button type="button" class="icon-action" data-page-action="refresh" aria-label="Refresh"></button>
-            <button type="button" class="icon-action" data-page-action="theme" aria-label="Switch theme"></button>
-            <button type="button" class="icon-action" data-page-action="logout" aria-label="Log out"></button>
+          <div class="app-header-controls">
+            <label class="toggle-filter global-email-mask" title="Mask email addresses everywhere in this console">
+              <input type="checkbox" role="switch" data-email-mask-toggle />
+              <span>Mask emails</span>
+            </label>
+            <div class="standalone-actions" aria-label="Page actions">
+              <button type="button" class="icon-action" data-page-action="refresh" aria-label="Refresh"></button>
+              <button type="button" class="icon-action" data-page-action="theme" aria-label="Switch theme"></button>
+              <button type="button" class="icon-action" data-page-action="logout" aria-label="Log out"></button>
+            </div>
           </div>
         </header>
         <div id="account-data-status" class="notice err" role="status"></div>
@@ -2507,10 +2559,6 @@
                     <input id="account-auth-enabled-only" type="checkbox" role="switch" checked />
                     <span>Enabled only</span>
                   </label>
-                  <label class="toggle-filter">
-                    <input id="account-auth-obfuscate-emails" type="checkbox" role="switch" />
-                    <span>Mask emails</span>
-                  </label>
                   <span class="native-select">
                     <select id="account-auth-provider" aria-label="Filter by authentication provider">
                       <option value="">All categories</option>
@@ -2534,7 +2582,7 @@
     <footer class="page-footer">
       <span>© 2026 <a href="https://github.com/4pii4/cpa-plugin-key-billing" target="_blank" rel="noopener noreferrer">CPA Key Billing</a></span>
       <span>&thinsp;·&thinsp;<a href="https://github.com/4pii4/cpa-plugin-key-billing/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">License</a></span>
-      <span>&thinsp;·&thinsp;Version: v1.3.13</span>
+      <span>&thinsp;·&thinsp;Version: v1.3.14</span>
     </footer>
 
     <div id="notice" class="notice" popover="manual"></div>
@@ -2632,6 +2680,9 @@
       const CREDENTIAL_KEY = "wrapping-key";
       const SESSION_CREDENTIAL_PREFIX = "cpa-key-billing.session.v1.";
       const VIEW_PREFERENCE_PREFIX = "cpa-key-billing.view.v1.";
+      const EMAIL_MASK_PREFERENCE = VIEW_PREFERENCE_PREFIX + "global.email-mask";
+      let maskEmailAddresses = false;
+      try { maskEmailAddresses = JSON.parse(localStorage.getItem(EMAIL_MASK_PREFERENCE) || "false") === true; } catch (_) {}
 
       function readPanelKey() {
         const fromStore = panelStoredValue("cli-proxy-auth")?.state?.managementKey;
@@ -2809,7 +2860,8 @@
           catalog: "Model pricing",
           priceStatus: "Reference price status",
           authFiles: "Auth file",
-          codexRouting: "Codex routing"
+          codexRouting: "Codex routing",
+          cyberPolicy: "Cyber-policy cooldown"
         }),
         account: dataEntries({
           profile: "Account profile",
@@ -2861,7 +2913,8 @@
         admin: {
           configuration: { names: ["keys", "plans", "routes", "credentials", "models"], syncErrors: [] },
           pricing: { names: ["catalog", "priceStatus"], after: "configuration" },
-          authFiles: { names: ["authFiles", "codexRouting"] }
+          authFiles: { names: ["authFiles", "codexRouting"] },
+          cyberPolicy: { names: ["cyberPolicy"] }
         },
         account: {
           ...Object.fromEntries(Object.keys(resources.account).map((name) => [name, { names: [name] }])),
@@ -3242,7 +3295,6 @@
           restoreChoice(role, prefix + id, "", true);
         restoreChoice(role, prefix + "request-event-status", "");
         restoreChoice(role, prefix + "auth-enabled-only", true);
-        restoreChoice(role, prefix + "auth-obfuscate-emails", false);
         restoreChoice(role, prefix + "auth-provider", "");
         if (!account) {
           restoreChoice(role, "analysis-key", "", true);
@@ -3455,14 +3507,16 @@
         const node = document.createElement(tag);
         for (const [name, value] of Object.entries(attrs || {})) {
           if (name === "class") node.className = value;
-          else if (name === "text") node.textContent = value;
+          else if (name === "text") node.textContent = displayLabel(value);
           else if (name.startsWith("on")) {
             node.addEventListener(name.slice(2), value);
-          } else if (value !== null && value !== undefined && value !== false) node.setAttribute(name, value);
+          } else if (value !== null && value !== undefined && value !== false) {
+            node.setAttribute(name, typeof value === "string" && ["title", "aria-label"].includes(name) ? displayLabel(value) : value);
+          }
         }
         for (const child of children.flat()) {
           if (child === null || child === undefined || child === false) continue;
-          node.append(child.nodeType ? child : document.createTextNode(String(child)));
+          node.append(child.nodeType ? child : document.createTextNode(displayLabel(child)));
         }
         return node;
       }
@@ -3505,7 +3559,7 @@
 
       function notify(message, kind) {
         const node = $("notice");
-        node.textContent = message;
+        node.textContent = displayLabel(message);
         node.className = "notice show " + (kind || "ok");
         if (node.showPopover && !node.matches(":popover-open")) { node.showPopover(); }
         clearTimeout(noticeTimer);
@@ -3529,8 +3583,8 @@
           let accepted = false;
           $("action-dialog").addEventListener("close", () => resolve(accepted), { once: true });
           openEditor("action-dialog", null, () => {
-            $("action-dialog-title").textContent = title;
-            $("action-text").textContent = text || "";
+            $("action-dialog-title").textContent = displayLabel(title);
+            $("action-text").textContent = displayLabel(text || "");
             $("action-input").value = value || "";
             $("action-input").classList.toggle("hidden", value === undefined);
             $("action-confirm").textContent = "Confirm";
@@ -3587,7 +3641,7 @@
           if (error instanceof AuthError || error instanceof StaleRequestError) return fail(error);
           if (editorCurrent(editor)) {
             editor.notice.className = "editor-state notice err show";
-            editor.notice.textContent = error.message || String(error);
+            editor.notice.textContent = displayLabel(error.message || String(error));
           }
         } finally {
           editor.saving = false;
@@ -3654,7 +3708,7 @@
         $("account-app").classList.add("hidden");
         $("gate").classList.remove("hidden");
         const box = $("gate-error");
-        box.textContent = error || "";
+        box.textContent = displayLabel(error || "");
         box.className = error ? "notice err show" : "notice err";
         setLoginMode(mode, true);
       }
@@ -4206,6 +4260,8 @@
               read("catalog", () => fetchCatalog(false)),
               read("priceStatus", async () => requireObject(await plugin("GET", "/prices/reference/status"), "Reference price status"))
             ]);
+          } else if (name === "cyberPolicy") {
+            await read("cyberPolicy", async () => requireObject(await plugin("GET", "/cyber-policy"), "Cyber-policy cooldown"));
           } else {
             await settleLoads([
               read("authFiles", () => fetchAuthFiles(false)),
@@ -4308,6 +4364,7 @@
             editors: ["plan", "route"],
             query: "logs",
             sections: [
+              section(["cyberPolicy"], renderCyberPolicy),
               keyedSection(["plans", "keys"], renderPlans),
               keyedSection(["routes", "keys", "credentials"], renderRoutes),
               section(["catalog"], renderPriceTable),
@@ -5239,7 +5296,7 @@
                 ),
                 el("div", { class: "event-entry-tags" }, tags)
               ),
-              el("pre", { class: "event-error-body mono", text: entry.body || entry.reason || "No error details" })
+              el("pre", { class: "event-error-body mono", text: displayLabel(entry.body || entry.reason || "No error details") })
             );
           }
         });
@@ -5276,7 +5333,6 @@
           files: resources[account ? "account" : "admin"].authFiles,
           body: $(prefix + "-files-body"),
           enabledOnly: $(prefix + "-enabled-only"),
-          obfuscateEmails: $(prefix + "-obfuscate-emails"),
           provider: $(prefix + "-provider"),
           search: $(prefix + "-search"),
           bulk: $(prefix + "-refresh-filtered")
@@ -5636,7 +5692,7 @@
             const statusClass = file.disabled ? "plain" : file.unavailable ? "bad" : "ok";
             const category = AUTH_CATEGORY_LABELS[file.category] || file.category || "Unknown";
             const plan = authPlanLabel(file.category, ui.owner.authQuotas.get(file.auth_index)?.plan);
-            const email = ui.obfuscateEmails.checked ? obfuscatedEmail(file.email) : file.email || "No email provided";
+            const email = displayLabel(file.email || "No email provided");
             const seenMeta = new Set();
             const meta = [category, plan].filter((value) => {
               const key = String(value || "").trim().toLocaleLowerCase();
@@ -5763,7 +5819,9 @@
             if (authQuotaCacheCurrent(false, owner, generation, index)) {
               const failed = owner.authQuotaErrors.has(index);
               notify(
-                failed ? "Quota reset, but refreshing it failed. Refresh manually." : "Reset Codex quota for “" + file.name + "”",
+                failed
+                  ? "Quota reset, but refreshing it failed. Refresh manually."
+                  : "Reset Codex quota for “" + displayLabel(file.name) + "”",
                 failed ? "err" : "ok"
               );
             }
@@ -5838,11 +5896,21 @@
         }
       }
 
+      const EMAIL_PATTERN =
+        /[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*/gi;
+
+      function normalizeDisplayLabel(value) { return String(value ?? "").replace(/\s*·\s*/g, DISPLAY_SEPARATOR); }
+
       // Format display labels without changing API values or editable text.
-      function displayLabel(value) { return String(value ?? "").replace(/\s*·\s*/g, DISPLAY_SEPARATOR); }
+      // The global privacy control also covers source labels, charts, errors,
+      // logs, tooltips, and exported rows that carry an auth-file email.
+      function displayLabel(value) {
+        const label = normalizeDisplayLabel(value);
+        return maskEmailAddresses ? label.replace(EMAIL_PATTERN, (email) => obfuscatedEmail(email)) : label;
+      }
 
       function displayText(value) {
-        if (typeof value !== "string" || !value.includes("·")) return value;
+        if (typeof value !== "string") return value;
         const fragment = document.createDocumentFragment();
         displayLabel(value).split(DISPLAY_SEPARATOR).forEach((part, index) => {
           if (index) fragment.append(el("span", { class: "text-separator", text: DISPLAY_SEPARATOR }));
@@ -5859,7 +5927,8 @@
         const label = candidate && candidate !== preview && candidate !== scope ? candidate : "";
         const primary = label || preview || (scope ? "unknown" : "Unassigned");
         const secondary = label ? preview : "";
-        return { primary, secondary, text: displayLabel(secondary ? primary + DISPLAY_SEPARATOR + secondary : primary) };
+        const rawText = normalizeDisplayLabel(secondary ? primary + DISPLAY_SEPARATOR + secondary : primary);
+        return { primary, secondary, rawText, text: displayLabel(rawText) };
       }
 
       function renderAPIKeyIdentity(view, options = {}) {
@@ -5955,13 +6024,13 @@
         const plans = resources.admin.plans.value;
         const filter = $("key-filter").value.trim().toLowerCase();
         const keys = resources.admin.keys.value.filter((key) => !key.deleted_at || $("keys-include-deleted").checked)
-          .filter((view) => matchesTerm([apiKeyIdentity(view).text, view.plan_name, view.scope].filter(Boolean).join(" "), filter));
+          .filter((view) => matchesTerm([apiKeyIdentity(view).rawText, view.plan_name, view.scope].filter(Boolean).join(" "), filter));
         renderCollection($("keys-body"), keys, {
           headers: ["API key", "Subscription plan", "Routing rules", "Concurrency limit", "Subscription quota", "Status", "Actions"],
           render: (view) => {
             const deleted = !!view.deleted_at;
             const saving = adminUIState.keySubmissions.has(view.scope);
-            const name = apiKeyIdentity(view).primary;
+            const name = apiKeyIdentity(view).text;
             const select = el(
               "select",
               {
@@ -6110,10 +6179,12 @@
         });
       }
 
-      function credentialLabel(item) {
+      function rawCredentialLabel(item) {
         const name = item.source === "auth-files" ? item.display_name || "No email provided" : item.display_name;
-        return displayLabel(item.provider + DISPLAY_SEPARATOR + name);
+        return normalizeDisplayLabel(item.provider + DISPLAY_SEPARATOR + name);
       }
+
+      function credentialLabel(item) { return displayLabel(rawCredentialLabel(item)); }
 
       function boundCredentialLabel(ref, labels) {
         const credential = (resources.admin.credentials.value || []).find((item) => item.ref === ref);
@@ -6138,7 +6209,7 @@
       }
 
       function compareCredentials(a, b) {
-        return credentialSourceRank(a) - credentialSourceRank(b) || credentialLabel(a).localeCompare(credentialLabel(b), "en-US");
+        return credentialSourceRank(a) - credentialSourceRank(b) || rawCredentialLabel(a).localeCompare(rawCredentialLabel(b), "en-US");
       }
 
       function sameCredentialProvider(a, b) { return a.source === b.source && a.provider === b.provider; }
@@ -6191,12 +6262,12 @@
               class: "link key-route-clear",
               text: "Clear",
               disabled: disabled || !names.length,
-              "aria-label": "Clear " + apiKeyIdentity(view).primary + " routing rules",
+              "aria-label": "Clear " + apiKeyIdentity(view).text + " routing rules",
               onclick: () =>
                 guard(() => {
                   closeKeyRouteTooltip();
                   return openActionDialog(
-                    "Clear “" + apiKeyIdentity(view).primary + "” routing rules?",
+                    "Clear “" + apiKeyIdentity(view).text + "” routing rules?",
                     "This removes all routing-rule bindings and direct model or credential allow/deny rules from this API key.",
                     undefined,
                     () =>
@@ -6212,7 +6283,7 @@
               class: "link key-route-edit",
               text: "Edit",
               disabled,
-              "aria-label": "Edit " + apiKeyIdentity(view).primary + " routing rules",
+              "aria-label": "Edit " + apiKeyIdentity(view).text + " routing rules",
               onclick: () => guard(() => editKeyRoutes(view))
             })
           )
@@ -6279,7 +6350,9 @@
         tooltip.style.top = top + "px";
       }
 
-      function matchesTerm(text, term) { return !term || displayLabel(text).toLowerCase().includes(displayLabel(term).toLowerCase()); }
+      function matchesTerm(text, term) {
+        return !term || normalizeDisplayLabel(text).toLowerCase().includes(normalizeDisplayLabel(term).toLowerCase());
+      }
 
       let keyRouteSelection = { scope: "" };
 
@@ -6565,6 +6638,115 @@
         return keys.length + " API keys" + (deleted ? " (including " + deleted + " deleted)" : "");
       }
 
+      let cyberPolicySaving = false;
+
+      function cyberPolicyDelayParts(seconds) {
+        seconds = Math.max(1, Number(seconds) || 1);
+        for (const unit of [86400, 3600, 60]) if (seconds % unit === 0) return { value: seconds / unit, unit };
+        return { value: seconds, unit: 1 };
+      }
+
+      async function saveCyberPolicy(settings) {
+        cyberPolicySaving = true;
+        renderCyberPolicy();
+        try {
+          const value = await queueAdminData("configuration", async (current) => {
+            const result = await plugin("PUT", "/cyber-policy", settings, { command: true });
+            current();
+            return requireObject(result, "Cyber-policy cooldown");
+          });
+          Object.assign(resources.admin.cyberPolicy, { value, error: "" });
+          notify("Cyber-policy cooldown saved");
+        } finally {
+          cyberPolicySaving = false;
+          renderCyberPolicy();
+        }
+      }
+
+      async function clearCyberPolicy(scope) {
+        cyberPolicySaving = true;
+        renderCyberPolicy();
+        try {
+          const result = await queueAdminData("configuration", async (current) => {
+            const value = await plugin("DELETE", "/cyber-policy?scope=" + encodeURIComponent(scope), null, { command: true });
+            current();
+            return requireObject(value, "Cleared cooldown");
+          });
+          Object.assign(resources.admin.cyberPolicy, { value: requireObject(result.status, "Cyber-policy cooldown"), error: "" });
+          notify(result.cleared ? "Cooldown cleared" : "Cooldown was already clear");
+        } finally {
+          cyberPolicySaving = false;
+          renderCyberPolicy();
+        }
+      }
+
+      function renderCyberPolicy() {
+        const entry = resources.admin.cyberPolicy;
+        const enabled = $("cyber-policy-enabled");
+        const delay = $("cyber-policy-delay");
+        const unit = $("cyber-policy-delay-unit");
+        const save = $("cyber-policy-save");
+        const status = $("cyber-policy-status");
+        const unavailable = entry.value === null || !!entry.error;
+        enabled.disabled = delay.disabled = unit.disabled = save.disabled = unavailable || cyberPolicySaving;
+        if (entry.value === null) {
+          status.textContent = entry.error ? "Unavailable" : "Loading…";
+          $("cyber-policy-bans").replaceChildren(el("div", { class: "empty", text: entry.error ? "Data loading failed" : "Loading…" }));
+          return;
+        }
+        const settings = entry.value.settings || {};
+        const bans = Array.isArray(entry.value.bans) ? entry.value.bans : [];
+        if (!cyberPolicySaving) {
+          enabled.checked = !!settings.enabled;
+          const parts = cyberPolicyDelayParts(settings.base_delay_seconds);
+          delay.value = String(parts.value);
+          unit.value = String(parts.unit);
+        }
+        status.textContent = cyberPolicySaving
+          ? "Saving…"
+          : settings.enabled ? bans.length + " active cooldown" + (bans.length === 1 ? "" : "s") : "Protection is off";
+        renderCollection($("cyber-policy-bans"), bans, {
+          attrs: { class: "event-list settings-card-list", role: "list" },
+          empty: "No active cooldowns",
+          render: (ban) => {
+            const identity = apiKeyIdentity(ban);
+            return el(
+              "article",
+              { class: "auth-file-card", role: "listitem" },
+              el(
+                "div",
+                { class: "event-entry-head settings-entry-header" },
+                renderAPIKeyIdentity(ban),
+                el("button", {
+                  class: "link danger",
+                  type: "button",
+                  disabled: cyberPolicySaving,
+                  text: "Clear cooldown",
+                  onclick: () =>
+                    openActionDialog(
+                      "Clear cooldown?",
+                      "Requests using " + identity.text +
+                        " will be admitted immediately if its subscription quota and routing rules allow them.",
+                      undefined,
+                      () => clearCyberPolicy(ban.scope)
+                    )
+                })
+              ),
+              el(
+                "div",
+                { class: "settings-entry-fields" },
+                settingsEntryField(
+                  "Blocked until",
+                  el("span", { text: when(ban.blocked_until) + DISPLAY_SEPARATOR + compactResetAfter(ban.remaining_seconds || 0) })
+                ),
+                settingsEntryField("Consecutive detections", el("span", { text: int(ban.consecutive || 0) })),
+                settingsEntryField("Last detection", el("span", { text: when(ban.last_detected_at) }))
+              )
+            );
+          }
+        });
+      }
+
       function renderPlans() {
         if (renderDataPending($("plans-body"), [resources.admin.plans, resources.admin.keys], "Loading…", "empty section-loading")) return;
         const plans = resources.admin.plans.value.map((plan) => ({
@@ -6782,7 +6964,7 @@
         for (const item of credentials.filter(
           (item) =>
             (!selection.enabledOnly || !item.disabled || routeChoiceState(selection, "credential", item.ref) !== "none") &&
-            matchesTerm(credentialLabel(item), term)
+            matchesTerm(rawCredentialLabel(item), term)
         )
           .sort(compareCredentials)) {
           options.push({
@@ -7644,7 +7826,11 @@
                 }
               : entry;
           lines.push(
-            columns.map((column) => csvCell(kind === "events" && column.endsWith("_tokens") && !measured ? null : row[column])).join(",")
+            columns.map((column) => {
+              const value = kind === "events" && column.endsWith("_tokens") && !measured ? null : row[column];
+              return csvCell(typeof value === "string" ? displayLabel(value) : value);
+            })
+              .join(",")
           );
         }
         return "\ufeff" + lines.join("\r\n") + "\r\n";
@@ -7893,7 +8079,7 @@
 
       function renderPluginLogMessage(pluginLog) {
         const message = pluginLog.message || "";
-        if (!message.startsWith("route ")) return el("div", { class: "plugin-log-message" }, message);
+        if (!message.startsWith("route ")) return el("div", { class: "plugin-log-message" }, displayLabel(message));
         try {
           const row = JSON.parse(message.slice(6));
           const model =
@@ -7937,9 +8123,9 @@
                 el("span", { text: "Request result: " + outcome })
               )
             ),
-            el("pre", {}, JSON.stringify(row, null, 2))
+            el("pre", {}, displayLabel(JSON.stringify(row, null, 2)))
           );
-        } catch (_) { return el("div", { class: "plugin-log-message" }, message); }
+        } catch (_) { return el("div", { class: "plugin-log-message" }, displayLabel(message)); }
       }
 
       function periodLabel(seconds) {
@@ -8735,6 +8921,25 @@
         if (currentRole && activeTab(currentRole === "account") === "analysis") renderAnalysis(currentRole === "account");
       }
 
+      function syncEmailMaskControls() {
+        document.querySelectorAll("[data-email-mask-toggle]").forEach((control) => { control.checked = maskEmailAddresses; });
+      }
+
+      function setEmailMask(enabled) {
+        maskEmailAddresses = !!enabled;
+        try { localStorage.setItem(EMAIL_MASK_PREFERENCE, JSON.stringify(maskEmailAddresses)); } catch (_) {}
+        syncEmailMaskControls();
+        for (const rolePages of Object.values(pages)) {
+          for (const page of Object.values(rolePages)) for (const section of page.sections) section.displayed = null;
+        }
+        renderPage();
+      }
+
+      syncEmailMaskControls();
+      document.querySelectorAll("[data-email-mask-toggle]").forEach((control) => {
+        control.addEventListener("change", (event) => setEmailMask(event.target.checked));
+      });
+
       for (const button of document.querySelectorAll('[data-page-action="refresh"]')) {
         setActionIcon(button, "refresh", "Refresh");
         button.onclick = () => refreshPage();
@@ -8810,10 +9015,6 @@
           saveChoice(role, ui.enabledOnly.id);
           renderAuthFiles(account);
         });
-        ui.obfuscateEmails.addEventListener("change", () => {
-          saveChoice(role, ui.obfuscateEmails.id);
-          renderAuthFiles(account);
-        });
         ui.provider.addEventListener("change", () => {
           saveChoice(role, ui.provider.id);
           renderAuthFiles(account);
@@ -8821,6 +9022,23 @@
         ui.search.addEventListener("input", () => renderAuthFiles(account));
         ui.bulk.onclick = () => guard(() => refreshFilteredAuthQuotas(account));
       }
+
+      $("cyber-policy-enabled").addEventListener("change", (event) => {
+        const settings = resources.admin.cyberPolicy.value?.settings;
+        if (!settings) return;
+        guard(() => saveCyberPolicy({ ...settings, enabled: event.target.checked }));
+      });
+      $("cyber-policy-save").onclick = () => {
+        const value = Number($("cyber-policy-delay").value);
+        const unit = Number($("cyber-policy-delay-unit").value);
+        const seconds = value * unit;
+        if (!Number.isInteger(value) || value < 1 || !Number.isInteger(seconds) || seconds > 30 * 86400) {
+          notify("Base delay must be a whole number between 1 second and 30 days", "err");
+          return;
+        }
+        const settings = resources.admin.cyberPolicy.value?.settings;
+        if (settings) guard(() => saveCyberPolicy({ ...settings, base_delay_seconds: seconds }));
+      };
 
       const TABS = Array.from(document.querySelectorAll(".tabs button[data-tab]"));
       function setAdminTab(name) {
@@ -8833,10 +9051,20 @@
           tab.classList.toggle("active", active);
           tab.setAttribute("aria-selected", String(active));
         }
-        const visible = selected === "settings" ? new Set(["plans", "routes", "prices", "plugin-logs"]) : new Set([selected]);
-        for (const section of ["keys", "analysis", "plans", "routes", "prices", "request-events", "errors", "auth-files", "plugin-logs"]) {
-          $("tab-" + section).classList.toggle("hidden", !visible.has(section));
-        }
+        const visible =
+          selected === "settings" ? new Set(["cyber-policy", "plans", "routes", "prices", "plugin-logs"]) : new Set([selected]);
+        for (const section of [
+          "keys",
+          "analysis",
+          "cyber-policy",
+          "plans",
+          "routes",
+          "prices",
+          "request-events",
+          "errors",
+          "auth-files",
+          "plugin-logs"
+        ]) { $("tab-" + section).classList.toggle("hidden", !visible.has(section)); }
         $("shared-time-filter").classList.toggle("hidden", !["analysis", "request-events", "errors"].includes(selected));
         $("events-export").classList.toggle("hidden", !["request-events", "errors"].includes(selected));
         if (!["analysis", "request-events", "errors"].includes(selected)) { closeSharedTimePopover(false); }

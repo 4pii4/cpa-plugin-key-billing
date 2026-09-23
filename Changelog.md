@@ -1,5 +1,23 @@
 # Changelog
 
+## v1.3.14
+
+### Upgrade notes
+
+- Back up the database before upgrading. Schema 16 adds persistent cyber-policy cooldown settings and per-key state; restore the backup before downgrading.
+- Cyber-policy protection is off by default. Configure its base delay in Settings; disabling it clears active cooldowns.
+
+### Backend
+
+- Added an optional cooldown for the exact downstream CPA billing API key that receives an upstream HTTP 400 `cyber_policy` error.
+- Persist cooldowns by hashed caller scope, double the delay for consecutive detections up to 30 days across cooldown expiry, reset only after a different outcome, and block new requests before they occupy an upstream credential.
+- Added administrator endpoints to inspect settings and active cooldowns, change the base delay, and clear an individual key immediately.
+
+### Frontend
+
+- Added cyber-policy protection settings, active cooldown details, and per-key clear actions to Settings.
+- Moved **Mask emails** to the persistent page header and apply it throughout administrator and account views, including auth cards, routing labels, analysis, events, errors, logs, tooltips, and CSV exports.
+
 ## v1.3.13
 
 ### Upgrade notes

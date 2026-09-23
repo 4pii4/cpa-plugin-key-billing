@@ -16,7 +16,8 @@ func TestV14CodexRoutingMigrationPreservesHistory(t *testing.T) {
 		t.Fatal(err)
 	}
 	// V14 is the current schema without the new routing table.
-	if _, err := legacy.Exec(strings.TrimPrefix(schema, codexRoutingSchema) + `
+	legacySchema := strings.TrimPrefix(strings.TrimPrefix(schema, codexRoutingSchema), cyberPolicySchema)
+	if _, err := legacy.Exec(legacySchema + `
 		INSERT INTO api_keys(scope,label) VALUES('dummy-scope','Keep me');
 		INSERT INTO request_events(id,at,scope,failed) VALUES(1,1,'dummy-scope',1),(2,2,'dummy-scope',0);
 		INSERT INTO request_errors(request_event_id,status_code) VALUES(1,429);
@@ -61,7 +62,8 @@ func TestV14CodexMigrationRollsBackOnConflict(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer legacy.Close()
-	if _, err := legacy.Exec(strings.TrimPrefix(schema, codexRoutingSchema) + `CREATE TABLE codex_routing(marker TEXT); INSERT INTO codex_routing VALUES('keep'); PRAGMA user_version=14;`); err != nil {
+	legacySchema := strings.TrimPrefix(strings.TrimPrefix(schema, codexRoutingSchema), cyberPolicySchema)
+	if _, err := legacy.Exec(legacySchema + `CREATE TABLE codex_routing(marker TEXT); INSERT INTO codex_routing VALUES('keep'); PRAGMA user_version=14;`); err != nil {
 		t.Fatal(err)
 	}
 	if db, err := Open(path); err == nil {

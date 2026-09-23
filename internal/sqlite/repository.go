@@ -23,6 +23,7 @@ func (d *DB) Load(requestEventCutoff, pluginLogCutoff time.Time) (billing.Snapsh
 		d.loadRoutes,
 		d.loadConfigCredentials,
 		d.loadCodexRouting,
+		d.loadCyberPolicy,
 	} {
 		if err := load(state); err != nil {
 			return billing.Snapshot{}, err
@@ -85,7 +86,12 @@ func saveStateTables(tx *sql.Tx, state *billing.State, changes billing.Changes) 
 		}
 	}
 	if changes.CodexRouting {
-		return saveCodexRouting(tx, state)
+		if err := saveCodexRouting(tx, state); err != nil {
+			return err
+		}
+	}
+	if changes.CyberPolicy {
+		return saveCyberPolicy(tx, state)
 	}
 	return nil
 }

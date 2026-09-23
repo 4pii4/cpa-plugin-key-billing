@@ -35,6 +35,7 @@ type Changes struct {
 	Routes            bool
 	ConfigCredentials bool
 	CodexRouting      bool
+	CyberPolicy       bool
 
 	NormalRequestEvents []RequestEvent
 	RequestErrorEvents  []RequestErrorEvent
@@ -44,7 +45,7 @@ type Changes struct {
 const maxPendingRequestRecords = 1000
 
 func (c Changes) empty() bool {
-	return len(c.Keys) == 0 && !c.AllKeys && !c.Plans && !c.Routes && !c.ConfigCredentials && !c.CodexRouting &&
+	return len(c.Keys) == 0 && !c.AllKeys && !c.Plans && !c.Routes && !c.ConfigCredentials && !c.CodexRouting && !c.CyberPolicy &&
 		len(c.NormalRequestEvents) == 0 && len(c.RequestErrorEvents) == 0 && c.RequestEventCutoff.IsZero()
 }
 
@@ -61,6 +62,7 @@ func (c Changes) merge(next Changes) Changes {
 		Routes:              c.Routes || next.Routes,
 		ConfigCredentials:   c.ConfigCredentials || next.ConfigCredentials,
 		CodexRouting:        c.CodexRouting || next.CodexRouting,
+		CyberPolicy:         c.CyberPolicy || next.CyberPolicy,
 		NormalRequestEvents: append(append([]RequestEvent(nil), c.NormalRequestEvents...), next.NormalRequestEvents...),
 		RequestErrorEvents:  append(append([]RequestErrorEvent(nil), c.RequestErrorEvents...), next.RequestErrorEvents...),
 		RequestEventCutoff:  next.RequestEventCutoff,

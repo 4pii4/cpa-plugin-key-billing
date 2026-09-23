@@ -76,6 +76,10 @@ func (a *App) interceptBeforeAuth(raw []byte) ([]byte, error) {
 	if !helper {
 		routing := a.store.ResolveRouting(scope, req.Model, req.RequestedModel)
 		a.beginRouteLog(req.RequestID, scope, routing)
+		cooldownNow := a.store.Now()
+		if decision := a.store.CyberPolicyDecision(scope, cooldownNow); decision.Blocked {
+			return OKEnvelope(cyberPolicyCooldownResponse(req.SourceFormat, decision, cooldownNow))
+		}
 		if routing.ConfigurationError != "" {
 			return OKEnvelope(routingConfigurationResponse(req.SourceFormat, routing.ConfigurationError))
 		}
@@ -190,6 +194,7 @@ func (a *App) handleUsage(raw []byte) ([]byte, error) {
 		recordError = billing.RequestError{StatusCode: failure.StatusCode, ErrorType: failure.ErrorType,
 			Reason: failure.Reason, Body: failure.Body}
 	}
+	now := a.store.Now()
 	event := billing.UsageEvent{
 		Scope:           scope,
 		KeyPreview:      billing.PreviewKey(record.APIKey),
@@ -206,12 +211,18 @@ func (a *App) handleUsage(raw []byte) ([]byte, error) {
 		Latency:         record.Latency,
 		TTFT:            record.TTFT,
 		Breakdown:       usageBreakdown(record),
-		At:              a.store.Now(),
+		At:              now,
 	}
 	if record.Failed {
 		a.store.RecordUsageError(event, recordError)
 	} else {
 		a.store.RecordUsage(event)
+	}
+	observation := a.store.ObserveCyberPolicyOutcome(scope, record.Failed && isCyberPolicyFailure(record.Failure), now)
+	if observation.Applied {
+		a.store.AddPluginLog(billing.PluginLogInfo,
+			"Cyber-policy cooldown applied to API key %s until %s after %d consecutive detection(s)",
+			observation.Preview, observation.BlockedUntil.UTC().Format(time.RFC3339), observation.Consecutive)
 	}
 	a.observeCredentialUsage(record.AuthIndex, record.AuthType, record.Source, scope)
 	return OKEnvelope(struct{}{})
@@ -261,6 +272,19 @@ func concurrencyLimitResponse(sourceFormat string, decision billing.SlotDecision
 			"Retry-After":  []string{"1"},
 		},
 		ResponseBody: refusalBody(sourceFormat, quotaExhaustedError, message),
+	}
+}
+
+func cyberPolicyCooldownResponse(sourceFormat string, decision billing.CyberPolicyDecision, now time.Time) RequestInterceptResponse {
+	headers := http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}
+	if retryAfter := retryAfterSeconds(decision.BlockedUntil, now); retryAfter > 0 {
+		headers.Set("Retry-After", strconv.Itoa(retryAfter))
+	}
+	message := "CPA billing API key is temporarily paused after a cyber-policy refusal. Requests resume at " +
+		decision.BlockedUntil.UTC().Format(time.RFC3339) + ". An administrator can clear the cooldown sooner."
+	return RequestInterceptResponse{
+		Terminate: true, StatusCode: http.StatusTooManyRequests, ResponseHeaders: headers,
+		ResponseBody: refusalBody(sourceFormat, cyberPolicyCooldownError, message),
 	}
 }
 
@@ -356,6 +380,11 @@ var (
 		anthropicType: "permission_error",
 		openaiType:    "permission_error",
 		openaiCode:    "insufficient_quota",
+	}
+	cyberPolicyCooldownError = refusal{
+		anthropicType: "rate_limit_error",
+		openaiType:    "rate_limit_error",
+		openaiCode:    "cyber_policy_cooldown",
 	}
 )
 

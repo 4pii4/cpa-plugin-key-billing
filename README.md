@@ -17,12 +17,14 @@
 - Sets a **maximum concurrent request count** for each API key
 - Binds **routing rules** to each API key to restrict model access and upstream credentials
 - Prioritizes **Codex Plus accounts before a Pro 20x reserve**, with plugin-owned account pools and bounded quota-recovery probes
+- Can pause the exact downstream **CPA billing API key** after an upstream `cyber_policy` refusal, with persistent exponential backoff and administrator clearing
+- Provides a global **Mask emails** control across administrator and account views
 - Retrieves reference model prices from [models.dev](https://models.dev/)
 - Ships fallback prices for common CPA model aliases so fresh installations can bill them immediately
 
 ## How it works
 
-Before a request reaches an upstream provider, the plugin checks its subscription quota, concurrency limit, and routing policy. After the upstream call finishes, CLIProxyAPI supplies usage through `usage.handle`. The plugin records the request event, calculates its cost, and updates consumption for the active quota period.
+Before a request reaches an upstream provider, the plugin checks its cyber-policy cooldown, subscription quota, concurrency limit, and routing policy. After the upstream call finishes, CLIProxyAPI supplies usage and upstream failures through `usage.handle`. The plugin records the request event, calculates its cost, updates consumption for the active quota period, and applies any enabled cooldown.
 
 ```mermaid
 ---
@@ -59,6 +61,20 @@ On the administrator **Auth file** page, enable **Plus first, Pro reserve**. The
 - Settings and fingerprint-based role overrides survive restarts. Quota snapshots and probe leases deliberately do not. Schema 15 adds the settings table; back up the database before upgrading, and restore that backup before downgrading.
 
 Administrator API: `GET /v0/management/plugins/cpa-key-billing/codex-routing` returns `settings`, `last_hook_at`, and `last_pool`. `PUT` the settings object `{ "enabled": true, "roles": { "sha256:…": "reserve" } }` to save; roles may be `primary` or `reserve`, and omitting a fingerprint restores automatic classification. Codex entries in the administrator `/auth-files` response expose their `routing_ref`. API-key self-service users cannot edit this policy.
+
+### Cyber-policy cooldown
+
+Settings includes an optional downstream-key cooldown for the provider response code `cyber_policy` with HTTP status 400. It is disabled by default and uses a 15-minute base delay until changed. When enabled, the plugin uses the API key on the exact `usage.handle` failure record, derives the same hashed caller scope used during request admission, and pauses only that CPA billing API key. Plaintext API keys are never added to cooldown state or logs.
+
+Each consecutive detection doubles the delay, up to 30 days, including a new refusal after the previous cooldown expires. A different observed outcome breaks the streak without shortening a cooldown already protecting the key. State is written synchronously and survives restarts, so stale browser data or a restart cannot silently bypass an active pause. Requests rejected by the cooldown receive HTTP 429, `Retry-After`, and the `cyber_policy_cooldown` code before pricing, concurrency, quota, or upstream credential selection. In-flight requests can still report their final outcomes.
+
+Administrators can view each active key and clear its cooldown immediately in Settings. Turning the feature off admits requests immediately and clears all active cooldown state. Schema 16 adds the persistent settings table; back up the database before upgrading, and restore that backup before downgrading.
+
+Administrator API:
+
+- `GET /v0/management/plugins/cpa-key-billing/cyber-policy` returns `settings` and active `bans`.
+- `PUT /v0/management/plugins/cpa-key-billing/cyber-policy` saves `{ "enabled": true, "base_delay_seconds": 900 }`.
+- `DELETE /v0/management/plugins/cpa-key-billing/cyber-policy?scope=<hashed-scope>` clears one key.
 
 ## Requirements
 

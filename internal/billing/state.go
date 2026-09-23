@@ -13,6 +13,7 @@ type State struct {
 	Routes            []Route
 	ConfigCredentials map[string]ConfigCredential
 	CodexRouting      CodexRouting
+	CyberPolicy       CyberPolicy
 }
 
 type ConfigCredential struct {
@@ -26,6 +27,7 @@ func NewState() *State {
 		Prices:            make(map[string]CustomPrice),
 		Keys:              make(map[string]*KeyState),
 		ConfigCredentials: make(map[string]ConfigCredential),
+		CyberPolicy:       newCyberPolicy(),
 	}
 }
 

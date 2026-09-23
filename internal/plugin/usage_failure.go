@@ -52,6 +52,15 @@ func usageFailureDetails(failure UsageFailure) usageFailureView {
 	}
 }
 
+// The code and 400 status are stable machine fields in the provider response;
+// the human message may change or be localized. Either the host status or the
+// embedded status can carry the original provider value after proxy wrapping.
+func isCyberPolicyFailure(failure UsageFailure) bool {
+	normalized, _ := parseJSONFailure(strings.TrimSpace(failure.Body))
+	return strings.EqualFold(normalized.Code, "cyber_policy") &&
+		(validFailureStatus(failure.StatusCode) == 400 || normalized.Status == 400)
+}
+
 func parseJSONFailure(raw string) (normalizedFailure, string) {
 	if raw == "" {
 		return normalizedFailure{}, ""

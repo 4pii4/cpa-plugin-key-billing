@@ -232,6 +232,7 @@ func editConfiguration[T any](s *Store, fn func(*State) (T, Changes, error)) (T,
 			copyKey.RouteBindings = key.RouteBindings.clone()
 			next.Keys[scope] = &copyKey
 		}
+		next.CyberPolicy = cloneCyberPolicy(s.state.CyberPolicy)
 
 		result, changes, err := fn(&next)
 		if err != nil {
