@@ -1,8 +1,11 @@
 package plugin
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -14,6 +17,12 @@ const (
 	codexInventoryTTL  = 30 * time.Second
 	codexQuotaTTL      = 2 * time.Minute
 	codexProbeInterval = 30 * time.Second
+
+	codexAutoPollInterval    = time.Minute
+	codexAutoFailureCooldown = 15 * time.Minute
+	codexAutoMinPingInterval = 10 * time.Minute
+	codexAutoResetDrift      = 30 * time.Second
+	codexAutoModel           = "gpt-5.5"
 )
 
 // Runtime evidence is deliberately not persisted. On restart, CPA's current
@@ -27,6 +36,7 @@ type codexRouter struct {
 	sequence    uint64
 	hookAt      time.Time
 	lastPool    string
+	autoRunning bool
 }
 
 type codexAccount struct {
@@ -38,6 +48,7 @@ type codexAccount struct {
 	evidence     uint64
 	health       map[string]codexHealth
 	probeAfter   map[string]time.Time
+	auto         codexAutoState
 }
 
 type codexQuotaLimit struct {
@@ -50,6 +61,54 @@ type codexHealth struct {
 	observed time.Time
 	failed   bool
 	retry    time.Time
+}
+
+type codexAutoWindow struct {
+	present   bool
+	usedKnown bool
+	used      float64
+	reset     time.Time
+}
+
+func (w codexAutoWindow) exhausted() bool {
+	return w.present && w.usedKnown && w.used >= 100
+}
+
+type codexAutoQuota struct {
+	valid    bool
+	session  codexAutoWindow
+	weekly   codexAutoWindow
+	blocking bool
+}
+
+type codexAutoState struct {
+	evidence  uint64
+	checking  bool
+	pinging   bool
+	nextCheck time.Time
+	checkedAt time.Time
+	lastPing  time.Time
+	session   codexAutoWindow
+	weekly    codexAutoWindow
+	status    string
+	message   string
+}
+
+type reqCodexAutoStart struct {
+	callbackID string
+	token      string
+	accountID  string
+	quota      codexAutoQuota
+	fetchedAt  time.Time
+}
+
+type codexAutoStartView struct {
+	RoutingRef string `json:"routing_ref"`
+	Status     string `json:"status"`
+	Message    string `json:"message,omitempty"`
+	CheckedAt  string `json:"checked_at,omitempty"`
+	LastPingAt string `json:"last_ping_at,omitempty"`
+	NextCheck  string `json:"next_check_at,omitempty"`
 }
 
 func (r *codexRouter) reset() {
@@ -71,7 +130,8 @@ func isCodexAccount(file hostAuthFile) bool {
 func codexIdentity(file hostAuthFile) hostAuthFile {
 	// Routing needs identity and revision, never a cached email or token preview.
 	return hostAuthFile{ID: file.ID, AuthIndex: file.AuthIndex, Type: file.Type, Provider: file.Provider,
-		Source: file.Source, Path: file.Path, AccountType: file.AccountType, RuntimeOnly: file.RuntimeOnly, ModTime: file.ModTime}
+		Source: file.Source, Path: file.Path, AccountType: file.AccountType, RuntimeOnly: file.RuntimeOnly,
+		Disabled: file.Disabled, Unavailable: file.Unavailable, ModTime: file.ModTime}
 }
 
 func (r *codexRouter) accountLocked(file hostAuthFile, inventory bool) *codexAccount {
@@ -83,6 +143,7 @@ func (r *codexRouter) accountLocked(file hostAuthFile, inventory bool) *codexAcc
 	}
 	state := r.accounts[file.AuthIndex]
 	if state != nil && state.file.ID == file.ID && authFileRevision(state.file) == authFileRevision(file) {
+		state.file.Disabled, state.file.Unavailable = file.Disabled, file.Unavailable
 		return state
 	}
 	// An older management read must not undo a newer inventory revision.
@@ -202,6 +263,73 @@ func parseCodexRoutingQuota(object map[string]any, at time.Time) map[string]code
 	return result
 }
 
+// parseCodexAutoQuota keeps the two ordinary Codex windows separate. An
+// inactive window advances its reset time on every usage query; an active one
+// stays fixed. That distinction is the only reliable signal available without
+// inventing state from request timestamps.
+func parseCodexAutoQuota(object map[string]any, at time.Time) codexAutoQuota {
+	info := objectMap(object, "rate_limit", "rateLimit")
+	if info == nil {
+		return codexAutoQuota{}
+	}
+	result := codexAutoQuota{valid: true}
+	for index, key := range []string{"primary_window", "secondary_window"} {
+		window := objectMap(info, key, camelKey(key))
+		if window == nil {
+			continue
+		}
+		parsed := codexAutoWindow{present: true}
+		if used, ok := floatValue(window, "used_percent", "usedPercent"); ok && used >= 0 && used <= 100 {
+			parsed.usedKnown, parsed.used = true, used
+		}
+		if seconds, ok := intValue(window, "reset_at", "resetAt"); ok && seconds > 0 {
+			parsed.reset = time.Unix(seconds, 0).UTC()
+		} else if seconds, ok := intValue(window, "reset_after_seconds", "resetAfterSeconds"); ok && seconds > 0 && seconds <= 31*86400 {
+			parsed.reset = at.Add(time.Duration(seconds) * time.Second).UTC()
+		}
+		windowSeconds, _ := intValue(window, "limit_window_seconds", "limitWindowSeconds")
+		switch {
+		case windowSeconds == 5*60*60:
+			result.session = parsed
+		case windowSeconds == 7*24*60*60 || windowSeconds >= 28*24*60*60 && windowSeconds <= 31*24*60*60:
+			result.weekly = parsed
+		case index == 0 && !result.session.present:
+			result.session = parsed
+		case index == 1 && !result.weekly.present:
+			result.weekly = parsed
+		}
+	}
+	if result.weekly.exhausted() {
+		result.blocking = true
+	}
+	allowed, hasAllowed := boolValue(info, "allowed")
+	reached, hasReached := boolValue(info, "limit_reached", "limitReached")
+	if (hasAllowed && !allowed || hasReached && reached) && !result.session.exhausted() {
+		// A generic block not explained by the 5-hour window is conservatively
+		// treated as a longer-term block. A later fresh usage response clears it.
+		result.blocking = true
+	}
+	return result
+}
+
+func codexAutoWindowRestarted(previous, current codexAutoWindow) bool {
+	if !previous.present || !current.present {
+		return false
+	}
+	if previous.exhausted() && !current.exhausted() {
+		return true
+	}
+	// Surprise global resets can arrive before a window is exhausted. A drop
+	// back to the beginning is stronger evidence than schedule arithmetic.
+	if previous.usedKnown && current.usedKnown && previous.used-current.used >= 1 && current.used <= 1 {
+		return true
+	}
+	if previous.reset.IsZero() || current.reset.IsZero() {
+		return false
+	}
+	return current.reset.Sub(previous.reset) >= codexAutoResetDrift
+}
+
 func (a *App) beginCodexQuota(file hostAuthFile) (*codexAccount, uint64) {
 	r := &a.codexRouter
 	r.mu.Lock()
@@ -234,6 +362,280 @@ func (a *App) finishCodexQuota(state *codexAccount, sequence uint64, result auth
 			delete(state.probeAfter, scope)
 		}
 	}
+}
+
+func (a *App) finishCodexAutoQuota(state *codexAccount, sequence uint64, req reqCodexAutoStart) {
+	if state == nil {
+		return
+	}
+	config := a.store.CodexRouting()
+	ref := billing.CredentialFingerprint(state.file.ID)
+	r := &a.codexRouter
+	r.mu.Lock()
+	if r.accounts[state.file.AuthIndex] != state || state.quotaRequest != sequence || state.auto.evidence > sequence {
+		r.mu.Unlock()
+		return
+	}
+	state.auto.checking = false
+	if !config.AutoStart[ref] {
+		state.auto = codexAutoState{}
+		r.mu.Unlock()
+		return
+	}
+	state.auto.evidence = sequence
+	state.auto.checkedAt = req.fetchedAt
+	previousSession, previousWeekly := state.auto.session, state.auto.weekly
+	state.auto.session, state.auto.weekly = req.quota.session, req.quota.weekly
+	if state.auto.nextCheck.Before(req.fetchedAt.Add(codexAutoPollInterval)) {
+		state.auto.nextCheck = req.fetchedAt.Add(codexAutoPollInterval)
+	}
+
+	trigger := codexAutoWindowRestarted(previousSession, req.quota.session) ||
+		codexAutoWindowRestarted(previousWeekly, req.quota.weekly)
+	switch {
+	case !req.quota.valid || !req.quota.session.present || req.quota.session.reset.IsZero():
+		state.auto.status = "unavailable"
+		state.auto.message = "The ordinary 5-hour window was not reported; no packet was sent."
+	case req.quota.session.exhausted():
+		state.auto.status = "blocked"
+		state.auto.message = "The 5-hour window is exhausted; watching for its regular or gifted reset."
+	case req.quota.blocking:
+		state.auto.status = "blocked"
+		state.auto.message = "The weekly window is exhausted; watching for its regular or gifted reset."
+	case !previousSession.present:
+		state.auto.status = "watching"
+		state.auto.message = "Baseline captured; watching the 5-hour and weekly reset signals."
+	case !trigger:
+		state.auto.status = "watching"
+		state.auto.message = "Windows are active or unchanged; no packet is needed."
+	case state.auto.pinging:
+		r.mu.Unlock()
+		return
+	case !state.auto.lastPing.IsZero() && req.fetchedAt.Sub(state.auto.lastPing) >= 0 && req.fetchedAt.Sub(state.auto.lastPing) < codexAutoMinPingInterval:
+		state.auto.status = "cooldown"
+		state.auto.message = "A fresh window signal was seen, but the 10-minute packet cooldown is active."
+	case strings.TrimSpace(req.callbackID) == "":
+		state.auto.status = "pending"
+		state.auto.message = "A fresh window was detected; waiting for a host callback scope to send the packet."
+	default:
+		state.auto.pinging = true
+		state.auto.status = "starting"
+		state.auto.message = "Fresh 5-hour or weekly window detected; sending the tiny start packet."
+		r.mu.Unlock()
+		a.sendCodexAutoStart(state, ref, req)
+		return
+	}
+	r.mu.Unlock()
+}
+
+func (a *App) sendCodexAutoStart(state *codexAccount, ref string, req reqCodexAutoStart) {
+	body, errMarshal := json.Marshal(map[string]any{
+		"model": codexAutoModel,
+		"input": []any{map[string]any{
+			"type": "message", "role": "user",
+			"content": []any{map[string]any{"type": "input_text", "text": "hi"}},
+		}},
+		"instructions":      "Reply with OK.",
+		"reasoning":         map[string]any{"effort": "none", "summary": "auto"},
+		"max_output_tokens": 8,
+		"store":             false,
+		"stream":            true,
+	})
+	var errPing error
+	if errMarshal != nil {
+		errPing = fmt.Errorf("build tiny Codex packet: %w", errMarshal)
+	} else if a.hostCaller == nil {
+		errPing = fmt.Errorf("host callback is unavailable")
+	} else {
+		headers := http.Header{
+			"Accept":        {"text/event-stream"},
+			"Content-Type":  {"application/json"},
+			"Originator":    {"codex_cli_rs"},
+			"User-Agent":    {"codex_cli_rs/0.144.1"},
+			"Authorization": {"Bearer " + req.token},
+		}
+		if strings.TrimSpace(req.accountID) != "" {
+			headers.Set("Chatgpt-Account-Id", strings.TrimSpace(req.accountID))
+		}
+		raw, errCall := a.hostCaller(hostHTTPDo, hostHTTPRequest{
+			HostCallbackID: req.callbackID,
+			Method:         http.MethodPost,
+			URL:            "https://chatgpt.com/backend-api/codex/responses",
+			Headers:        headers,
+			Body:           body,
+		})
+		if errCall != nil {
+			errPing = fmt.Errorf("tiny Codex packet failed: %s", redactSecret(errCall.Error(), req.token))
+		} else {
+			var response hostHTTPResponse
+			if errDecode := json.Unmarshal(raw, &response); errDecode != nil {
+				errPing = fmt.Errorf("parse tiny Codex packet response: %w", errDecode)
+			} else if response.StatusCode < 200 || response.StatusCode >= 300 {
+				var object map[string]any
+				_ = json.Unmarshal(response.Body, &object)
+				message := redactSecret(upstreamErrorMessage(object), req.token)
+				if message == "" {
+					message = http.StatusText(response.StatusCode)
+				}
+				errPing = fmt.Errorf("tiny Codex packet returned HTTP %d: %s", response.StatusCode, message)
+			} else if errStream := codexAutoStreamCompletion(response.Body); errStream != nil {
+				errPing = fmt.Errorf("tiny Codex packet did not complete: %s", redactSecret(errStream.Error(), req.token))
+			}
+		}
+	}
+
+	now := a.store.Now()
+	r := &a.codexRouter
+	r.mu.Lock()
+	current := r.accounts[state.file.AuthIndex]
+	if current != state {
+		r.mu.Unlock()
+		return
+	}
+	state.auto.pinging = false
+	if errPing != nil {
+		state.auto.status = "failed"
+		state.auto.message = errPing.Error()
+		state.auto.nextCheck = now.Add(codexAutoFailureCooldown)
+	} else {
+		state.auto.status = "started"
+		state.auto.message = "Tiny gpt-5.5 stream completed; the fresh 5-hour and weekly windows were started."
+		state.auto.lastPing = now
+		state.auto.nextCheck = now.Add(codexAutoPollInterval)
+	}
+	r.mu.Unlock()
+	if errPing != nil {
+		a.store.AddPluginLog(billing.PluginLogError, "Codex window auto-start failed for credential %s: %v", ref, errPing)
+		return
+	}
+	a.store.AddPluginLog(billing.PluginLogInfo, "Codex window auto-start completed for credential %s", ref)
+}
+
+func codexAutoStreamCompletion(body []byte) error {
+	for _, line := range bytes.Split(body, []byte("\n")) {
+		line = bytes.TrimSpace(line)
+		if !bytes.HasPrefix(line, []byte("data:")) {
+			continue
+		}
+		data := bytes.TrimSpace(bytes.TrimPrefix(line, []byte("data:")))
+		if len(data) == 0 || bytes.Equal(data, []byte("[DONE]")) {
+			continue
+		}
+		var event map[string]any
+		if json.Unmarshal(data, &event) != nil {
+			continue
+		}
+		eventType := strings.ToLower(firstString(event, "type"))
+		if eventType == "response.completed" {
+			return nil
+		}
+		if eventType == "error" || eventType == "response.failed" || eventType == "response.incomplete" {
+			message := upstreamErrorMessage(event)
+			if message == "" {
+				message = eventType
+			}
+			return fmt.Errorf("%s", message)
+		}
+	}
+	return fmt.Errorf("stream ended without response.completed")
+}
+
+// runCodexAutoStart advances one due account during a host-owned callback.
+// It intentionally has no timer or goroutine: request.complete and settings
+// updates provide safe activity ticks while the embedded Go runtime stays idle
+// between host calls.
+func (a *App) runCodexAutoStart(callbackID string) {
+	if a == nil || a.store == nil || strings.TrimSpace(callbackID) == "" {
+		return
+	}
+	config := a.store.CodexRouting()
+	if len(config.AutoStart) == 0 {
+		return
+	}
+	a.syncCodexInventory()
+	now := a.store.Now()
+	r := &a.codexRouter
+	r.mu.Lock()
+	if r.autoRunning {
+		r.mu.Unlock()
+		return
+	}
+	indexes := make([]string, 0, len(r.accounts))
+	for index := range r.accounts {
+		indexes = append(indexes, index)
+	}
+	sort.Strings(indexes)
+	var selected *codexAccount
+	for _, index := range indexes {
+		state := r.accounts[index]
+		ref := billing.CredentialFingerprint(state.file.ID)
+		if !config.AutoStart[ref] || state.file.Disabled || state.file.Unavailable || state.auto.checking || state.auto.pinging {
+			continue
+		}
+		if !state.auto.nextCheck.IsZero() && now.Before(state.auto.nextCheck) {
+			continue
+		}
+		selected = state
+		break
+	}
+	if selected == nil {
+		r.mu.Unlock()
+		return
+	}
+	r.autoRunning = true
+	selected.auto.checking = true
+	selected.auto.status = "checking"
+	selected.auto.message = "Reading the current 5-hour and weekly windows."
+	selected.auto.nextCheck = now.Add(codexAutoPollInterval)
+	file := selected.file
+	r.mu.Unlock()
+
+	_, errFetch := a.fetchAuthQuota(callbackID, file, "codex")
+	r.mu.Lock()
+	if current := r.accounts[file.AuthIndex]; current == selected {
+		selected.auto.checking = false
+		if errFetch != nil {
+			selected.auto.status = "failed"
+			selected.auto.message = errFetch.Error()
+			selected.auto.nextCheck = now.Add(codexAutoFailureCooldown)
+		}
+	}
+	r.autoRunning = false
+	r.mu.Unlock()
+	if errFetch != nil {
+		a.store.AddPluginLog(billing.PluginLogError, "Codex window check failed for credential %s: %v",
+			billing.CredentialFingerprint(file.ID), errFetch)
+	}
+}
+
+func (a *App) codexAutoStartViews(config billing.CodexRouting) []codexAutoStartView {
+	r := &a.codexRouter
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	views := make([]codexAutoStartView, 0, len(config.AutoStart))
+	for _, state := range r.accounts {
+		ref := billing.CredentialFingerprint(state.file.ID)
+		if !config.AutoStart[ref] {
+			continue
+		}
+		status := state.auto.status
+		if status == "" {
+			status = "idle"
+		}
+		view := codexAutoStartView{RoutingRef: ref, Status: status, Message: state.auto.message}
+		if !state.auto.checkedAt.IsZero() {
+			view.CheckedAt = state.auto.checkedAt.UTC().Format(time.RFC3339)
+		}
+		if !state.auto.lastPing.IsZero() {
+			view.LastPingAt = state.auto.lastPing.UTC().Format(time.RFC3339)
+		}
+		if !state.auto.nextCheck.IsZero() {
+			view.NextCheck = state.auto.nextCheck.UTC().Format(time.RFC3339)
+		}
+		views = append(views, view)
+	}
+	sort.Slice(views, func(i, j int) bool { return views[i].RoutingRef < views[j].RoutingRef })
+	return views
 }
 
 func (a *App) observeCodexUsage(record UsageRecord) {
@@ -431,7 +833,10 @@ func (a *App) codexRoutingStatus(_ ManagementRequest) ManagementResponse {
 	r.mu.Lock()
 	hookAt, lastPool := r.hookAt, r.lastPool
 	r.mu.Unlock()
-	return JSONResponse(http.StatusOK, map[string]any{"settings": config, "last_hook_at": hookAt, "last_pool": lastPool})
+	return JSONResponse(http.StatusOK, map[string]any{
+		"settings": config, "last_hook_at": hookAt, "last_pool": lastPool,
+		"auto_start_accounts": a.codexAutoStartViews(config),
+	})
 }
 
 func (a *App) putCodexRouting(req ManagementRequest) ManagementResponse {
@@ -439,8 +844,23 @@ func (a *App) putCodexRouting(req ManagementRequest) ManagementResponse {
 	if err := json.Unmarshal(req.Body, &config); err != nil {
 		return JSONError(http.StatusBadRequest, "invalid", "Invalid Codex routing settings")
 	}
+	previous := a.store.CodexRouting()
 	if err := a.store.SetCodexRouting(config); err != nil {
 		return errorResponse(err)
 	}
+	a.resetCodexAutoStartSelections(previous, config)
+	a.runCodexAutoStart(req.HostCallbackID)
 	return a.codexRoutingStatus(req)
+}
+
+func (a *App) resetCodexAutoStartSelections(previous, current billing.CodexRouting) {
+	r := &a.codexRouter
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	for _, state := range r.accounts {
+		ref := billing.CredentialFingerprint(state.file.ID)
+		if previous.AutoStart[ref] != current.AutoStart[ref] {
+			state.auto = codexAutoState{}
+		}
+	}
 }

@@ -93,6 +93,7 @@ type quotaRow struct {
 
 type authQuotaResponse struct {
 	codexLimits                         map[string]codexQuotaLimit
+	codexAuto                           codexAutoQuota
 	AuthRevision                        string     `json:"auth_revision,omitempty"`
 	FetchedAt                           time.Time  `json:"fetched_at"`
 	Plan                                string     `json:"plan,omitempty"`
@@ -341,6 +342,13 @@ func (a *App) fetchAuthQuota(callbackID string, file hostAuthFile, provider stri
 	}
 	if provider == "codex" {
 		a.finishCodexQuota(routingState, routingSequence, result)
+		a.finishCodexAutoQuota(routingState, routingSequence, reqCodexAutoStart{
+			callbackID: callbackID,
+			token:      token,
+			accountID:  credentialString(credential, "account_id", "accountId", "chatgpt_account_id", "chatgptAccountId"),
+			quota:      result.codexAuto,
+			fetchedAt:  result.FetchedAt,
+		})
 	}
 	return result, nil
 }
@@ -419,6 +427,7 @@ func (a *App) fetchCodexQuota(callbackID, token, accountID string, result *authQ
 		result.Plan = normalizeCodexPlan(plan)
 	}
 	result.codexLimits = parseCodexRoutingQuota(object, result.FetchedAt)
+	result.codexAuto = parseCodexAutoQuota(object, result.FetchedAt)
 	appendCodexRateLimit(result, "", objectMap(object, "rate_limit", "rateLimit"))
 	appendCodexRateLimit(result, "Code Review ", objectMap(object, "code_review_rate_limit", "codeReviewRateLimit"))
 	for _, raw := range objectSlice(object, "additional_rate_limits", "additionalRateLimits") {

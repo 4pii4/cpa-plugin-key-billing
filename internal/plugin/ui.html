@@ -2582,7 +2582,7 @@
     <footer class="page-footer">
       <span>© 2026 <a href="https://github.com/4pii4/cpa-plugin-key-billing" target="_blank" rel="noopener noreferrer">CPA Key Billing</a></span>
       <span>&thinsp;·&thinsp;<a href="https://github.com/4pii4/cpa-plugin-key-billing/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">License</a></span>
-      <span>&thinsp;·&thinsp;Version: v1.3.14</span>
+      <span>&thinsp;·&thinsp;Version: v1.3.15</span>
     </footer>
 
     <div id="notice" class="notice" popover="manual"></div>
@@ -5646,6 +5646,8 @@
         if (!file.routing_ref || file.category !== "codex") return null;
         const entry = resources.admin.codexRouting;
         const current = entry.value?.settings?.roles?.[file.routing_ref] || "auto";
+        const autoStart = entry.value?.settings?.auto_start?.[file.routing_ref] === true;
+        const autoState = (entry.value?.auto_start_accounts || []).find((item) => item.routing_ref === file.routing_ref);
         const select = el(
           "select",
           {
@@ -5668,9 +5670,42 @@
         );
         return el(
           "div",
-          { class: "row auth-file-quota" },
-          el("span", { class: "small muted", text: "Routing pool" }),
-          el("span", { class: "native-select" }, select)
+          { class: "auth-file-quota" },
+          el(
+            "div",
+            { class: "row" },
+            el("span", { class: "small muted", text: "Routing pool" }),
+            el("span", { class: "native-select" }, select)
+          ),
+          el(
+            "label",
+            {
+              class: "toggle-filter",
+              title: "Watch for regular or gifted Codex resets and start fresh 5-hour and weekly windows with one tiny gpt-5.5 request."
+            },
+            el("input", {
+              type: "checkbox",
+              role: "switch",
+              checked: autoStart,
+              disabled: codexRoutingSaving || !entry.value || !!entry.error,
+              onchange: (event) => {
+                const enabled = event.target.checked;
+                guard(() =>
+                  saveCodexRouting((settings) => {
+                    settings.auto_start = { ...(settings.auto_start || {}) };
+                    if (enabled) settings.auto_start[file.routing_ref] = true; else delete settings.auto_start[file.routing_ref];
+                  })
+                );
+              }
+            }),
+            el("span", { text: "Auto-start 5h / weekly windows" })
+          ),
+          autoStart
+            ? el("div", {
+                class: "small muted",
+                text: autoState?.message || "Enabled — the first host activity captures a quota baseline."
+              })
+            : null
         );
       }
 

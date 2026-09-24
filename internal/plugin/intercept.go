@@ -170,6 +170,7 @@ func (a *App) completeRequest(raw []byte) ([]byte, error) {
 			a.store.ReleaseSlot(completion.RequestID)
 		}()
 		a.finishRouteLog(completion)
+		a.runCodexAutoStart(completion.HostCallbackID)
 	}
 	return OKEnvelope(struct{}{})
 }

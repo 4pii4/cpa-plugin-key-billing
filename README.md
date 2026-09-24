@@ -17,6 +17,7 @@
 - Sets a **maximum concurrent request count** for each API key
 - Binds **routing rules** to each API key to restrict model access and upstream credentials
 - Prioritizes **Codex Plus accounts before a Pro 20x reserve**, with plugin-owned account pools and bounded quota-recovery probes
+- Auto-starts opted-in Codex **5-hour and weekly windows** with one tiny request after regular or surprise gifted resets
 - Can pause the exact downstream **CPA billing API key** after an upstream `cyber_policy` refusal, with persistent exponential backoff and administrator clearing
 - Provides a global **Mask emails** control across administrator and account views
 - Retrieves reference model prices from [models.dev](https://models.dev/)
@@ -60,7 +61,17 @@ On the administrator **Auth file** page, enable **Plus first, Pro reserve**. The
 - **Host boundary:** CPA supplies only its eligible, highest-priority candidate tier. Keep participating accounts at the same CPA priority. The plugin cannot override disabled accounts, zero weights, model incompatibility, hard cooldowns, pinned credentials, an earlier scheduler plugin, or a host execution path that does not invoke `scheduler.pick` (including Home mode on CPA 7.2.143). The page reports whether a Codex scheduler call has actually been observed; refresh the page status after traffic. Stale plugin evidence cannot hold an account indefinitely, but a CPA cooldown still can prevent its recovery probe.
 - Settings and fingerprint-based role overrides survive restarts. Quota snapshots and probe leases deliberately do not. Schema 15 adds the settings table; back up the database before upgrading, and restore that backup before downgrading.
 
-Administrator API: `GET /v0/management/plugins/cpa-key-billing/codex-routing` returns `settings`, `last_hook_at`, and `last_pool`. `PUT` the settings object `{ "enabled": true, "roles": { "sha256:…": "reserve" } }` to save; roles may be `primary` or `reserve`, and omitting a fingerprint restores automatic classification. Codex entries in the administrator `/auth-files` response expose their `routing_ref`. API-key self-service users cannot edit this policy.
+### Codex window auto-start
+
+Each Codex authentication-file card has an **Auto-start 5h / weekly windows** switch. It is off by default and independent of Plus-first routing. For an opted-in account, the plugin reads the ordinary Codex quota windows during host activity. Inactive windows report a reset timestamp that slides forward; active windows keep a fixed timestamp. A slide of at least 30 seconds, an exhausted window becoming available, or usage unexpectedly dropping to the beginning identifies a fresh regular or globally gifted reset.
+
+Once the fresh state is confirmed and neither ordinary window is exhausted, the plugin sends `gpt-5.5` the text `hi`, asks it to reply with `OK`, selects no reasoning, and drains the complete stream. Codex starts the window only after that stream finishes. The packet consumes a small amount of upstream quota, so the switch is per account. One account cannot receive another packet for 10 minutes, and a failed check or packet waits 15 minutes before retrying. Spark and code-review windows neither trigger nor block the ordinary-window packet.
+
+The plugin creates no timer or background goroutine. Completed client requests and Codex-routing settings updates synchronously advance one due account, so the feature works without an open browser while CLIProxyAPI is active. A completely idle proxy performs no network work; the next completed request resumes the checks. Runtime observations are discarded on restart, requiring a new baseline before a packet can be sent. The plugin keeps polling accounts whose weekly window is exhausted, which lets an unannounced global reset override the previously advertised reset date immediately on the next observation.
+
+Quota checks and packets use CLIProxyAPI's host HTTP transport and therefore honor its global proxy. CLIProxyAPI 7.2.143 does not expose a credential-bound HTTP client to RPC plugins, so authentication files with their own `proxy_url` are reported as unsupported and are not auto-started.
+
+Administrator API: `GET /v0/management/plugins/cpa-key-billing/codex-routing` returns `settings`, `last_hook_at`, `last_pool`, and `auto_start_accounts`. `PUT` the settings object `{ "enabled": true, "roles": { "sha256:…": "reserve" }, "auto_start": { "sha256:…": true } }` to save. Roles may be `primary` or `reserve`; omitting a role restores automatic classification, while omitting an auto-start fingerprint disables packets for that account. Codex entries in the administrator `/auth-files` response expose their `routing_ref`. API-key self-service users cannot edit this policy.
 
 ### Cyber-policy cooldown
 

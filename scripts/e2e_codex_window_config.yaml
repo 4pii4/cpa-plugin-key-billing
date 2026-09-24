@@ -1,0 +1,28 @@
+# Isolated CLIProxyAPI configuration for the Codex window auto-start E2E case.
+host: "127.0.0.1"
+port: __PORT__
+auth-dir: "__RUNTIME_DIR__/auth"
+proxy-url: "http://127.0.0.1:__FIXTURE_PORT__"
+api-keys:
+  - "e2e-downstream-key"
+logging-to-file: false
+remote-management:
+  allow-remote: false
+  secret-key: "e2e-management-key"
+  disable-control-panel: true
+plugins:
+  enabled: true
+  dir: "__RUNTIME_DIR__/plugins"
+  configs:
+    cpa-key-billing:
+      enabled: true
+      debug: true
+      state_file: "__RUNTIME_DIR__/state.db"
+
+openai-compatibility:
+  - name: "codex-window-trigger"
+    base-url: "http://fixture.invalid/v1"
+    api-key-entries:
+      - api-key: "dummy-trigger-key"
+    models:
+      - name: "gpt-4o"

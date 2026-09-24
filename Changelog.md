@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.3.15
+
+### Upgrade notes
+
+- Codex window auto-start is off by default. Enable it per authentication-file account on **Auth file**; each successful start consumes a small amount of that account's quota.
+- CLIProxyAPI must receive traffic to advance checks because the plugin creates no background timer. Authentication files with their own `proxy_url` are not supported by the host callback transport.
+
+### Backend
+
+- Added activity-driven Codex 5-hour and weekly window auto-start with a tiny streamed `gpt-5.5` request, full response drainage, per-account cooldowns, and no plugin-owned background workers.
+- Detect inactive windows from sliding reset timestamps, continue watching exhausted weekly windows, and react to early global quota gifts without waiting for the previously advertised reset date.
+- Persist per-account opt-in by credential fingerprint while keeping quota observations, failure details, and packet status process-local.
+
+### Frontend
+
+- Added a per-account **Auto-start 5h / weekly windows** control and live status to Codex authentication-file cards on desktop and narrow screens.
+
 ## v1.3.14
 
 ### Upgrade notes

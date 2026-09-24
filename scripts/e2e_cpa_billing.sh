@@ -52,6 +52,7 @@ run_dir="$(mktemp -d "${TMPDIR:-/tmp}/cpa-key-billing-e2e.XXXXXX")"
 active_pid=""
 upstream_pid=""
 upstream_port=""
+codex_fixture_pid=""
 
 cleanup() {
   local status=$?
@@ -64,6 +65,10 @@ cleanup() {
     kill "$upstream_pid" >/dev/null 2>&1 || true
     wait "$upstream_pid" >/dev/null 2>&1 || true
   fi
+	if [[ -n "$codex_fixture_pid" ]]; then
+		kill "$codex_fixture_pid" >/dev/null 2>&1 || true
+		wait "$codex_fixture_pid" >/dev/null 2>&1 || true
+	fi
   find "$run_dir" -type f -name config.yaml -delete 2>/dev/null || true
   if [[ "${CPA_E2E_KEEP:-0}" == "1" ]]; then
     echo "Test files retained in: $run_dir"
@@ -1150,6 +1155,160 @@ assert_reference_price_billing() {
   log_step "Reference prices: base, prefixed, and reasoning-suffix models billed in both response modes"
 }
 
+assert_codex_window_autostart() {
+	local port="$1" runtime_dir="$2" fixture_log="$runtime_dir/fixture.log"
+	local fixture_port="" attempts=0 auth_file files_file routing_file fixture_file
+	local sliding_ref gift_ref stable_ref disabled_ref sliding_index gift_index stable_index disabled_index
+	local body packet_count status artifact="$runtime_dir/codex-window-autostart-artifact.json"
+	local artifact_dir="${CPA_E2E_ARTIFACT_DIR:-${TMPDIR:-/tmp}/cpa-key-billing-e2e-artifacts}"
+
+	mkdir -p "$runtime_dir/plugins" "$runtime_dir/auth" "$runtime_dir/responses"
+	cp "$plugin_path" "$runtime_dir/plugins/cpa-key-billing.$plugin_extension"
+	openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
+		-keyout "$runtime_dir/chatgpt.key" -out "$runtime_dir/chatgpt.crt" \
+		-subj "/CN=chatgpt.com" -addext "subjectAltName=DNS:chatgpt.com" >/dev/null 2>&1
+	python3 "$script_dir/codex_window_fixture.py" --port 0 \
+		--cert "$runtime_dir/chatgpt.crt" --key "$runtime_dir/chatgpt.key" >"$fixture_log" 2>&1 &
+	codex_fixture_pid=$!
+	while (( attempts < 100 )); do
+		fixture_port="$(sed -n 's|^codex fixture: http://127.0.0.1:||p' "$fixture_log" | head -n 1)"
+		if [[ -n "$fixture_port" ]] && curl -fsS --max-time 1 "http://127.0.0.1:$fixture_port/health" >/dev/null 2>&1; then
+			break
+		fi
+		if ! kill -0 "$codex_fixture_pid" >/dev/null 2>&1; then
+			echo "Codex window fixture failed to start:" >&2
+			cat "$fixture_log" >&2 || true
+			return 1
+		fi
+		attempts=$((attempts + 1))
+		sleep 0.1
+	done
+	if [[ -z "$fixture_port" ]]; then
+		echo "Timeout waiting for Codex window fixture." >&2
+		return 1
+	fi
+
+	for auth_file in sliding gift stable disabled; do
+		jq -nc --arg name "$auth_file" '{
+			type:"codex", access_token:("dummy-token-" + $name), refresh_token:"dummy-refresh",
+			account_id:("dummy-account-" + $name), email:($name + "@example.test"),
+			plan_type:"plus", expired:"2099-01-01T00:00:00Z"
+		}' >"$runtime_dir/auth/codex-$auth_file.json"
+	done
+
+	sed -e "s|__PORT__|$port|g" -e "s|__RUNTIME_DIR__|$runtime_dir|g" \
+		-e "s|__FIXTURE_PORT__|$fixture_port|g" \
+		"$script_dir/e2e_codex_window_config.yaml" >"$runtime_dir/config.yaml"
+	chmod 600 "$runtime_dir/config.yaml" "$runtime_dir"/auth/*.json "$runtime_dir/chatgpt.key"
+	SSL_CERT_FILE="$runtime_dir/chatgpt.crt" "$host_binary" -config "$runtime_dir/config.yaml" -local-model >"$runtime_dir/host.log" 2>&1 &
+	active_pid=$!
+	if ! wait_for_server "$port"; then
+		tail -n 100 "$runtime_dir/host.log" >&2 || true
+		return 1
+	fi
+
+	files_file="$runtime_dir/auth-files.json"
+	management_call GET "$port" "/v0/management/plugins/cpa-key-billing/auth-files" >"$files_file"
+	sliding_ref="$(jq -er 'first(.files[] | select(.email == "sliding@example.test")).routing_ref' "$files_file")"
+	gift_ref="$(jq -er 'first(.files[] | select(.email == "gift@example.test")).routing_ref' "$files_file")"
+	stable_ref="$(jq -er 'first(.files[] | select(.email == "stable@example.test")).routing_ref' "$files_file")"
+	disabled_ref="$(jq -er 'first(.files[] | select(.email == "disabled@example.test")).routing_ref' "$files_file")"
+	sliding_index="$(jq -er 'first(.files[] | select(.email == "sliding@example.test")).auth_index' "$files_file")"
+	gift_index="$(jq -er 'first(.files[] | select(.email == "gift@example.test")).auth_index' "$files_file")"
+	stable_index="$(jq -er 'first(.files[] | select(.email == "stable@example.test")).auth_index' "$files_file")"
+	disabled_index="$(jq -er 'first(.files[] | select(.email == "disabled@example.test")).auth_index' "$files_file")"
+
+	management_call PUT "$port" "/v0/management/plugins/cpa-key-billing/prices" \
+		-H "Content-Type: application/json" \
+		--data '{"model_id":"gpt-4o","input_per_1m":1,"output_per_1m":2}' >/dev/null
+	routing_file="$runtime_dir/codex-routing.json"
+	management_call PUT "$port" "/v0/management/plugins/cpa-key-billing/codex-routing" \
+		-H "Content-Type: application/json" \
+		--data "$(jq -nc --arg ref "$sliding_ref" '{enabled:false,roles:{},auto_start:{($ref):true}}')" >"$routing_file"
+	if ! jq -e --arg ref "$sliding_ref" '.settings.enabled == false and .settings.auto_start == {($ref):true}' "$routing_file" >/dev/null; then
+		echo "Codex window auto-start setting was not saved." >&2
+		return 1
+	fi
+
+	log_step "Codex window auto-start: waiting for the real one-minute activity poll"
+	sleep 61
+	body="$(request_body chat "gpt-4o" false "Trigger the due Codex window check after this request completes.")"
+	api_call "$port" "Codex auto-start activity trigger" "/v1/chat/completions" "$body" chat \
+		"$runtime_dir/responses/activity-trigger.json"
+	for ((attempts = 0; attempts < 100; attempts++)); do
+		curl -fsS "http://127.0.0.1:$fixture_port/fixture/state" >"$runtime_dir/fixture-state.json"
+		packet_count="$(jq -r '[.packets[] | select(.account == "sliding")] | length' "$runtime_dir/fixture-state.json")"
+		[[ "$packet_count" == "1" ]] && break
+		sleep 0.1
+	done
+	if [[ "$packet_count" != "1" ]]; then
+		echo "A completed client request did not start the due sliding Codex window." >&2
+		return 1
+	fi
+
+	management_call PUT "$port" "/v0/management/plugins/cpa-key-billing/codex-routing" \
+		-H "Content-Type: application/json" \
+		--data "$(jq -nc --arg sliding "$sliding_ref" --arg gift "$gift_ref" --arg stable "$stable_ref" \
+			'{enabled:false,roles:{},auto_start:{($sliding):true,($gift):true,($stable):true}}')" >"$routing_file"
+	for index in "$gift_index" "$stable_index"; do
+		management_call GET "$port" "/v0/management/plugins/cpa-key-billing/auth-files/quota?auth_index=$index" >/dev/null
+	done
+	management_call GET "$port" "/v0/management/plugins/cpa-key-billing/auth-files/quota?auth_index=$gift_index" >/dev/null
+	management_call GET "$port" "/v0/management/plugins/cpa-key-billing/auth-files/quota?auth_index=$stable_index" >/dev/null
+	management_call GET "$port" "/v0/management/plugins/cpa-key-billing/auth-files/quota?auth_index=$disabled_index" >/dev/null
+	fixture_file="$runtime_dir/fixture-before-gift.json"
+	curl -fsS "http://127.0.0.1:$fixture_port/fixture/state" >"$fixture_file"
+	if ! jq -e '
+		([.packets[] | select(.account == "sliding")] | length) == 1 and
+		([.packets[] | select(.account == "gift" or .account == "stable" or .account == "disabled")] | length) == 0
+	' "$fixture_file" >/dev/null; then
+		echo "Stable, weekly-blocked, or non-opted-in account received a tiny packet." >&2
+		return 1
+	fi
+
+	curl -fsS -X POST "http://127.0.0.1:$fixture_port/fixture/gift?account=gift" >/dev/null
+	management_call GET "$port" "/v0/management/plugins/cpa-key-billing/auth-files/quota?auth_index=$gift_index" >/dev/null
+	management_call GET "$port" "/v0/management/plugins/cpa-key-billing/auth-files/quota?auth_index=$disabled_index" >/dev/null
+	fixture_file="$runtime_dir/fixture-final.json"
+	curl -fsS "http://127.0.0.1:$fixture_port/fixture/state" >"$fixture_file"
+	management_call GET "$port" "/v0/management/plugins/cpa-key-billing/codex-routing" >"$runtime_dir/codex-routing-final.json"
+	if ! jq -e '
+		(.packets | length) == 2 and
+		([.packets[].account] | sort) == ["gift","sliding"] and
+		all(.packets[]; .body_exact and (.account_id == ("dummy-account-" + .account)) and (.completed_at > 0))
+	' "$fixture_file" >/dev/null; then
+		echo "Codex tiny packets were duplicated, malformed, incomplete, or sent to the wrong account." >&2
+		return 1
+	fi
+	if ! jq -e --arg sliding "$sliding_ref" --arg gift "$gift_ref" --arg stable "$stable_ref" --arg disabled "$disabled_ref" '
+		.settings.auto_start == {($sliding):true,($gift):true,($stable):true} and
+		([.auto_start_accounts[] | select(.routing_ref == $sliding or .routing_ref == $gift) |
+			select(.status == "started" and (.last_ping_at | length) > 0)] | length) == 2 and
+		(first(.auto_start_accounts[] | select(.routing_ref == $stable)) | (.last_ping_at // "") == "") and
+		([.auto_start_accounts[].routing_ref] | index($disabled) | not)
+	' "$runtime_dir/codex-routing-final.json" >/dev/null; then
+		echo "Codex window runtime status does not match the completed packet evidence." >&2
+		return 1
+	fi
+
+	jq -n --slurpfile routing "$runtime_dir/codex-routing-final.json" --slurpfile fixture "$fixture_file" '{
+		verified_at:(now | todateiso8601),
+		scenario:"activity poll, stable window, weekly block, surprise global reset, opt-out, exact drained packet",
+		routing:$routing[0], fixture:$fixture[0]
+	}' >"$artifact"
+	jq -e '.fixture.packets | length == 2' "$artifact" >/dev/null
+	mkdir -p "$artifact_dir"
+	cp "$artifact" "$artifact_dir/codex-window-autostart-v7.2.143.json"
+	log_ok "Codex window auto-start: automatic and gifted-reset paths verified; artifact $artifact_dir/codex-window-autostart-v7.2.143.json"
+
+	kill "$active_pid" >/dev/null 2>&1 || true
+	wait "$active_pid" >/dev/null 2>&1 || true
+	active_pid=""
+	kill "$codex_fixture_pid" >/dev/null 2>&1 || true
+	wait "$codex_fixture_pid" >/dev/null 2>&1 || true
+	codex_fixture_pid=""
+}
+
 run_target() {
   local target="$1"
   local index="$2"
@@ -1513,6 +1672,9 @@ run_target() {
   wait "$active_pid" >/dev/null 2>&1 || true
   active_pid=""
   log_ok "${host_label}: 51 upstream requests (including 4 reference price requests), 1 concurrent interception, 6 model interceptions, 4 credential routes, 2 credential blocks, 12 quota interceptions"
+
+	log_step "Codex 5-hour / weekly auto-start with a surprise gifted reset"
+	assert_codex_window_autostart "$port" "$target_dir/codex-window-autostart"
 }
 
 log_stage "Starting dummy provider"

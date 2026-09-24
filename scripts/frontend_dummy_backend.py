@@ -418,7 +418,12 @@ for auth_file in AUTH_FILES:
     if auth_file["category"] == "codex":
         auth_file["routing_ref"] = AUTH_FILE_CREDENTIAL_REFS[auth_file["auth_index"]]
 
-CODEX_ROUTING = {"settings": {"enabled": False, "roles": {}}, "last_hook_at": "0001-01-01T00:00:00Z", "last_pool": ""}
+CODEX_ROUTING = {
+    "settings": {"enabled": False, "roles": {}, "auto_start": {}},
+    "last_hook_at": "0001-01-01T00:00:00Z",
+    "last_pool": "",
+    "auto_start_accounts": [],
+}
 
 AUTH_CATEGORY_ORDER = {"claude": 0, "antigravity": 1, "codex": 2, "xai": 3, "kimi": 4}
 AUTH_FILES.sort(

@@ -18,7 +18,7 @@ const (
 const (
 	PluginID   = "cpa-key-billing"
 	PluginName = "cpa-key-billing"
-	Version    = "1.3.14"
+	Version    = "1.3.15"
 
 	MenuLabel       = "API Key Billing"
 	MenuDescription = "Manage downstream API key routing, billing, concurrency limits, subscription quotas, and usage"
@@ -122,10 +122,11 @@ type SchedulerPickResponse struct {
 }
 
 type RequestCompletion struct {
-	RequestID  string `json:"RequestID"`
-	Outcome    string `json:"Outcome"`
-	StatusCode int    `json:"StatusCode"`
-	Error      string `json:"Error"`
+	RequestID      string `json:"RequestID"`
+	Outcome        string `json:"Outcome"`
+	StatusCode     int    `json:"StatusCode"`
+	Error          string `json:"Error"`
+	HostCallbackID string `json:"host_callback_id,omitempty"`
 }
 
 type RequestInterceptRequest struct {
