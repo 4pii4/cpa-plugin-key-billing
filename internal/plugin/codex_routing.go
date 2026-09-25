@@ -435,11 +435,10 @@ func (a *App) sendCodexAutoStart(state *codexAccount, ref string, req reqCodexAu
 			"type": "message", "role": "user",
 			"content": []any{map[string]any{"type": "input_text", "text": "hi"}},
 		}},
-		"instructions":      "Reply with OK.",
-		"reasoning":         map[string]any{"effort": "none", "summary": "auto"},
-		"max_output_tokens": 8,
-		"store":             false,
-		"stream":            true,
+		"instructions": "Reply with OK.",
+		"reasoning":    map[string]any{"effort": "none", "summary": "auto"},
+		"store":        false,
+		"stream":       true,
 	})
 	var errPing error
 	if errMarshal != nil {
@@ -590,7 +589,7 @@ func (a *App) runCodexAutoStart(callbackID string) {
 	file := selected.file
 	r.mu.Unlock()
 
-	_, errFetch := a.fetchAuthQuota(callbackID, file, "codex")
+	_, errFetch := a.fetchAuthQuotaWithOptions(callbackID, file, "codex", false)
 	r.mu.Lock()
 	if current := r.accounts[file.AuthIndex]; current == selected {
 		selected.auto.checking = false

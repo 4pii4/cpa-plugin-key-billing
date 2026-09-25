@@ -11,12 +11,25 @@ import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
+from h2.config import H2Configuration
+from h2.connection import H2Connection
+from h2.events import DataReceived, RequestReceived, StreamEnded
+
 
 ACCOUNTS = {
     "dummy-token-sliding": "sliding",
     "dummy-token-gift": "gift",
     "dummy-token-stable": "stable",
     "dummy-token-disabled": "disabled",
+}
+
+SUPPORTED_PACKET = {
+    "model": "gpt-5.6-luna",
+    "input": [{"type": "message", "role": "user", "content": [{"type": "input_text", "text": "hi"}]}],
+    "instructions": "Reply with OK.",
+    "reasoning": {"effort": "none", "summary": "auto"},
+    "store": False,
+    "stream": True,
 }
 
 
@@ -27,6 +40,7 @@ class FixtureState:
         self.gifted = False
         self.quota_calls = {name: 0 for name in ACCOUNTS.values()}
         self.packets = []
+        self.billing_packets = []
         self.stable_session_reset = now + 5 * 60 * 60
         self.stable_weekly_reset = now + 7 * 24 * 60 * 60
         self.gift_weekly_reset = now + 2 * 24 * 60 * 60
@@ -74,21 +88,29 @@ class FixtureState:
             self.gifted = True
 
     def add_packet(self, account, account_id, body, completed_at):
-        expected = {
-            "model": "gpt-5.6-luna",
-            "input": [{"type": "message", "role": "user", "content": [{"type": "input_text", "text": "hi"}]}],
-            "instructions": "Reply with OK.",
-            "reasoning": {"effort": "none", "summary": "auto"},
-            "max_output_tokens": 8,
-            "store": False,
-            "stream": True,
-        }
         with self.lock:
             self.packets.append(
                 {
                     "account": account,
                     "account_id": account_id,
-                    "body_exact": body == expected,
+                    "body": body,
+                    "body_exact": body == SUPPORTED_PACKET,
+                    "unsupported_parameters_absent": "max_output_tokens" not in body,
+                    "completed_at": completed_at,
+                }
+            )
+
+    def add_billing_packet(self, account, account_id, body, headers, completed_at):
+        with self.lock:
+            self.billing_packets.append(
+                {
+                    "account": account,
+                    "account_id": account_id,
+                    "accept": headers.get("Accept", headers.get("accept", "")),
+                    "originator": headers.get("Originator", headers.get("originator", "")),
+                    "service_tier": body.get("service_tier", ""),
+                    "model": body.get("model", ""),
+                    "stream": body.get("stream"),
                     "completed_at": completed_at,
                 }
             )
@@ -99,6 +121,7 @@ class FixtureState:
                 "gifted": self.gifted,
                 "quota_calls": dict(self.quota_calls),
                 "packets": list(self.packets),
+                "billing_packets": list(self.billing_packets),
             }
 
 
@@ -125,11 +148,106 @@ class FixtureHandler(BaseHTTPRequestHandler):
         except ssl.SSLError:
             self.close_connection = True
             return
+        if connection.selected_alpn_protocol() == "h2":
+            self.handle_h2_connection(connection)
+            self.close_connection = True
+            return
         self.connection = connection
         self.request = connection
         self.rfile = connection.makefile("rb", self.rbufsize)
         self.wfile = connection.makefile("wb", self.wbufsize)
         self.close_connection = False
+
+    def handle_h2_connection(self, connection):
+        protocol = H2Connection(config=H2Configuration(client_side=False, header_encoding="utf-8"))
+        protocol.initiate_connection()
+        connection.sendall(protocol.data_to_send())
+        streams = {}
+        while True:
+            data = connection.recv(65535)
+            if not data:
+                return
+            for event in protocol.receive_data(data):
+                if isinstance(event, RequestReceived):
+                    streams[event.stream_id] = {"headers": dict(event.headers), "body": bytearray()}
+                elif isinstance(event, DataReceived):
+                    stream = streams.get(event.stream_id)
+                    if stream is not None:
+                        stream["body"].extend(event.data)
+                    protocol.acknowledge_received_data(event.flow_controlled_length, event.stream_id)
+                elif isinstance(event, StreamEnded):
+                    stream = streams.pop(event.stream_id, None)
+                    if stream is not None:
+                        self.handle_h2_request(protocol, event.stream_id, stream)
+            pending = protocol.data_to_send()
+            if pending:
+                connection.sendall(pending)
+
+    def handle_h2_request(self, protocol, stream_id, stream):
+        headers = stream["headers"]
+        method = headers.get(":method", "")
+        path = urlparse(headers.get(":path", "")).path
+        account = self.account_from_authorization(headers.get("authorization", ""))
+        if method == "GET" and path == "/backend-api/wham/usage":
+            if not account:
+                self.send_h2_json(protocol, stream_id, 401, {"error": {"message": "unknown dummy token"}})
+            else:
+                self.send_h2_json(protocol, stream_id, 200, self.state.quota(account))
+            return
+        if method == "POST" and path == "/backend-api/codex/responses":
+            try:
+                body = json.loads(bytes(stream["body"]) or b"{}")
+            except json.JSONDecodeError:
+                self.send_h2_json(protocol, stream_id, 400, {"error": {"message": "invalid JSON"}})
+                return
+            if not account:
+                self.send_h2_json(protocol, stream_id, 401, {"error": {"message": "unknown dummy token"}})
+                return
+            if body == SUPPORTED_PACKET:
+                expected_account_id = f"dummy-account-{account}"
+                if (
+                    headers.get("accept", "") != "text/event-stream"
+                    or headers.get("originator", "") != "codex_cli_rs"
+                    or headers.get("chatgpt-account-id", "") != expected_account_id
+                ):
+                    self.send_h2_json(protocol, stream_id, 400, {"error": {"message": "invalid tiny packet"}})
+                    return
+                self.send_h2_sse(
+                    protocol,
+                    stream_id,
+                    [
+                        {"type": "response.created"},
+                        {"type": "response.completed", "response": {"status": "completed"}},
+                    ],
+                )
+                self.state.add_packet(account, headers.get("chatgpt-account-id", ""), body, time.time())
+                return
+            response = self.billing_response(body)
+            self.send_h2_sse(
+                protocol,
+                stream_id,
+                [
+                    {"type": "response.created", "response": response},
+                    {"type": "response.completed", "response": response},
+                ],
+            )
+            self.state.add_billing_packet(account, headers.get("chatgpt-account-id", ""), body, headers, time.time())
+            return
+        self.send_h2_json(protocol, stream_id, 404, {"error": {"message": f"no fixture route for {path}"}})
+
+    def send_h2_json(self, protocol, stream_id, status, payload):
+        raw = json.dumps(payload, separators=(",", ":")).encode("utf-8")
+        protocol.send_headers(
+            stream_id,
+            [(":status", str(status)), ("content-type", "application/json"), ("content-length", str(len(raw)))],
+        )
+        protocol.send_data(stream_id, raw, end_stream=True)
+
+    def send_h2_sse(self, protocol, stream_id, events):
+        protocol.send_headers(stream_id, [(":status", "200"), ("content-type", "text/event-stream")])
+        for index, event in enumerate(events):
+            raw = ("data: " + json.dumps(event, separators=(",", ":")) + "\n\n").encode("utf-8")
+            protocol.send_data(stream_id, raw, end_stream=index == len(events) - 1)
 
     def do_GET(self):
         path = urlparse(self.path).path
@@ -178,7 +296,9 @@ class FixtureHandler(BaseHTTPRequestHandler):
         self.send_json(404, {"error": {"message": f"no fixture route for {parsed.path}"}}, close=True)
 
     def account_from_token(self):
-        value = self.headers.get("Authorization", "")
+        return self.account_from_authorization(self.headers.get("Authorization", ""))
+
+    def account_from_authorization(self, value):
         token = value.removeprefix("Bearer ").strip()
         return ACCOUNTS.get(token)
 
@@ -195,6 +315,21 @@ class FixtureHandler(BaseHTTPRequestHandler):
         if not account or body is None:
             self.send_json(400, {"error": {"message": "invalid tiny packet"}}, close=True)
             return
+        if body != SUPPORTED_PACKET:
+            self.handle_billing_packet(account, body)
+            return
+        if "max_output_tokens" in body:
+            self.send_json(400, {"detail": "Unsupported parameter: max_output_tokens"}, close=True)
+            return
+        expected_account_id = f"dummy-account-{account}"
+        if (
+            body != SUPPORTED_PACKET
+            or self.headers.get("Accept") != "text/event-stream"
+            or self.headers.get("Originator") != "codex_cli_rs"
+            or self.headers.get("Chatgpt-Account-Id") != expected_account_id
+        ):
+            self.send_json(400, {"error": {"message": "invalid tiny packet"}}, close=True)
+            return
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Transfer-Encoding", "chunked")
@@ -209,6 +344,56 @@ class FixtureHandler(BaseHTTPRequestHandler):
         completed_at = time.time()
         self.state.add_packet(account, self.headers.get("Chatgpt-Account-Id", ""), body, completed_at)
         self.close_connection = True
+
+    def handle_billing_packet(self, account, body):
+        account_id = self.headers.get("Chatgpt-Account-Id", "")
+        response = self.billing_response(body)
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream")
+        self.send_header("Transfer-Encoding", "chunked")
+        self.send_header("Connection", "close")
+        self.end_headers()
+        self.write_chunk(
+            ("data: " + json.dumps({"type": "response.created", "response": response}, separators=(",", ":")) + "\n\n").encode()
+        )
+        self.write_chunk(
+            ("data: " + json.dumps({"type": "response.completed", "response": response}, separators=(",", ":")) + "\n\n").encode()
+        )
+        self.write_chunk(b"")
+        self.wfile.flush()
+        completed_at = time.time()
+        self.state.add_billing_packet(account, account_id, body, self.headers, completed_at)
+        self.close_connection = True
+
+    def billing_response(self, body):
+        service_tier = body.get("service_tier", "")
+        response_id = "resp_" + uuid.uuid4().hex
+        message_id = "msg_" + uuid.uuid4().hex
+        now = int(time.time())
+        return {
+            "id": response_id,
+            "object": "response",
+            "created_at": now,
+            "status": "completed",
+            "model": "gpt-5.6-sol",
+            "service_tier": service_tier or "auto",
+            "output": [
+                {
+                    "id": message_id,
+                    "type": "message",
+                    "status": "completed",
+                    "role": "assistant",
+                    "content": [{"type": "output_text", "text": "OK", "annotations": []}],
+                }
+            ],
+            "usage": {
+                "input_tokens": 128,
+                "input_tokens_details": {"cached_tokens": 32},
+                "output_tokens": 8,
+                "output_tokens_details": {"reasoning_tokens": 0},
+                "total_tokens": 136,
+            },
+        }
 
     def write_chunk(self, payload):
         if payload:
@@ -241,6 +426,7 @@ def main():
     server.fixture_state = FixtureState()
     server.tls_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     server.tls_context.load_cert_chain(args.cert, args.key)
+    server.tls_context.set_alpn_protocols(["h2", "http/1.1"])
     print(f"codex fixture: http://127.0.0.1:{server.server_port}", flush=True)
     server.serve_forever()
 

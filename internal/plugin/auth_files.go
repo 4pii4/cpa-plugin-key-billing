@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"net/url"
 	"sort"
 	"strconv"
 	"strings"
@@ -91,14 +92,25 @@ type quotaRow struct {
 	windowSeconds    int64
 }
 
+type codexResetCredit struct {
+	ID        string `json:"id,omitempty"`
+	ResetType string `json:"reset_type,omitempty"`
+	Status    string `json:"status,omitempty"`
+	GrantedAt string `json:"granted_at,omitempty"`
+	ExpiresAt string `json:"expires_at"`
+}
+
 type authQuotaResponse struct {
 	codexLimits                         map[string]codexQuotaLimit
 	codexAuto                           codexAutoQuota
-	AuthRevision                        string     `json:"auth_revision,omitempty"`
-	FetchedAt                           time.Time  `json:"fetched_at"`
-	Plan                                string     `json:"plan,omitempty"`
-	RateLimitResetCreditsAvailableCount *int       `json:"rate_limit_reset_credits_available_count,omitempty"`
-	Quota                               []quotaRow `json:"quota"`
+	AuthRevision                        string             `json:"auth_revision,omitempty"`
+	FetchedAt                           time.Time          `json:"fetched_at"`
+	Plan                                string             `json:"plan,omitempty"`
+	SubscriptionActiveUntil             any                `json:"subscription_active_until,omitempty"`
+	RateLimitResetCreditsAvailableCount *int               `json:"rate_limit_reset_credits_available_count,omitempty"`
+	RateLimitResetCredits               []codexResetCredit `json:"rate_limit_reset_credits,omitempty"`
+	RateLimitResetCreditsError          string             `json:"rate_limit_reset_credits_error,omitempty"`
+	Quota                               []quotaRow         `json:"quota"`
 }
 
 func (a *App) authFiles(access viewAccess) ManagementResponse {
@@ -285,6 +297,10 @@ func authCategoryOrder(category string) int {
 }
 
 func (a *App) fetchAuthQuota(callbackID string, file hostAuthFile, provider string) (authQuotaResponse, error) {
+	return a.fetchAuthQuotaWithOptions(callbackID, file, provider, true)
+}
+
+func (a *App) fetchAuthQuotaWithOptions(callbackID string, file hostAuthFile, provider string, includeCodexDetails bool) (authQuotaResponse, error) {
 	var routingState *codexAccount
 	var routingSequence uint64
 	if provider == "codex" {
@@ -323,7 +339,11 @@ func (a *App) fetchAuthQuota(callbackID string, file hostAuthFile, provider stri
 		if plan := credentialString(credential, "plan_type", "planType"); plan != "" {
 			result.Plan = normalizeCodexPlan(plan)
 		}
-		err = a.fetchCodexQuota(callbackID, token, credentialString(credential, "account_id", "accountId", "chatgpt_account_id", "chatgptAccountId"), &result)
+		accountID := credentialString(credential, "account_id", "accountId", "chatgpt_account_id", "chatgptAccountId")
+		if activeUntil := codexDateLikeValue(credential, "chatgpt_subscription_active_until", "chatgptSubscriptionActiveUntil", "subscription_active_until", "subscriptionActiveUntil"); activeUntil != nil {
+			result.SubscriptionActiveUntil = activeUntil
+		}
+		err = a.fetchCodexQuota(callbackID, token, accountID, includeCodexDetails, &result)
 	case "claude":
 		err = a.fetchClaudeQuota(callbackID, token, &result)
 	case "kimi":
@@ -403,7 +423,7 @@ func (a *App) upstream(callbackID, method, endpoint, token string, headers http.
 }
 
 func upstreamErrorMessage(object map[string]any) string {
-	message := firstString(object, "message", "error_description")
+	message := firstString(object, "message", "detail", "error_description")
 	if nested := objectMap(object, "error"); nested != nil {
 		message = firstNonEmptyString(firstString(nested, "message", "detail"), message)
 	}
@@ -414,7 +434,7 @@ func upstreamErrorMessage(object map[string]any) string {
 	return message
 }
 
-func (a *App) fetchCodexQuota(callbackID, token, accountID string, result *authQuotaResponse) error {
+func (a *App) fetchCodexQuota(callbackID, token, accountID string, includeDetails bool, result *authQuotaResponse) error {
 	headers := http.Header{"User-Agent": {"codex_cli_rs/0.76.0"}, "Content-Type": {"application/json"}}
 	if accountID != "" {
 		headers.Set("Chatgpt-Account-Id", accountID)
@@ -447,7 +467,77 @@ func (a *App) fetchCodexQuota(callbackID, token, accountID string, result *authQ
 			result.RateLimitResetCreditsAvailableCount = &value
 		}
 	}
+	if !includeDetails {
+		return nil
+	}
+	if accountID != "" {
+		subscriptionURL := "https://chatgpt.com/backend-api/subscriptions?account_id=" + url.QueryEscape(accountID)
+		if subscription, errSubscription := a.upstream(callbackID, http.MethodGet, subscriptionURL, token, headers.Clone(), nil); errSubscription == nil {
+			if activeUntil := codexDateLikeValue(subscription, "active_until", "activeUntil"); activeUntil != nil {
+				result.SubscriptionActiveUntil = activeUntil
+			}
+		}
+	}
+	creditHeaders := headers.Clone()
+	creditHeaders.Set("Accept", "application/json")
+	creditHeaders.Set("OpenAI-Beta", "codex-1")
+	creditHeaders.Set("Originator", "Codex Desktop")
+	credits, errCredits := a.upstream(callbackID, http.MethodGet,
+		"https://chatgpt.com/backend-api/wham/rate-limit-reset-credits", token, creditHeaders, nil)
+	if errCredits != nil {
+		result.RateLimitResetCreditsError = errCredits.Error()
+		return nil
+	}
+	if count, ok := intValue(credits, "available_count", "availableCount"); ok {
+		value := int(count)
+		result.RateLimitResetCreditsAvailableCount = &value
+	}
+	result.RateLimitResetCredits = parseCodexResetCredits(credits)
+	if result.RateLimitResetCreditsAvailableCount == nil && len(result.RateLimitResetCredits) > 0 {
+		value := len(result.RateLimitResetCredits)
+		result.RateLimitResetCreditsAvailableCount = &value
+	}
 	return nil
+}
+
+func codexDateLikeValue(object map[string]any, keys ...string) any {
+	for _, key := range keys {
+		switch value := object[key].(type) {
+		case string:
+			value = strings.TrimSpace(value)
+			if value != "" && value != "0" {
+				return value
+			}
+		case float64:
+			if !math.IsNaN(value) && !math.IsInf(value, 0) && value != 0 {
+				return value
+			}
+		}
+	}
+	return nil
+}
+
+func parseCodexResetCredits(object map[string]any) []codexResetCredit {
+	credits := make([]codexResetCredit, 0)
+	for _, raw := range objectSlice(object, "credits") {
+		record, ok := raw.(map[string]any)
+		if !ok || firstString(record, "reset_type", "resetType") != "codex_rate_limits" ||
+			firstString(record, "status") != "available" {
+			continue
+		}
+		expiresAt := firstString(record, "expires_at", "expiresAt")
+		if expiresAt == "" {
+			continue
+		}
+		credits = append(credits, codexResetCredit{
+			ID:        firstString(record, "id"),
+			ResetType: "codex_rate_limits",
+			Status:    "available",
+			GrantedAt: firstString(record, "granted_at", "grantedAt"),
+			ExpiresAt: expiresAt,
+		})
+	}
+	return credits
 }
 
 func appendCodexRateLimit(result *authQuotaResponse, labelPrefix string, info map[string]any) {

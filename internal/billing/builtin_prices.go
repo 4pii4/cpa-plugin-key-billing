@@ -5,7 +5,7 @@ import "math"
 // Builtin prices are shipped with the plugin and are intentionally not persisted.
 // Rates are USD per 1,000,000 tokens. Custom prices always take precedence.
 //
-// Vendor pricing was verified on 2026-09-14 against the official Anthropic,
+// Vendor pricing was verified on 2026-09-25 against the official Anthropic,
 // Google, and OpenAI pricing pages. CPA-only aliases use the corresponding
 // vendor model's rates unless a note below says otherwise.
 var builtinPrices = map[string]CustomPrice{
@@ -155,6 +155,14 @@ var builtinPrices = map[string]CustomPrice{
 		ModelID:    "gpt-6-astra",
 		PriceRates: openAILongContextRates(10, 50, 1, 12.5),
 	},
+	NormalizeModelID("gpt-6-sol"): {
+		ModelID:    "gpt-6-sol",
+		PriceRates: openAILongContextRates(2, 10, 0.2, 2.5),
+	},
+	NormalizeModelID("gpt-6-luna"): {
+		ModelID:    "gpt-6-luna",
+		PriceRates: openAILongContextRates(0.1, 0.5, 0.01, 0.125),
+	},
 	NormalizeModelID("gpt-image-1.5"): {
 		ModelID: "gpt-image-1.5",
 		PriceRates: PriceRates{
@@ -164,12 +172,8 @@ var builtinPrices = map[string]CustomPrice{
 		},
 	},
 	NormalizeModelID("gpt-image-2"): {
-		ModelID: "gpt-image-2",
-		PriceRates: PriceRates{
-			InputPer1M:     2.5,
-			OutputPer1M:    15,
-			CacheReadPer1M: float64Ptr(0.625),
-		},
+		ModelID:    "gpt-image-2",
+		PriceRates: openAIImageRates(30),
 	},
 	NormalizeModelID("gpt-image-2.5"): {
 		ModelID: "gpt-image-2.5",

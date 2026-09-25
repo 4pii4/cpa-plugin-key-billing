@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.4.1
+
+### Backend
+
+- Made Codex Fast mode billing built-in: requests with `service_tier=priority` or `service_tier=fast` are automatically billed at 2× the standard rate. The legacy `codex_fast_mode_billing` configuration field is accepted but ignored.
+- Changed the multiplier from 2.5× to 2× to match current OpenAI pricing.
+- Updated `gpt-image-2` built-in prices to match the current OpenAI text-token and image-token rates.
+- Added Codex subscription details, manual reset credit expiry, and a dedicated reset-credits endpoint to the auth quota response.
+- Removed `max_output_tokens` from the Codex window auto-start packet.
+- Improved upstream error message extraction to include `detail` fields.
+
+### Frontend
+
+- Added manual reset credit expiry display and consume-credit UI to Codex authentication-file cards.
+- Added subscription active-until display to Codex plan details.
+
 ## v1.4.0
 
 ### Backend

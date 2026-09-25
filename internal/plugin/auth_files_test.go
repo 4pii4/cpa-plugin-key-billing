@@ -305,7 +305,7 @@ func TestUpstreamErrorsRedactPhysicalCredential(t *testing.T) {
 
 func TestCodexQuotaPreservesAdditionalDynamicWindows(t *testing.T) {
 	app := newConfiguredApp(t)
-	var endpoint string
+	var endpoints []string
 	app.SetHostCaller(func(method string, payload any) (json.RawMessage, error) {
 		switch method {
 		case hostAuthList:
@@ -314,7 +314,7 @@ func TestCodexQuotaPreservesAdditionalDynamicWindows(t *testing.T) {
 			return json.RawMessage(`{"auth_index":"codex-1","json":{"access_token":"dummy-token","account_id":"dummy-account"}}`), nil
 		case hostHTTPDo:
 			request := payload.(hostHTTPRequest)
-			endpoint = request.URL
+			endpoints = append(endpoints, request.URL)
 			if request.Headers.Get("Authorization") != "Bearer dummy-token" || request.Headers.Get("Chatgpt-Account-Id") != "dummy-account" {
 				t.Fatalf("headers = %#v", request.Headers)
 			}
@@ -333,8 +333,8 @@ func TestCodexQuotaPreservesAdditionalDynamicWindows(t *testing.T) {
 	if errDecode := json.Unmarshal(response.Body, &result); errDecode != nil {
 		t.Fatal(errDecode)
 	}
-	if endpoint != "https://chatgpt.com/backend-api/wham/usage" {
-		t.Fatalf("endpoint = %q", endpoint)
+	if len(endpoints) == 0 || endpoints[0] != "https://chatgpt.com/backend-api/wham/usage" {
+		t.Fatalf("endpoints = %v", endpoints)
 	}
 	if result.Plan != "pro-20x" || len(result.Quota) != 3 {
 		t.Fatalf("quota = %+v", result)

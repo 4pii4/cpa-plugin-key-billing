@@ -1150,7 +1150,79 @@
         .auth-refresh-icon-button.loading .lucide-icon, [data-page-action="refresh"]:disabled .lucide-icon { animation: none; }
       }
       .auth-file-quota { display: grid; gap: 11px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); }
+      .auth-file-quota.auth-quota-section {
+        gap: 9px;
+        padding: 10px 11px;
+        border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+        border-radius: 10px;
+        background: color-mix(in srgb, var(--bg-secondary) 55%, transparent);
+      }
       .auth-quota-summary { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: var(--text-secondary); font-size: 12px; }
+      .auth-codex-plan { display: flex; flex-wrap: wrap; gap: 6px; }
+      .auth-codex-plan-item {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 5px;
+        max-width: 100%;
+        padding: 3px 8px;
+        border: 1px solid var(--border-color);
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--bg-primary) 70%, transparent);
+      }
+      .auth-codex-plan-label { color: var(--text-tertiary); font-size: 11.5px; font-weight: 400; white-space: nowrap; }
+      .auth-codex-plan-value {
+        min-width: 0;
+        color: var(--text-secondary);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 11.5px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+      .auth-codex-plan-value.premium { color: var(--warning-text); font-weight: 650; }
+      .auth-codex-plan-value.elite { color: #526379; font-weight: 650; }
+      :root[data-theme="dark"] .auth-codex-plan-value.elite { color: #c3d3e4; }
+      .auth-codex-relative { color: var(--text-tertiary); font-weight: 400; }
+      .auth-codex-relative::before { content: "·"; margin: 0 3px; color: var(--text-tertiary); }
+      .auth-codex-reset-credits {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 8px 9px;
+        border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+        border-radius: 8px;
+      }
+      .auth-codex-reset-title {
+        color: var(--text-tertiary);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 11.5px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        line-height: 1.35;
+        text-transform: uppercase;
+      }
+      .auth-codex-reset-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px;
+        min-width: 0;
+        font-size: 11.5px;
+      }
+      .auth-codex-reset-label {
+        min-width: 0;
+        overflow: hidden;
+        color: var(--text-secondary);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .auth-codex-reset-time {
+        flex-shrink: 0;
+        color: var(--text-secondary);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+      }
+      .auth-codex-reset-error { color: var(--warning-text); font-size: 11.5px; font-weight: 500; overflow-wrap: anywhere; }
       .auth-quota-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 11px; }
       .auth-quota-row { display: grid; gap: 4px; min-width: 0; }
       .auth-quota-line { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
@@ -1175,6 +1247,16 @@
         font-variant-numeric: tabular-nums;
       }
       .auth-quota-value { color: var(--text-primary); font-size: 12px; font-weight: 600; }
+      .auth-quota-actions { display: flex; justify-content: flex-end; gap: 6px; }
+      .auth-quota-reset-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+        font-size: 11.5px;
+        font-weight: 600;
+      }
+      .auth-quota-reset-button .lucide-icon { width: 14px; height: 14px; }
       .auth-quota-error {
         padding: 9px 10px;
         border: 1px solid var(--failure-badge-border);
@@ -2582,7 +2664,7 @@
     <footer class="page-footer">
       <span>© 2026 <a href="https://github.com/4pii4/cpa-plugin-key-billing" target="_blank" rel="noopener noreferrer">CPA Key Billing</a></span>
       <span>&thinsp;·&thinsp;<a href="https://github.com/4pii4/cpa-plugin-key-billing/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">License</a></span>
-      <span>&thinsp;·&thinsp;Version: v1.4.0</span>
+      <span>&thinsp;·&thinsp;Version: v1.4.1</span>
     </footer>
 
     <div id="notice" class="notice" popover="manual"></div>
@@ -5490,8 +5572,7 @@
       }
 
       function compactResetDate(date) {
-        const pad = (part) => String(part).padStart(2, "0");
-        return pad(date.getMonth() + 1) + "/" + pad(date.getDate()) + " " + pad(date.getHours()) + ":" + pad(date.getMinutes());
+        return date.toLocaleString(undefined, { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false });
       }
 
       function compactResetAfter(seconds) {
@@ -5499,6 +5580,45 @@
         if (seconds >= 86400) return "in " + Math.floor(seconds / 86400) + " days";
         if (seconds >= 3600) return "in " + Math.floor(seconds / 3600) + " hours";
         return "in " + Math.floor(seconds / 60) + " minutes";
+      }
+
+      function quotaInstant(value) {
+        if (typeof value === "number" && Number.isFinite(value)) return new Date(value < 1e12 ? value * 1000 : value);
+        if (typeof value === "string" && value.trim()) {
+          const numeric = Number(value);
+          if (Number.isFinite(numeric) && numeric !== 0) return new Date(numeric < 1e12 ? numeric * 1000 : numeric);
+          return new Date(value);
+        }
+        return null;
+      }
+
+      function compactRelativeInstant(date) {
+        if (!date || isNaN(date.getTime())) return "";
+        const delta = date.getTime() - Date.now();
+        const absolute = Math.abs(delta);
+        const sign = delta < 0 ? -1 : 1;
+        let value, unit;
+        if (absolute >= 86400000) {
+          value = sign * Math.floor(absolute / 86400000);
+          unit = "day";
+        } else if (absolute >= 3600000) {
+          value = sign * Math.floor(absolute / 3600000);
+          unit = "hour";
+        } else {
+          value = sign * Math.max(1, Math.floor(absolute / 60000));
+          unit = "minute";
+        }
+        return new Intl.RelativeTimeFormat(undefined, { numeric: "always" }).format(value, unit);
+      }
+
+      function localTimeZoneLabel(date = new Date()) {
+        const offset = -date.getTimezoneOffset();
+        if (!Number.isFinite(offset) || offset === 0) return "GMT";
+        const sign = offset < 0 ? "-" : "+";
+        const absolute = Math.abs(Math.trunc(offset));
+        const hours = Math.floor(absolute / 60);
+        const minutes = absolute % 60;
+        return "GMT" + sign + hours + (minutes ? ":" + String(minutes).padStart(2, "0") : "");
       }
 
       function quotaResetMeta(row) {
@@ -5561,36 +5681,117 @@
         );
       }
 
+      function codexPlanItem(label, value, relative = "", valueClass = "") {
+        return el(
+          "span",
+          { class: "auth-codex-plan-item" },
+          el("span", { class: "auth-codex-plan-label", text: label }),
+          el("span", { class: "auth-codex-plan-value" + (valueClass ? " " + valueClass : ""), text: value }),
+          relative ? el("span", { class: "auth-codex-relative", text: relative }) : null
+        );
+      }
+
+      function renderCodexQuota(file, account, result, rows) {
+        const planItems = [];
+        const plan = authPlanLabel("codex", result.plan);
+        const normalizedPlan = String(result.plan || "").trim().toLocaleLowerCase();
+        if (plan) {
+          const planClass =
+            normalizedPlan === "pro-20x" || normalizedPlan === "pro" ? "elite" : normalizedPlan === "pro-5x" ? "premium" : "";
+          planItems.push(codexPlanItem("Plan", plan, "", planClass));
+        }
+        const renewal = quotaInstant(result.subscription_active_until);
+        if (renewal && !isNaN(renewal.getTime())) {
+          planItems.push(codexPlanItem("Renewal time", compactResetDate(renewal), compactRelativeInstant(renewal)));
+        }
+        const resetCount = Number(result.rate_limit_reset_credits_available_count);
+        if (Number.isFinite(resetCount)) planItems.push(codexPlanItem("Manual resets", int(resetCount)));
+
+        const resetCredits = Array.isArray(result.rate_limit_reset_credits)
+          ? result.rate_limit_reset_credits.filter(
+              (credit) =>
+                credit && (!credit.reset_type || credit.reset_type === "codex_rate_limits") &&
+                (!credit.status || credit.status === "available") &&
+                credit.expires_at
+            )
+          : [];
+        const resetCreditPanel = resetCredits.length
+          ? el(
+              "div",
+              { class: "auth-codex-reset-credits" },
+              el("div", { class: "auth-codex-reset-title", text: "Manual reset expiry (" + localTimeZoneLabel() + ")" }),
+              ...resetCredits.map((credit, index) => {
+                const expiry = quotaInstant(credit.expires_at);
+                const valid = expiry && !isNaN(expiry.getTime());
+                return el(
+                  "div",
+                  { class: "auth-codex-reset-row" },
+                  el("span", { class: "auth-codex-reset-label", text: "Reset " + (index + 1) }),
+                  el(
+                    "span",
+                    { class: "auth-codex-reset-time" },
+                    valid ? compactResetDate(expiry) : String(credit.expires_at),
+                    valid ? el("span", { class: "auth-codex-relative", text: compactRelativeInstant(expiry) }) : null
+                  )
+                );
+              })
+            )
+          : result.rate_limit_reset_credits_error
+            ? el("div", {
+                class: "auth-codex-reset-error",
+                text: "Failed to load manual reset expiry: " + result.rate_limit_reset_credits_error
+              })
+            : null;
+
+        return el(
+          "div",
+          { class: "auth-file-quota auth-quota-section auth-codex-quota" },
+          planItems.length ? el("div", { class: "auth-codex-plan" }, ...planItems) : null,
+          resetCreditPanel,
+          rows.length
+            ? el("div", { class: "auth-quota-list" }, rows.map(renderQuotaRow))
+            : el("div", { class: "muted small", text: "No quota information returned by the upstream service" }),
+          !account && Number.isFinite(resetCount) && resetCount > 0
+            ? el(
+                "div",
+                { class: "auth-quota-actions" },
+                el(
+                  "button",
+                  {
+                    type: "button",
+                    class: "auth-quota-reset-button",
+                    disabled: !canResetAuthQuota(file),
+                    title: "Reset quota",
+                    onclick: () => guard(() => resetAuthQuota(file))
+                  },
+                  actionIcon("refresh"),
+                  "Reset quota"
+                )
+              )
+            : null
+        );
+      }
+
       function renderAuthFileQuota(file, account) {
         const owner = account ? accountUIState : adminUIState;
         const index = file.auth_index;
         if (owner.authQuotaLoading.has(index)) {
-          return el("div", { class: "auth-file-quota" }, el("div", { class: "muted small", text: "Updating quotas…" }));
+          return el("div", { class: "auth-file-quota auth-quota-section" }, el("div", { class: "muted small", text: "Updating quotas…" }));
         }
         const error = owner.authQuotaErrors.get(index);
-        if (error) return el("div", { class: "auth-file-quota" }, el("div", { class: "auth-quota-error", text: error }));
+        if (error) return el("div", { class: "auth-file-quota auth-quota-section" }, el("div", { class: "auth-quota-error", text: error }));
         const result = owner.authQuotas.get(index);
         if (!result) return null;
+        const rows = Array.isArray(result.quota) ? result.quota : [];
+        if (file.category === "codex") return renderCodexQuota(file, account, result, rows);
         const summary = [];
         if (Number.isFinite(Number(result.rate_limit_reset_credits_available_count))) {
           summary.push(el("span", { text: "Manual resets available: " + int(result.rate_limit_reset_credits_available_count) }));
-          if (!account && file.category === "codex") {
-            summary.push(
-              el("button", {
-                type: "button",
-                class: "link small",
-                text: "Reset quota",
-                disabled: !canResetAuthQuota(file),
-                onclick: () => guard(() => resetAuthQuota(file))
-              })
-            );
-          }
         }
         if (result.fetched_at) summary.push(el("span", { class: "muted", text: "Last checked: " + when(result.fetched_at) }));
-        const rows = result.quota;
         return el(
           "div",
-          { class: "auth-file-quota" },
+          { class: "auth-file-quota auth-quota-section" },
           summary.length ? el("div", { class: "auth-quota-summary" }, summary) : null,
           rows.length
             ? el("div", { class: "auth-quota-list" }, rows.map(renderQuotaRow))
@@ -7173,6 +7374,11 @@
         return cost.long_context ? "Long context >" + threshold : "Standard context ≤" + threshold;
       }
 
+      function costMultiplierText(value) {
+        const multiplier = Number(value);
+        return Number.isFinite(multiplier) && multiplier > 1 ? "x" + multiplier : "";
+      }
+
       function showCostTooltip(anchor, cost, hasCacheWrite) {
         const tooltip = $("cost-tooltip");
         const rows = [
@@ -7184,13 +7390,13 @@
         tooltip.replaceChildren(
           el("div", { class: "cost-tooltip-title", text: "Cost breakdown" }),
           ...(cost.tiered ? [el("div", { class: "cost-tooltip-summary" }, el("span", {}, "Tier"), el("b", {}, costTierText(cost)))] : []),
-          ...(cost.multiplier === 2.5
+          ...(Number(cost.multiplier) > 1
             ? [
                 el(
                   "div",
                   { class: "cost-tooltip-summary" },
                   el("span", {}, "Billing multiplier"),
-                  el("b", {}, "2.5×" + DISPLAY_SEPARATOR + "Codex Fast mode")
+                  el("b", {}, cost.multiplier + "×" + DISPLAY_SEPARATOR + "Codex Fast mode")
                 ),
                 el("div", { class: "cost-tooltip-summary" }, "Unit prices and amounts below include the multiplier")
               ]
@@ -7931,7 +8137,7 @@
         note.textContent = loadedCountText(entries.length, view.total, list.complete);
         const renderRow = (entry) => {
           const cost = entry.cost;
-          const costNote = [cost.tiered ? (cost.long_context ? "Long context" : "Standard") : "", cost.multiplier === 2.5 ? "x2.5" : ""]
+          const costNote = [cost.tiered ? (cost.long_context ? "Long context" : "Standard") : "", costMultiplierText(cost.multiplier)]
             .filter(Boolean)
             .join(DISPLAY_SEPARATOR);
           const input = requestInputTokens(cost);

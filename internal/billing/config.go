@@ -12,10 +12,9 @@ import (
 const DefaultStateFile = "plugins/cpa-key-billing-state-v1.db"
 
 type Config struct {
-	Enabled              bool   `yaml:"enabled"`
-	Debug                bool   `yaml:"debug"`
-	StateFile            string `yaml:"state_file"`
-	CodexFastModeBilling bool   `yaml:"codex_fast_mode_billing"`
+	Enabled   bool   `yaml:"enabled"`
+	Debug     bool   `yaml:"debug"`
+	StateFile string `yaml:"state_file"`
 }
 
 func DefaultConfig() Config {
@@ -33,6 +32,9 @@ func DecodeConfig(raw []byte) (Config, error) {
 			// These fields belong to the host and are ignored by the plugin.
 			Priority int       `yaml:"priority"`
 			Store    yaml.Node `yaml:"store"`
+			// Kept only so existing configurations continue to decode. Fast-mode
+			// pricing is built in and no longer has a switch.
+			LegacyCodexFastModeBilling *bool `yaml:"codex_fast_mode_billing"`
 		}{Config: cfg}
 		decoder := yaml.NewDecoder(bytes.NewReader(raw))
 		decoder.KnownFields(true)

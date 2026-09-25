@@ -7,11 +7,11 @@ func TestDecodeConfigDefaults(t *testing.T) {
 	if errDecode != nil {
 		t.Fatalf("DecodeConfig: %v", errDecode)
 	}
-	if !cfg.Enabled || cfg.Debug || cfg.CodexFastModeBilling || cfg.StateFile != DefaultStateFile {
+	if !cfg.Enabled || cfg.Debug || cfg.StateFile != DefaultStateFile {
 		t.Fatalf("config = %+v", cfg)
 	}
 	cfg, errDecode = DecodeConfig([]byte("enabled: true\ndebug: true\ncodex_fast_mode_billing: true\n"))
-	if errDecode != nil || !cfg.Debug || !cfg.CodexFastModeBilling {
+	if errDecode != nil || !cfg.Debug {
 		t.Fatalf("config = %+v, error = %v", cfg, errDecode)
 	}
 }

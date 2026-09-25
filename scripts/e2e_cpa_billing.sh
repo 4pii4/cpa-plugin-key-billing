@@ -1160,6 +1160,9 @@ assert_codex_window_autostart() {
 	local fixture_port="" attempts=0 auth_file files_file routing_file fixture_file
 	local sliding_ref gift_ref stable_ref disabled_ref sliding_index gift_index stable_index disabled_index
 	local body packet_count status artifact="$runtime_dir/codex-window-autostart-artifact.json"
+	local standard_body fast_body billing_events="$runtime_dir/codex-fast-mode-events.json"
+	local billing_fixture="$runtime_dir/codex-fast-mode-fixture.json"
+	local billing_artifact="$runtime_dir/codex-fast-mode-billing-artifact.json"
 	local artifact_dir="${CPA_E2E_ARTIFACT_DIR:-${TMPDIR:-/tmp}/cpa-key-billing-e2e-artifacts}"
 
 	mkdir -p "$runtime_dir/plugins" "$runtime_dir/auth" "$runtime_dir/responses"
@@ -1275,7 +1278,9 @@ assert_codex_window_autostart() {
 	if ! jq -e '
 		(.packets | length) == 2 and
 		([.packets[].account] | sort) == ["gift","sliding"] and
-		all(.packets[]; .body_exact and (.account_id == ("dummy-account-" + .account)) and (.completed_at > 0))
+		all(.packets[];
+			.body_exact and .unsupported_parameters_absent and
+			(.account_id == ("dummy-account-" + .account)) and (.completed_at > 0))
 	' "$fixture_file" >/dev/null; then
 		echo "Codex tiny packets were duplicated, malformed, incomplete, or sent to the wrong account." >&2
 		return 1
@@ -1300,6 +1305,57 @@ assert_codex_window_autostart() {
 	mkdir -p "$artifact_dir"
 	cp "$artifact" "$artifact_dir/codex-window-autostart-v7.2.143.json"
 	log_ok "Codex window auto-start: automatic and gifted-reset paths verified; artifact $artifact_dir/codex-window-autostart-v7.2.143.json"
+
+	management_call PUT "$port" "/v0/management/plugins/cpa-key-billing/codex-routing" \
+		-H "Content-Type: application/json" --data '{"enabled":false,"roles":{},"auto_start":{}}' >/dev/null
+	standard_body="$(request_body responses "gpt-5.6-sol" true "Reply with exactly OK.")"
+	fast_body="$(jq -c '. + {service_tier:"priority"}' <<<"$standard_body")"
+	api_call "$port" "Codex OAuth standard billing" "/v1/responses" "$standard_body" responses \
+		"$runtime_dir/responses/codex-standard.sse"
+	api_call "$port" "Codex OAuth Fast billing" "/v1/responses" "$fast_body" responses \
+		"$runtime_dir/responses/codex-fast.sse"
+	for ((attempts = 0; attempts < 100; attempts++)); do
+		management_call GET "$port" "/v0/management/plugins/cpa-key-billing/events?model=gpt-5.6-sol&limit=10" >"$billing_events"
+		[[ "$(jq -r '.entries | length' "$billing_events")" == "2" ]] && break
+		sleep 0.1
+	done
+	if ! jq -e '
+		.entries as $entries |
+		(first($entries[] | select(.service_tier == "priority"))) as $fast |
+		(first($entries[] | select(.service_tier != "priority"))) as $standard |
+		($entries | length) == 2 and
+		$standard.price_source == "builtin" and $fast.price_source == "builtin" and
+		(($standard.cost.multiplier // 0) == 0) and $fast.cost.multiplier == 2 and
+		$standard.cost.uncached_input_tokens == 96 and $standard.cost.cache_read_tokens == 32 and
+		$standard.cost.billed_output_tokens == 8 and
+		(($standard.cost.total_usd - 0.0005568) | fabs) < 0.000000000001 and
+		(($fast.cost.total_usd - ($standard.cost.total_usd * 2)) | fabs) < 0.000000000001 and
+		$fast.cost.applied_input_per_1m == 8 and $fast.cost.applied_cache_read_per_1m == 0.8 and
+		$fast.cost.applied_output_per_1m == 40
+	' "$billing_events" >/dev/null; then
+		echo "Codex Fast mode did not bill automatically at exactly 2x the built-in standard price." >&2
+		jq -c '.entries' "$billing_events" >&2 || true
+		return 1
+	fi
+	curl -fsS "http://127.0.0.1:$fixture_port/fixture/state" >"$billing_fixture"
+	if ! jq -e '
+		(.billing_packets | length) == 2 and
+		([.billing_packets[].service_tier] | sort) == ["","priority"] and
+		all(.billing_packets[];
+			.model == "gpt-5.6-sol" and .stream == true and
+			.accept == "text/event-stream" and .originator == "codex-tui" and
+			.account_id == ("dummy-account-" + .account) and .completed_at > 0)
+	' "$billing_fixture" >/dev/null; then
+		echo "Codex Fast-mode fixture did not observe the expected standard and priority requests." >&2
+		return 1
+	fi
+	jq -n --slurpfile events "$billing_events" --slurpfile fixture "$billing_fixture" '{
+		verified_at:(now | todateiso8601),
+		scenario:"OAuth auth-file standard versus priority Fast mode using built-in gpt-5.6-sol pricing",
+		events:$events[0], fixture:$fixture[0]
+	}' >"$billing_artifact"
+	cp "$billing_artifact" "$artifact_dir/codex-fast-mode-billing-v7.2.143.json"
+	log_ok "Codex Fast mode: automatic 2x billing and persisted event readback verified; artifact $artifact_dir/codex-fast-mode-billing-v7.2.143.json"
 
 	kill "$active_pid" >/dev/null 2>&1 || true
 	wait "$active_pid" >/dev/null 2>&1 || true

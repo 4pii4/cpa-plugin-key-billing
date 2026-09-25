@@ -16,7 +16,7 @@ func appendRequestEvent(tx *sql.Tx, entry billing.RequestEvent) (int64, error) {
 	switch entry.PriceSource {
 	case billing.PriceSourceCustom, billing.PriceSourceBuiltin, billing.PriceSourceReference:
 		if entry.Cost.Multiplier == billing.CodexFastModeMultiplier {
-			priceSource += ":x2.5"
+			priceSource += ":x2"
 		}
 	}
 	result, errInsert := tx.Exec(`
@@ -264,9 +264,12 @@ func scanRequestEventRow(rows *sql.Rows) (billing.RequestEventRow, error) {
 	row.Failed = failed != 0
 	row.AccountingQuality = billing.TokenAccountingQuality(quality)
 	switch priceSource {
+	case "custom:x2", "builtin:x2", "reference:x2":
+		priceSource = strings.TrimSuffix(priceSource, ":x2")
+		row.Cost.Multiplier = billing.CodexFastModeMultiplier
 	case "custom:x2.5", "builtin:x2.5", "reference:x2.5":
 		priceSource = strings.TrimSuffix(priceSource, ":x2.5")
-		row.Cost.Multiplier = billing.CodexFastModeMultiplier
+		row.Cost.Multiplier = 2.5
 	}
 	row.PriceSource = billing.PriceSource(priceSource)
 	return row, nil

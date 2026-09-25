@@ -448,7 +448,17 @@ def quota_row(label, remaining_percent, reset_seconds, **extra):
 AUTH_FILE_QUOTAS = {
     "auth-demo-codex-pro": {
         "plan": "pro-20x",
+        "subscription_active_until": iso(NOW - timedelta(days=14)),
         "rate_limit_reset_credits_available_count": 1,
+        "rate_limit_reset_credits": [
+            {
+                "id": "demo-reset-credit-1",
+                "reset_type": "codex_rate_limits",
+                "status": "available",
+                "granted_at": iso(NOW - timedelta(days=3)),
+                "expires_at": iso(NOW + timedelta(days=27)),
+            }
+        ],
         "quota": [
             quota_row("Weekly limit", 62, 432000),
             quota_row(
@@ -740,7 +750,7 @@ def event_sample(
 # Numeric usage and timing values are sampled from a real export. All identities
 # below are synthetic and intentionally unrelated to the source records.
 SUCCESS_EVENT_SAMPLES = [
-    event_sample(0, "codex · dev-team@example.com", "codex", "gpt-5.6-sol", "CodexExecutor", "high", "priority", 11513, 8209, 266, (712, 91648, 4096, 425), (4, 0.4, 5, 20), multiplier=2.5),
+    event_sample(0, "codex · dev-team@example.com", "codex", "gpt-5.6-sol", "CodexExecutor", "high", "priority", 11513, 8209, 266, (712, 91648, 4096, 425), (4, 0.4, 5, 20), multiplier=2),
     event_sample(5, "codex · dev-team@example.com", "codex", "gpt-5.6-luna", "CodexWebsocketsExecutor", "low", "auto", 2516, 1431, 10, (1030, 49920, 0, 75), (0.2, 0.02, 0.25, 1.2)),
     event_sample(1, "codex · dev-team@example.com", "codex", "gpt-5.5", "CodexWebsocketsExecutor", "medium", "auto", 2417, 1103, 0, (1194, 95616, 0, 73), (5, 0.5, 5, 30)),
     event_sample(1, "codex · dev-team@example.com", "codex", "gpt-5.6-sol", "CodexWebsocketsExecutor", "high", "auto", 5306, 2121, 21, (798, 169984, 0, 201), (4, 0.4, 5, 20)),
@@ -1520,6 +1530,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json(200, {"status_code": 409, "body": '{"error":{"message":"No reset credits available"}}'})
             else:
                 quota["rate_limit_reset_credits_available_count"] -= 1
+                quota["rate_limit_reset_credits"] = quota.get("rate_limit_reset_credits", [])[1:]
                 for row in quota["quota"]:
                     row["remaining_percent"] = 100
                 self.send_json(200, {"status_code": 204, "body": ""})

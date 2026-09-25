@@ -128,7 +128,9 @@ func (r PriceRates) resolve(source PriceSource) Price {
 	return price
 }
 
-const CodexFastModeMultiplier = 2.5
+// OpenAI bills Codex Fast mode (including the legacy "priority" service tier)
+// at 2x the corresponding Standard rate.
+const CodexFastModeMultiplier = 2.0
 
 type Cost struct {
 	// Multiplier is the applied billing multiplier. Zero/omitted means 1x.

@@ -63,10 +63,9 @@ func (s *Store) recordUsage(event UsageEvent, failure *RequestError) {
 	cost := ComputeCost(price, event.Breakdown)
 	missingCycleTime := false
 	updateResult(s, func(state *State) (struct{}, Changes) {
-		// ServiceTier is the client-requested tier, not the upstream response tier.
-		if s.cfg.CodexFastModeBilling && price.Source != PriceSourceNone && event.Breakdown.Billable() &&
+		if price.Source != PriceSourceNone && event.Breakdown.Billable() &&
 			strings.EqualFold(provider, "codex") && authType == "oauth" &&
-			strings.EqualFold(strings.TrimSpace(event.ServiceTier), "priority") {
+			isCodexFastModeTier(event.ServiceTier) {
 			cost.Multiplier = CodexFastModeMultiplier
 			cost.UncachedInputUSD *= CodexFastModeMultiplier
 			cost.CacheReadUSD *= CodexFastModeMultiplier
@@ -141,5 +140,14 @@ func (s *Store) recordUsage(event UsageEvent, failure *RequestError) {
 			"Reference-price billing: billing_model=%q, cost=$%.8f, unit prices per 1M tokens: input=$%g, output=$%g, cache read=$%g, cache write=$%g",
 			billingModel, cost.TotalUSD, cost.AppliedInputPer1M, cost.AppliedOutputPer1M,
 			cost.AppliedCacheReadPer1M, cost.AppliedCacheWritePer1M)
+	}
+}
+
+func isCodexFastModeTier(serviceTier string) bool {
+	switch strings.ToLower(strings.TrimSpace(serviceTier)) {
+	case "priority", "fast":
+		return true
+	default:
+		return false
 	}
 }

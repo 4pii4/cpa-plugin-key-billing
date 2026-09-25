@@ -145,11 +145,6 @@ func registration() Registration {
 					Description: "Record debug details, including routing and reference-price matches",
 				},
 				{
-					Name:        "codex_fast_mode_billing",
-					Type:        "boolean",
-					Description: "Bill Codex priority-tier upstream requests at 2.5x standard rates",
-				},
-				{
 					Name:        "state_file",
 					Type:        "string",
 					Description: "Billing database file path",

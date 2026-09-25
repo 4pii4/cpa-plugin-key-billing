@@ -288,7 +288,7 @@ func TestCodexManagementQuotaFeedsSchedulerWithoutNetworkOnPick(t *testing.T) {
 	if pick := codexPick(t, a, pool, "gpt-5.5"); pick.AuthID != "codex-0" {
 		t.Fatal("fresh reset was ignored", pick)
 	}
-	if httpCalls != 2 {
+	if httpCalls != 6 {
 		t.Fatal("scheduler performed provider HTTP", httpCalls)
 	}
 }
