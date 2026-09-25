@@ -75,7 +75,7 @@ class FixtureState:
 
     def add_packet(self, account, account_id, body, completed_at):
         expected = {
-            "model": "gpt-5.5",
+            "model": "gpt-5.6-luna",
             "input": [{"type": "message", "role": "user", "content": [{"type": "input_text", "text": "hi"}]}],
             "instructions": "Reply with OK.",
             "reasoning": {"effort": "none", "summary": "auto"},

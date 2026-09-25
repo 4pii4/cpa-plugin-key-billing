@@ -22,7 +22,7 @@ const (
 	codexAutoFailureCooldown = 15 * time.Minute
 	codexAutoMinPingInterval = 10 * time.Minute
 	codexAutoResetDrift      = 30 * time.Second
-	codexAutoModel           = "gpt-5.5"
+	codexAutoModel           = "gpt-5.6-luna"
 )
 
 // Runtime evidence is deliberately not persisted. On restart, CPA's current
@@ -499,7 +499,7 @@ func (a *App) sendCodexAutoStart(state *codexAccount, ref string, req reqCodexAu
 		state.auto.nextCheck = now.Add(codexAutoFailureCooldown)
 	} else {
 		state.auto.status = "started"
-		state.auto.message = "Tiny gpt-5.5 stream completed; the fresh 5-hour and weekly windows were started."
+		state.auto.message = "Tiny " + codexAutoModel + " stream completed; the fresh 5-hour and weekly windows were started."
 		state.auto.lastPing = now
 		state.auto.nextCheck = now.Add(codexAutoPollInterval)
 	}

@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.4.0
+
+### Backend
+
+- Changed the Codex window auto-start packet model to `gpt-5.6-luna` after `gpt-5.5` was removed.
+
+### Frontend
+
+- Updated the auto-start control description to show the current tiny-packet model.
+
 ## v1.3.15
 
 ### Upgrade notes
