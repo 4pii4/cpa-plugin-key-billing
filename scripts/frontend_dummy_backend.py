@@ -422,6 +422,16 @@ CODEX_ROUTING = {
     "settings": {"enabled": False, "roles": {}, "auto_start": {}},
     "last_hook_at": "0001-01-01T00:00:00Z",
     "last_pool": "",
+    "last_model": "",
+    "last_candidate_count": 0,
+    "checks": [
+        {"id": "plugin_priority", "label": "Plugin priority", "state": "info", "summary": "Configured as 10. Confirm no enabled plugin is higher."},
+        {"id": "account_availability", "label": "Account availability", "state": "pass", "summary": "All 2 Codex auth-file accounts are enabled and available."},
+        {"id": "auth_priority", "label": "Auth-file priority", "state": "pass", "summary": "All 2 accounts use effective priority 0."},
+        {"id": "auth_weight", "label": "Auth-file weight", "state": "pass", "summary": "All 2 accounts have positive effective weights."},
+        {"id": "pool_classification", "label": "Pool classification", "state": "pass", "summary": "Both accounts have plan metadata in the quota fixture."},
+        {"id": "model_eligibility", "label": "Requested-model eligibility", "state": "warn", "summary": "Not observed yet. Send a real Codex request."},
+    ],
     "auto_start_accounts": [],
 }
 

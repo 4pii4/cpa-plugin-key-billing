@@ -9,6 +9,7 @@ import (
 
 	"cpa-key-billing/internal/billing"
 	"cpa-key-billing/internal/sqlite"
+	"gopkg.in/yaml.v3"
 )
 
 type App struct {
@@ -20,6 +21,8 @@ type App struct {
 	credentials           map[string]credentialView
 	credentialsByRawID    map[string]string
 	credentialRefsByIndex map[string]string
+	pluginPriority        int
+	pluginPriorityKnown   bool
 	scheduler             subsetScheduler
 	codexRouter           codexRouter
 	pending               map[string]pendingRouteLog
@@ -110,9 +113,21 @@ func (a *App) configure(raw []byte) error {
 	if errDecode != nil {
 		return errDecode
 	}
+	var hostConfig struct {
+		Priority *int `yaml:"priority"`
+	}
+	if errPriority := yaml.Unmarshal(req.ConfigYAML, &hostConfig); errPriority != nil {
+		return fmt.Errorf("parse plugin priority: %w", errPriority)
+	}
 	if errConfigure := func() error {
 		a.routingMu.Lock()
 		defer a.routingMu.Unlock()
+		a.pluginPriorityKnown = hostConfig.Priority != nil
+		if hostConfig.Priority != nil {
+			a.pluginPriority = *hostConfig.Priority
+		} else {
+			a.pluginPriority = 0
+		}
 		previous := a.store.ConfigCredentials()
 		if err := a.store.Configure(cfg); err != nil {
 			return err

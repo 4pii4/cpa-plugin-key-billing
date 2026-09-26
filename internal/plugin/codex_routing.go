@@ -36,6 +36,8 @@ type codexRouter struct {
 	sequence    uint64
 	hookAt      time.Time
 	lastPool    string
+	lastModel   string
+	lastOffered []string
 	autoRunning bool
 }
 
@@ -111,6 +113,32 @@ type codexAutoStartView struct {
 	NextCheck  string `json:"next_check_at,omitempty"`
 }
 
+type codexRoutingCheck struct {
+	ID      string `json:"id"`
+	Label   string `json:"label"`
+	State   string `json:"state"`
+	Summary string `json:"summary"`
+}
+
+type codexRoutingSnapshot struct {
+	hookAt      time.Time
+	lastPool    string
+	lastModel   string
+	lastOffered []string
+	plans       map[string]string
+}
+
+type codexRoutingAccountAudit struct {
+	file          hostAuthFile
+	priority      int64
+	prioritySet   bool
+	weight        int64
+	weightSet     bool
+	plan          string
+	explicitRole  bool
+	credentialErr bool
+}
+
 func (r *codexRouter) reset() {
 	r.inventoryMu.Lock()
 	defer r.inventoryMu.Unlock()
@@ -118,7 +146,7 @@ func (r *codexRouter) reset() {
 	defer r.mu.Unlock()
 	r.files, r.accounts = nil, nil
 	r.inventoryAt, r.hookAt = time.Time{}, time.Time{}
-	r.lastPool = ""
+	r.lastPool, r.lastModel, r.lastOffered = "", "", nil
 }
 
 func isCodexAccount(file hostAuthFile) bool {
@@ -773,6 +801,11 @@ func (a *App) pickCodexCredential(scope, model, pool string, candidates []Schedu
 	defer r.mu.Unlock()
 	now := a.store.Now()
 	r.hookAt = now
+	r.lastModel = strings.TrimSpace(model)
+	r.lastOffered = make([]string, 0, len(candidates))
+	for _, candidate := range candidates {
+		r.lastOffered = append(r.lastOffered, candidate.ID)
+	}
 	for _, candidate := range candidates {
 		if file, known := r.files[candidate.ID]; known && !isCodexAccount(file) {
 			return "", false
@@ -826,14 +859,230 @@ func (a *App) pickCodexCredential(scope, model, pool string, candidates []Schedu
 	return id, true
 }
 
-func (a *App) codexRoutingStatus(_ ManagementRequest) ManagementResponse {
-	config := a.store.CodexRouting()
+func routingCheck(id, label, state, summary string) codexRoutingCheck {
+	return codexRoutingCheck{ID: id, Label: label, State: state, Summary: summary}
+}
+
+func (a *App) codexRoutingSnapshot() codexRoutingSnapshot {
 	r := &a.codexRouter
 	r.mu.Lock()
-	hookAt, lastPool := r.hookAt, r.lastPool
-	r.mu.Unlock()
+	defer r.mu.Unlock()
+	snapshot := codexRoutingSnapshot{
+		hookAt:      r.hookAt,
+		lastPool:    r.lastPool,
+		lastModel:   r.lastModel,
+		lastOffered: append([]string(nil), r.lastOffered...),
+		plans:       make(map[string]string, len(r.accounts)),
+	}
+	for index, account := range r.accounts {
+		snapshot.plans[index] = account.plan
+	}
+	return snapshot
+}
+
+func (a *App) configuredPluginPriority() (int, bool) {
+	a.routingMu.Lock()
+	defer a.routingMu.Unlock()
+	return a.pluginPriority, a.pluginPriorityKnown
+}
+
+func (a *App) auditCodexRoutingAccount(file hostAuthFile, config billing.CodexRouting, plans map[string]string) codexRoutingAccountAudit {
+	audit := codexRoutingAccountAudit{file: file, priority: 0, weight: 1}
+	audit.plan = normalizeCodexPlan(plans[file.AuthIndex])
+	role := config.Roles[billing.CredentialFingerprint(file.ID)]
+	audit.explicitRole = role == "primary" || role == "reserve"
+	if a.hostCaller == nil {
+		audit.credentialErr = true
+		return audit
+	}
+	raw, errGet := a.hostCaller(hostAuthGet, map[string]string{"auth_index": file.AuthIndex})
+	if errGet != nil {
+		audit.credentialErr = true
+		return audit
+	}
+	var response hostAuthGetResponse
+	if json.Unmarshal(raw, &response) != nil {
+		audit.credentialErr = true
+		return audit
+	}
+	var credential map[string]any
+	if json.Unmarshal(response.JSON, &credential) != nil {
+		audit.credentialErr = true
+		return audit
+	}
+	if priority, ok := credentialInt(credential, "priority"); ok {
+		audit.priority, audit.prioritySet = priority, true
+	}
+	if weight, ok := credentialInt(credential, "weight"); ok {
+		audit.weight, audit.weightSet = weight, true
+	}
+	if plan := credentialString(credential, "plan_type", "planType"); plan != "" {
+		audit.plan = normalizeCodexPlan(plan)
+	}
+	return audit
+}
+
+func (a *App) codexRoutingChecks(config billing.CodexRouting, snapshot codexRoutingSnapshot) []codexRoutingCheck {
+	checks := make([]codexRoutingCheck, 0, 6)
+	priority, priorityKnown := a.configuredPluginPriority()
+	if priorityKnown {
+		checks = append(checks, routingCheck("plugin_priority", "Plugin priority", "info",
+			fmt.Sprintf("Configured as %d. CPA does not expose peer plugin priorities here; confirm no enabled plugin is higher.", priority)))
+	} else {
+		checks = append(checks, routingCheck("plugin_priority", "Plugin priority", "warn",
+			"No explicit priority is visible in this plugin's lifecycle configuration. Configure it and confirm it is highest."))
+	}
+
+	files, errList := a.listHostAuthFiles()
+	if errList != nil {
+		message := "CPA auth-file inventory is unavailable: " + errList.Error()
+		for _, spec := range [][2]string{
+			{"account_availability", "Account availability"},
+			{"auth_priority", "Auth-file priority"},
+			{"auth_weight", "Auth-file weight"},
+			{"pool_classification", "Pool classification"},
+			{"model_eligibility", "Requested-model eligibility"},
+		} {
+			checks = append(checks, routingCheck(spec[0], spec[1], "fail", message))
+		}
+		return checks
+	}
+
+	accounts := make([]codexRoutingAccountAudit, 0)
+	for _, file := range files {
+		if isCodexAccount(file) {
+			accounts = append(accounts, a.auditCodexRoutingAccount(file, config, snapshot.plans))
+		}
+	}
+	if len(accounts) == 0 {
+		checks = append(checks, routingCheck("account_availability", "Account availability", "fail", "No Codex authentication-file accounts are configured."))
+	} else {
+		disabled, unavailable := 0, 0
+		for _, account := range accounts {
+			if account.file.Disabled {
+				disabled++
+			}
+			if account.file.Unavailable {
+				unavailable++
+			}
+		}
+		if disabled+unavailable == 0 {
+			checks = append(checks, routingCheck("account_availability", "Account availability", "pass",
+				fmt.Sprintf("All %d Codex auth-file accounts are enabled and available.", len(accounts))))
+		} else {
+			checks = append(checks, routingCheck("account_availability", "Account availability", "fail",
+				fmt.Sprintf("%d disabled and %d unavailable out of %d Codex auth-file accounts.", disabled, unavailable, len(accounts))))
+		}
+	}
+
+	unreadable, priorityDefaults := 0, 0
+	priorities := make(map[int64]struct{})
+	for _, account := range accounts {
+		if account.credentialErr {
+			unreadable++
+			continue
+		}
+		priorities[account.priority] = struct{}{}
+		if !account.prioritySet {
+			priorityDefaults++
+		}
+	}
+	priorityValues := make([]int, 0, len(priorities))
+	for value := range priorities {
+		priorityValues = append(priorityValues, int(value))
+	}
+	sort.Ints(priorityValues)
+	if len(accounts) == 0 {
+		checks = append(checks, routingCheck("auth_priority", "Auth-file priority", "fail", "No Codex auth files are available to compare."))
+	} else if unreadable > 0 {
+		checks = append(checks, routingCheck("auth_priority", "Auth-file priority", "fail",
+			fmt.Sprintf("Could not inspect priority for %d of %d Codex auth files.", unreadable, len(accounts))))
+	} else if len(priorityValues) == 1 {
+		checks = append(checks, routingCheck("auth_priority", "Auth-file priority", "pass",
+			fmt.Sprintf("All %d accounts use effective priority %d (%d use CPA's default 0).", len(accounts), priorityValues[0], priorityDefaults)))
+	} else if len(priorityValues) > 1 {
+		checks = append(checks, routingCheck("auth_priority", "Auth-file priority", "fail",
+			fmt.Sprintf("Priorities differ across accounts: %v. CPA can hide lower-priority accounts before this plugin runs.", priorityValues)))
+	}
+
+	weightDefaults, nonPositive := 0, 0
+	for _, account := range accounts {
+		if account.credentialErr {
+			continue
+		}
+		if !account.weightSet {
+			weightDefaults++
+		}
+		if account.weight <= 0 {
+			nonPositive++
+		}
+	}
+	if len(accounts) == 0 {
+		checks = append(checks, routingCheck("auth_weight", "Auth-file weight", "fail", "No Codex auth files are available to inspect."))
+	} else if unreadable > 0 {
+		checks = append(checks, routingCheck("auth_weight", "Auth-file weight", "fail",
+			fmt.Sprintf("Could not inspect weight for %d of %d Codex auth files.", unreadable, len(accounts))))
+	} else if nonPositive > 0 {
+		checks = append(checks, routingCheck("auth_weight", "Auth-file weight", "fail",
+			fmt.Sprintf("%d of %d accounts have a non-positive weight and cannot participate.", nonPositive, len(accounts))))
+	} else if len(accounts) > 0 {
+		checks = append(checks, routingCheck("auth_weight", "Auth-file weight", "pass",
+			fmt.Sprintf("All %d accounts have positive effective weights (%d use CPA's default 1).", len(accounts), weightDefaults)))
+	}
+
+	unclassified := 0
+	for _, account := range accounts {
+		if !account.explicitRole && account.plan == "" {
+			unclassified++
+		}
+	}
+	if len(accounts) == 0 {
+		checks = append(checks, routingCheck("pool_classification", "Pool classification", "fail", "No Codex auth files are available to classify."))
+	} else if unreadable > 0 {
+		checks = append(checks, routingCheck("pool_classification", "Pool classification", "warn",
+			fmt.Sprintf("Could not fully inspect %d account records; refresh quotas and review routing overrides.", unreadable)))
+	} else if unclassified > 0 {
+		checks = append(checks, routingCheck("pool_classification", "Pool classification", "warn",
+			fmt.Sprintf("%d of %d accounts have neither known plan metadata nor an explicit primary/reserve override.", unclassified, len(accounts))))
+	} else if len(accounts) > 0 {
+		checks = append(checks, routingCheck("pool_classification", "Pool classification", "pass",
+			fmt.Sprintf("All %d accounts have plan metadata or an explicit routing-pool override.", len(accounts))))
+	}
+
+	active := make(map[string]struct{})
+	for _, account := range accounts {
+		if !account.file.Disabled && !account.file.Unavailable {
+			active[account.file.ID] = struct{}{}
+		}
+	}
+	if snapshot.hookAt.IsZero() || snapshot.lastModel == "" {
+		checks = append(checks, routingCheck("model_eligibility", "Requested-model eligibility", "warn",
+			"Not observed yet. Send a real Codex request to see which enabled accounts CPA offers for that model."))
+	} else {
+		offered := make(map[string]struct{})
+		for _, id := range snapshot.lastOffered {
+			if _, exists := active[id]; exists {
+				offered[id] = struct{}{}
+			}
+		}
+		if len(offered) == len(active) && len(active) > 0 {
+			checks = append(checks, routingCheck("model_eligibility", "Requested-model eligibility", "pass",
+				fmt.Sprintf("CPA offered all %d enabled accounts for the last requested model %q.", len(active), snapshot.lastModel)))
+		} else {
+			checks = append(checks, routingCheck("model_eligibility", "Requested-model eligibility", "warn",
+				fmt.Sprintf("CPA offered %d of %d enabled accounts for %q; check model support, priority, pins, weights, and cooldowns.", len(offered), len(active), snapshot.lastModel)))
+		}
+	}
+	return checks
+}
+
+func (a *App) codexRoutingStatus(_ ManagementRequest) ManagementResponse {
+	config := a.store.CodexRouting()
+	snapshot := a.codexRoutingSnapshot()
 	return JSONResponse(http.StatusOK, map[string]any{
-		"settings": config, "last_hook_at": hookAt, "last_pool": lastPool,
+		"settings": config, "last_hook_at": snapshot.hookAt, "last_pool": snapshot.lastPool,
+		"last_model": snapshot.lastModel, "last_candidate_count": len(snapshot.lastOffered),
+		"checks":              a.codexRoutingChecks(config, snapshot),
 		"auto_start_accounts": a.codexAutoStartViews(config),
 	})
 }

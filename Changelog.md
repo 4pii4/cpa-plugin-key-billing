@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.4.2
+
+### Backend
+
+- Added Codex routing readiness checks for plugin priority, account availability, auth-file priority and weight, pool classification, and last-request model eligibility.
+- Record the last Codex model and exact candidate set observed by the scheduler without exposing credential contents.
+
+### Frontend
+
+- Redesigned authentication-file cards with clearer quota windows, banked resets, routing controls, responsive layouts, and provider-avatar status indicators.
+- Replaced the permissive Codex routing message with a collapsible evidence report that validates the live scheduler timestamp and pool before declaring routing verified.
+
 ## v1.4.1
 
 ### Backend

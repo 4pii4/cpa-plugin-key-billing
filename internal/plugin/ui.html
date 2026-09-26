@@ -394,6 +394,9 @@
       .table-scroll .muted { color: var(--text-secondary); }
       /* Leave room for CPAMC's action bar over the iframe. */
       .head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-height: 52px; padding-right: 200px; margin-bottom: 16px; }
+      @media (max-width: 1100px) and (min-width: 769px) {
+        .auth-file-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
       @media (max-width: 768px) {
         .head { padding-right: 0; min-height: 0; margin-bottom: 12px; }
       }
@@ -558,7 +561,15 @@
       }
       :root[data-cpamp-plugin-host="true"] .toggle-filter.compact-toggle { border-color: transparent; background: transparent; }
       :root[data-cpamp-plugin-host="true"]
-        button:not(.link, .icon-action, .auth-refresh-icon-button, .routing-section-toggle, .routing-option) {
+        button:not(
+          .link,
+          .icon-action,
+          .auth-email-copy,
+          .auth-refresh-icon-button,
+          .auth-quota-reset-button,
+          .routing-section-toggle,
+          .routing-option
+        ) {
         min-height: 34px;
         padding: 0 12px;
         border-color: var(--app-border, var(--border-color));
@@ -566,7 +577,10 @@
         background: var(--app-surface-muted, var(--bg-tertiary));
         line-height: 1.2;
       }
-      :root[data-cpamp-plugin-host="true"] button:not(.link):not(.routing-section-toggle):not(.routing-option):hover:not(:disabled) {
+      :root[data-cpamp-plugin-host="true"]
+        button:not(.link):not(.auth-email-copy):not(.auth-quota-reset-button):not(.routing-section-toggle):not(.routing-option):hover:not(
+          :disabled
+        ) {
         border-color: var(--border-hover);
         background: var(--app-accent-soft, var(--bg-hover));
         color: var(--primary-color);
@@ -1060,48 +1074,145 @@
         line-height: 1;
       }
       .toggle-filter.compact-toggle:focus-within { border-color: transparent; box-shadow: none; }
-      .auth-file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; align-items: stretch; }
+      .auth-autostart-toggle {
+        align-items: center;
+        gap: 10px;
+        min-height: 0;
+        padding: 8px 10px;
+        border-color: color-mix(in srgb, var(--border-color) 80%, transparent);
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--bg-primary) 55%, transparent);
+      }
+      .auth-autostart-toggle > input[type="checkbox"] {
+        flex: 0 0 16px;
+        align-self: center;
+        width: 16px;
+        height: 16px;
+        min-height: 16px;
+        margin: 0;
+        padding: 0;
+        accent-color: var(--primary-color);
+      }
+      .auth-autostart-content { display: flex; flex-direction: column; gap: 2px; min-width: 0; line-height: 1.25; }
+      .auth-autostart-content > span { color: var(--text-primary); font-size: 12px; font-weight: 500; white-space: normal; }
+      .auth-autostart-status {
+        margin: 0;
+        color: var(--text-tertiary);
+        font-size: 10.5px;
+        font-weight: 400;
+        line-height: 1.3;
+        white-space: normal;
+      }
+      .auth-file-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; align-items: stretch; }
       .auth-file-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
         height: 100%;
         min-width: 0;
-        padding: 14px;
+        padding: 20px;
         border: 1px solid var(--border-color);
-        border-radius: var(--radius-md);
+        border-radius: 16px;
         background: var(--bg-secondary);
-        transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+        overflow: hidden;
+        transition: none;
       }
+      :root[data-theme="dark"] .auth-file-card { border-color: #27272a; background: #121216; }
       @media (hover: hover) {
-        .account-model-card:hover, .auth-file-card:hover {
+        .account-model-card:hover {
           transform: translateY(-2px);
-          border-color: var(--border-hover);
-          background: color-mix(in srgb, var(--bg-secondary) 92%, var(--primary-color));
-          box-shadow: 0 7px 18px color-mix(in srgb, var(--text-primary) 10%, transparent);
+          border-color: color-mix(in srgb, var(--primary-color) 35%, var(--border-color));
+          box-shadow: 0 10px 30px -4px rgb(0 0 0 / 0.32), 0 0 20px color-mix(in srgb, var(--primary-color) 6%, transparent);
         }
       }
-      .auth-file-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-      .auth-file-main { display: flex; align-items: flex-start; gap: 10px; min-width: 0; flex: 1; }
+      .auth-file-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+      .auth-file-main { display: flex; align-items: flex-start; gap: 12px; min-width: 0; flex: 1; }
+      .auth-provider-icon-wrap { position: relative; flex: 0 0 36px; width: 36px; height: 36px; line-height: 0; }
+      .auth-status-dot {
+        position: absolute;
+        right: -2px;
+        bottom: -2px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--quota-high-color);
+        border: 3px solid var(--bg-secondary);
+      }
+      :root[data-theme="dark"] .auth-status-dot { border-color: #121216; }
+      .auth-status-dot.status-bad { background: var(--error-color); }
+      .auth-status-dot.status-off { background: var(--text-tertiary); }
       .auth-file-identity { min-width: 0; flex: 1; }
-      .auth-file-email-title { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .auth-file-email-line { display: flex; align-items: center; gap: 6px; min-width: 0; }
+      .auth-file-email-title {
+        min-width: 0;
+        overflow: hidden;
+        color: var(--text-primary);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      button.auth-email-copy {
+        display: grid;
+        flex: none;
+        place-items: center;
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        min-height: 20px;
+        padding: 3px;
+        border: 0;
+        border-radius: 5px;
+        background: transparent;
+        color: var(--text-tertiary);
+        opacity: 0.8;
+      }
+      button.auth-email-copy:hover:not(:disabled), button.auth-email-copy:focus-visible {
+        background: transparent;
+        color: var(--text-secondary);
+        opacity: 1;
+      }
+      button.auth-email-copy.copied { color: var(--primary-color); opacity: 1; }
+      .auth-email-copy .lucide-icon { width: 13px; height: 13px; }
       .auth-file-meta {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 6px;
         min-width: 0;
         overflow: hidden;
-        margin-top: 4px;
+        margin-top: 3px;
         color: var(--text-secondary);
         font-size: 12px;
         white-space: nowrap;
       }
       .auth-file-meta > span { flex: none; }
+      .auth-plan-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 5px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 600;
+        line-height: 18px;
+        border: 1px solid color-mix(in srgb, var(--primary-color) 22%, transparent);
+        background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+        color: var(--primary-color);
+      }
+      .auth-plan-badge.plan-elite {
+        border-color: color-mix(in srgb, #6366f1 25%, transparent);
+        background: color-mix(in srgb, #6366f1 12%, transparent);
+        color: #818cf8;
+      }
+      :root:not([data-theme="dark"]) .auth-plan-badge.plan-elite { color: #6366f1; }
       .auth-provider-icon {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        flex: 0 0 30px;
-        width: 30px;
-        height: 30px;
-        margin-top: 2px;
+        flex: 0 0 36px;
+        width: 36px;
+        height: 36px;
         overflow: hidden;
         border-radius: 50%;
         line-height: 0;
@@ -1127,18 +1238,22 @@
       :root[data-theme="dark"] .auth-provider-icon[data-provider="xai"] {
         box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
       }
-      .auth-file-actions { display: flex; align-items: center; gap: 6px; flex: none; }
+      .auth-file-actions { display: flex; align-items: center; gap: 8px; flex: none; }
       .auth-refresh-icon-button {
         display: grid;
         place-items: center;
-        width: 30px;
-        height: 30px;
-        min-width: 30px;
-        min-height: 30px;
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        min-height: 32px;
         padding: 0;
+        border-color: color-mix(in srgb, var(--border-color) 70%, transparent);
         border-radius: 50%;
+        background: color-mix(in srgb, var(--bg-tertiary) 80%, transparent);
+        color: var(--text-tertiary);
         line-height: 0;
       }
+      .auth-refresh-icon-button:hover:not(:disabled) { color: var(--text-primary); }
       .auth-refresh-icon-button .lucide-icon { width: 14px; height: 14px; transform-origin: center; }
       .auth-refresh-icon-button.loading .lucide-icon, [data-page-action="refresh"]:disabled .lucide-icon {
         animation: auth-refresh-spin 0.8s linear infinite;
@@ -1149,14 +1264,8 @@
       @media (prefers-reduced-motion: reduce) {
         .auth-refresh-icon-button.loading .lucide-icon, [data-page-action="refresh"]:disabled .lucide-icon { animation: none; }
       }
-      .auth-file-quota { display: grid; gap: 11px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); }
-      .auth-file-quota.auth-quota-section {
-        gap: 9px;
-        padding: 10px 11px;
-        border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
-        border-radius: 10px;
-        background: color-mix(in srgb, var(--bg-secondary) 55%, transparent);
-      }
+      .auth-file-quota { display: grid; gap: 10px; }
+      .auth-file-quota.auth-quota-section { gap: 14px; margin: 0 0 16px; padding: 0; border: 0; background: transparent; }
       .auth-quota-summary { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: var(--text-secondary); font-size: 12px; }
       .auth-codex-plan { display: flex; flex-wrap: wrap; gap: 6px; }
       .auth-codex-plan-item {
@@ -1186,46 +1295,91 @@
       .auth-codex-reset-credits {
         display: flex;
         flex-direction: column;
-        gap: 4px;
-        padding: 8px 9px;
-        border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
-        border-radius: 8px;
+        gap: 10px;
+        padding: 14px;
+        border: 1px solid color-mix(in srgb, var(--primary-color) 28%, var(--border-color));
+        border-radius: 12px;
+        background: linear-gradient(
+          to bottom,
+          color-mix(in srgb, var(--primary-color) 8%, transparent),
+          color-mix(in srgb, var(--bg-primary) 55%, transparent)
+        );
+        overflow: hidden;
       }
+      .auth-codex-reset-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
       .auth-codex-reset-title {
-        color: var(--text-tertiary);
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        font-size: 11.5px;
-        font-weight: 600;
-        letter-spacing: 0.1em;
-        line-height: 1.35;
-        text-transform: uppercase;
-      }
-      .auth-codex-reset-row {
         display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 8px;
+        align-items: center;
+        gap: 7px;
+        color: var(--text-primary);
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.35;
+      }
+      .auth-codex-reset-title::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        box-shadow: 0 0 8px color-mix(in srgb, var(--primary-color) 35%, transparent);
+      }
+      .auth-codex-reset-count {
+        padding: 2px 9px;
+        border: 1px solid color-mix(in srgb, var(--primary-color) 24%, transparent);
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+        color: var(--primary-color);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 10px;
+        line-height: 16px;
+        white-space: nowrap;
+      }
+      .auth-codex-reset-list { display: grid; gap: 6px; }
+      .auth-codex-reset-row {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        gap: 10px;
         min-width: 0;
-        font-size: 11.5px;
+        padding: 8px 10px;
+        border: 1px solid color-mix(in srgb, var(--border-color) 80%, transparent);
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--bg-primary) 70%, transparent);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 11px;
       }
       .auth-codex-reset-label {
-        min-width: 0;
-        overflow: hidden;
-        color: var(--text-secondary);
-        text-overflow: ellipsis;
+        padding: 1px 7px;
+        border: 1px solid color-mix(in srgb, var(--primary-color) 22%, transparent);
+        border-radius: 5px;
+        background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+        color: var(--primary-color);
+        font-size: 10px;
+        font-weight: 600;
         white-space: nowrap;
       }
       .auth-codex-reset-time {
-        flex-shrink: 0;
+        min-width: 0;
         color: var(--text-secondary);
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         font-variant-numeric: tabular-nums;
+        line-height: 1.35;
         text-align: right;
+        white-space: normal;
       }
       .auth-codex-reset-error { color: var(--warning-text); font-size: 11.5px; font-weight: 500; overflow-wrap: anywhere; }
-      .auth-quota-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 11px; }
-      .auth-quota-row { display: grid; gap: 4px; min-width: 0; }
-      .auth-quota-line { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+      .auth-quota-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+      .auth-quota-row {
+        display: grid;
+        gap: 8px;
+        min-width: 0;
+        padding: 12px 14px;
+        border: 1px solid color-mix(in srgb, var(--border-color) 80%, transparent);
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--bg-primary) 55%, transparent);
+      }
+      .auth-quota-row.no-reset { padding-bottom: 16px; }
+      .auth-quota-line { display: flex; align-items: center; gap: 10px; min-width: 0; }
       .auth-quota-label {
         flex: 1;
         min-width: 0;
@@ -1234,7 +1388,7 @@
         white-space: nowrap;
         color: var(--text-secondary);
         font-size: 12px;
-        font-weight: 600;
+        font-weight: 500;
       }
       .auth-quota-stats {
         display: flex;
@@ -1246,17 +1400,60 @@
         font-size: 11px;
         font-variant-numeric: tabular-nums;
       }
-      .auth-quota-value { color: var(--text-primary); font-size: 12px; font-weight: 600; }
-      .auth-quota-actions { display: flex; justify-content: flex-end; gap: 6px; }
+      .auth-quota-value {
+        color: var(--text-primary);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .auth-quota-value.high { color: var(--quota-high-color); }
+      .auth-quota-value.medium { color: var(--warning-text); }
+      .auth-quota-value.low { color: var(--quota-low-color); }
+      .auth-quota-row .bar { height: 6px; background: color-mix(in srgb, var(--text-primary) 10%, transparent); }
+      .auth-quota-row .quota-fill { background: linear-gradient(to right, var(--primary-color), var(--quota-high-color)); }
+      .auth-quota-reset-meta {
+        overflow: hidden;
+        color: var(--text-tertiary);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 10.5px;
+        font-variant-numeric: tabular-nums;
+        line-height: 1.3;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .auth-quota-actions { display: flex; justify-content: stretch; gap: 6px; }
       .auth-quota-reset-button {
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 6px;
+        width: 100%;
+        padding: 8px 12px;
+        border-color: color-mix(in srgb, var(--primary-color) 30%, transparent);
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--primary-color) 14%, transparent);
+        color: var(--primary-color);
         white-space: nowrap;
-        font-size: 11.5px;
+        font-size: 12px;
         font-weight: 600;
       }
+      .auth-quota-reset-button:hover:not(:disabled) {
+        background: color-mix(in srgb, var(--primary-color) 24%, transparent);
+        color: var(--text-primary);
+      }
       .auth-quota-reset-button .lucide-icon { width: 14px; height: 14px; }
+      .auth-file-footer { display: grid; gap: 10px; margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border-color); }
+      .auth-routing-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        color: var(--text-tertiary);
+        font-size: 12px;
+      }
+      .auth-routing-label { display: inline-flex; align-items: center; gap: 7px; font-weight: 500; white-space: nowrap; }
+      .auth-routing-label .lucide-icon { width: 14px; height: 14px; }
+      .auth-routing-row .native-select select { min-height: 32px; padding-block: 4px; border-radius: 8px; font-size: 12px; }
       .auth-quota-error {
         padding: 9px 10px;
         border: 1px solid var(--failure-badge-border);
@@ -1265,6 +1462,110 @@
         color: var(--failure-badge-text);
         font-size: 12px;
         overflow-wrap: anywhere;
+      }
+      .codex-routing-report {
+        display: grid;
+        gap: 10px;
+        margin-top: 14px;
+        padding: 13px 14px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
+      }
+      .codex-routing-report[data-state="verified"] {
+        border-color: color-mix(in srgb, var(--quota-high-color) 32%, var(--border-color));
+        background: color-mix(in srgb, var(--quota-high-color) 6%, var(--bg-secondary));
+      }
+      .codex-routing-report[data-state="warning"] {
+        border-color: color-mix(in srgb, var(--amber-text) 34%, var(--border-color));
+        background: color-mix(in srgb, var(--amber-text) 6%, var(--bg-secondary));
+      }
+      .codex-routing-report[data-state="error"] {
+        border-color: color-mix(in srgb, var(--error-color) 34%, var(--border-color));
+        background: color-mix(in srgb, var(--error-color) 6%, var(--bg-secondary));
+      }
+      .codex-routing-report-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+      .codex-routing-report-dot { flex: 0 0 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--text-tertiary); }
+      .codex-routing-report[data-state="verified"] .codex-routing-report-dot { background: var(--quota-high-color); }
+      .codex-routing-report[data-state="warning"] .codex-routing-report-dot { background: var(--amber-text); }
+      .codex-routing-report[data-state="error"] .codex-routing-report-dot { background: var(--error-color); }
+      .codex-routing-report-title { min-width: 0; color: var(--text-primary); font-size: 13px; font-weight: 600; }
+      .codex-routing-report-badge {
+        margin-left: auto;
+        padding: 2px 8px;
+        border: 1px solid var(--border-color);
+        border-radius: 999px;
+        color: var(--text-secondary);
+        font-size: 10px;
+        font-weight: 600;
+        line-height: 17px;
+        white-space: nowrap;
+      }
+      .codex-routing-collapse { flex: 0 0 28px; width: 28px; height: 28px; min-width: 28px; min-height: 28px; padding: 6px; }
+      .codex-routing-collapse .lucide-icon { width: 14px; height: 14px; transition: none; }
+      .codex-routing-collapse[aria-expanded="true"] .lucide-chevron-icon { transform: rotate(90deg); }
+      .codex-routing-report-body { display: grid; gap: 10px; }
+      .codex-routing-report-summary, .codex-routing-report-guidance {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .codex-routing-report-guidance { color: var(--text-tertiary); }
+      .codex-routing-evidence { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; }
+      .codex-routing-evidence > div {
+        display: grid;
+        gap: 2px;
+        min-width: 0;
+        padding: 8px 10px;
+        border: 1px solid color-mix(in srgb, var(--border-color) 75%, transparent);
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--bg-primary) 55%, transparent);
+      }
+      .codex-routing-evidence dt {
+        color: var(--text-tertiary);
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .codex-routing-evidence dd {
+        min-width: 0;
+        margin: 0;
+        overflow: hidden;
+        color: var(--text-primary);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 11.5px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .codex-routing-checks { display: grid; gap: 6px; }
+      .codex-routing-check {
+        display: grid;
+        grid-template-columns: 10px minmax(0, 1fr);
+        gap: 3px 8px;
+        align-items: start;
+        padding: 8px 10px;
+        border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--bg-primary) 42%, transparent);
+      }
+      .codex-routing-check-dot {
+        grid-row: 1 / span 2;
+        width: 8px;
+        height: 8px;
+        margin-top: 4px;
+        border-radius: 50%;
+        background: var(--text-tertiary);
+      }
+      .codex-routing-check[data-state="pass"] .codex-routing-check-dot { background: var(--quota-high-color); }
+      .codex-routing-check[data-state="warn"] .codex-routing-check-dot { background: var(--amber-text); }
+      .codex-routing-check[data-state="fail"] .codex-routing-check-dot { background: var(--error-color); }
+      .codex-routing-check[data-state="info"] .codex-routing-check-dot { background: var(--primary-color); }
+      .codex-routing-check-label { color: var(--text-primary); font-size: 11.5px; font-weight: 600; }
+      .codex-routing-check-summary { color: var(--text-tertiary); font-size: 11px; line-height: 1.4; overflow-wrap: anywhere; }
+      @media (max-width: 520px) {
+        .codex-routing-evidence { grid-template-columns: minmax(0, 1fr); }
       }
       dialog, .time-range-popover { max-height: 80dvh; }
       dialog {
@@ -2460,7 +2761,23 @@
             </div>
             <p class="muted small">Codex accounts: Plus → other plans → Pro 20x reserve. Override pools below. Other providers and API keys are unchanged.</p>
             <p class="muted small">Stale quota: retry within 2 min, one probe per account/window every 30 sec. CPA eligibility, pins, and cooldowns still apply. Keep accounts at the same CPA priority.</p>
-            <p id="codex-routing-status" class="muted small" role="status">Loading routing settings…</p>
+            <div id="codex-routing-status" class="codex-routing-report" data-state="pending" role="status" aria-live="polite">
+              <div class="codex-routing-report-head">
+                <span class="codex-routing-report-dot" aria-hidden="true"></span>
+                <strong id="codex-routing-status-title" class="codex-routing-report-title">Checking routing evidence…</strong>
+                <span id="codex-routing-status-badge" class="codex-routing-report-badge">Checking</span>
+                <button id="codex-routing-report-toggle" class="icon-action codex-routing-collapse" type="button" aria-expanded="true" aria-controls="codex-routing-report-body" aria-label="Collapse scheduler report" title="Collapse scheduler report"></button>
+              </div>
+              <div id="codex-routing-report-body" class="codex-routing-report-body">
+                <p id="codex-routing-status-summary" class="codex-routing-report-summary">Loading routing settings…</p>
+                <dl class="codex-routing-evidence">
+                  <div> <dt>Scheduler hook</dt> <dd id="codex-routing-hook-evidence">Checking…</dd> </div>
+                  <div> <dt>Last pool</dt> <dd id="codex-routing-pool-evidence">Checking…</dd> </div>
+                </dl>
+                <div id="codex-routing-checks" class="codex-routing-checks" aria-label="Routing readiness checks"></div>
+                <p id="codex-routing-status-guidance" class="codex-routing-report-guidance"></p>
+              </div>
+            </div>
           </div>
           <div class="card">
             <div class="row spread section-toolbar">
@@ -2664,7 +2981,7 @@
     <footer class="page-footer">
       <span>© 2026 <a href="https://github.com/4pii4/cpa-plugin-key-billing" target="_blank" rel="noopener noreferrer">CPA Key Billing</a></span>
       <span>&thinsp;·&thinsp;<a href="https://github.com/4pii4/cpa-plugin-key-billing/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">License</a></span>
-      <span>&thinsp;·&thinsp;Version: v1.4.1</span>
+      <span>&thinsp;·&thinsp;Version: v1.4.2</span>
     </footer>
 
     <div id="notice" class="notice" popover="manual"></div>
@@ -5639,11 +5956,14 @@
       }
 
       function quotaLabel(row) {
-        return displayLabel(
+        const label = displayLabel(
           row.group_label && row.group_label.toLocaleLowerCase() !== row.label.toLocaleLowerCase()
             ? row.group_label + DISPLAY_SEPARATOR + row.label
             : row.group_label || row.label
         );
+        if (!row.group_label && /^5-hour limit$/i.test(label)) return "5-Hour Window";
+        if (!row.group_label && /^weekly limit$/i.test(label)) return "Weekly Limit";
+        return label;
       }
 
       function renderQuotaRow(row) {
@@ -5651,15 +5971,15 @@
         const percent = row.remaining_percent;
         const hasPercent = percent !== undefined;
         const value = hasPercent ? percent.toFixed(0) + "%" : "—";
-        const level = percent >= 70 ? "high" : percent >= 30 ? "medium" : "low";
+        const level = !hasPercent ? "high" : percent >= 70 ? "high" : percent >= 30 ? "medium" : "low";
         const reset = quotaResetMeta(row);
         const amount = quotaAmount(row);
-        const stats = [el("span", { class: "auth-quota-value", text: value })];
+        const stats = [el("span", { class: "auth-quota-value " + level, text: value })];
         if (amount) stats.push(el("span", { text: amount }));
-        if (reset.at) stats.push(el("span", { text: reset.at + (reset.after ? DISPLAY_SEPARATOR + reset.after : "") }));
+        const resetText = reset.at ? "Resets " + (reset.after ? reset.after + " at " : "at ") + reset.at : "";
         return el(
           "div",
-          { class: "auth-quota-row" },
+          { class: "auth-quota-row" + (resetText ? "" : " no-reset") },
           el(
             "div",
             { class: "auth-quota-line" },
@@ -5677,7 +5997,8 @@
               "aria-valuenow": hasPercent ? Math.round(percent) : null
             },
             el("i", { class: "quota-fill " + (hasPercent ? level : "high"), style: "width:" + (hasPercent ? percent : 0) + "%" })
-          )
+          ),
+          resetText ? el("div", { class: "auth-quota-reset-meta", text: resetText }) : null
         );
       }
 
@@ -5692,21 +6013,7 @@
       }
 
       function renderCodexQuota(file, account, result, rows) {
-        const planItems = [];
-        const plan = authPlanLabel("codex", result.plan);
-        const normalizedPlan = String(result.plan || "").trim().toLocaleLowerCase();
-        if (plan) {
-          const planClass =
-            normalizedPlan === "pro-20x" || normalizedPlan === "pro" ? "elite" : normalizedPlan === "pro-5x" ? "premium" : "";
-          planItems.push(codexPlanItem("Plan", plan, "", planClass));
-        }
-        const renewal = quotaInstant(result.subscription_active_until);
-        if (renewal && !isNaN(renewal.getTime())) {
-          planItems.push(codexPlanItem("Renewal time", compactResetDate(renewal), compactRelativeInstant(renewal)));
-        }
         const resetCount = Number(result.rate_limit_reset_credits_available_count);
-        if (Number.isFinite(resetCount)) planItems.push(codexPlanItem("Manual resets", int(resetCount)));
-
         const resetCredits = Array.isArray(result.rate_limit_reset_credits)
           ? result.rate_limit_reset_credits.filter(
               (credit) =>
@@ -5715,60 +6022,79 @@
                 credit.expires_at
             )
           : [];
-        const resetCreditPanel = resetCredits.length
-          ? el(
-              "div",
-              { class: "auth-codex-reset-credits" },
-              el("div", { class: "auth-codex-reset-title", text: "Manual reset expiry (" + localTimeZoneLabel() + ")" }),
-              ...resetCredits.map((credit, index) => {
-                const expiry = quotaInstant(credit.expires_at);
-                const valid = expiry && !isNaN(expiry.getTime());
-                return el(
+        const hasResetCredits = (Number.isFinite(resetCount) && resetCount > 0) || resetCredits.length > 0;
+        const resetCreditPanel =
+          hasResetCredits || result.rate_limit_reset_credits_error
+            ? el(
+                "div",
+                { class: "auth-codex-reset-credits" },
+                el(
                   "div",
-                  { class: "auth-codex-reset-row" },
-                  el("span", { class: "auth-codex-reset-label", text: "Reset " + (index + 1) }),
-                  el(
-                    "span",
-                    { class: "auth-codex-reset-time" },
-                    valid ? compactResetDate(expiry) : String(credit.expires_at),
-                    valid ? el("span", { class: "auth-codex-relative", text: compactRelativeInstant(expiry) }) : null
-                  )
-                );
-              })
-            )
-          : result.rate_limit_reset_credits_error
-            ? el("div", {
-                class: "auth-codex-reset-error",
-                text: "Failed to load manual reset expiry: " + result.rate_limit_reset_credits_error
-              })
+                  { class: "auth-codex-reset-head" },
+                  el("div", { class: "auth-codex-reset-title", text: "Banked Resets" }),
+                  hasResetCredits
+                    ? el("span", {
+                        class: "auth-codex-reset-count",
+                        text: int(Number.isFinite(resetCount) ? resetCount : resetCredits.length) + " Available"
+                      })
+                    : null
+                ),
+                resetCredits.length
+                  ? el(
+                      "div",
+                      { class: "auth-codex-reset-list" },
+                      ...resetCredits.map((credit, index) => {
+                        const expiry = quotaInstant(credit.expires_at);
+                        const valid = expiry && !isNaN(expiry.getTime());
+                        const expiration = valid ? quotaResetMeta({ reset_at: credit.expires_at }) : null;
+                        return el(
+                          "div",
+                          { class: "auth-codex-reset-row" },
+                          el("span", { class: "auth-codex-reset-label", text: "Slot " + (index + 1) }),
+                          el("span", {
+                            class: "auth-codex-reset-time",
+                            text: valid
+                              ? "Expires " + (expiration.after ? expiration.after + " at " : "at ") + expiration.at
+                              : String(credit.expires_at)
+                          })
+                        );
+                      })
+                    )
+                  : null,
+                result.rate_limit_reset_credits_error
+                  ? el("div", {
+                      class: "auth-codex-reset-error",
+                      text: "Failed to load banked resets: " + result.rate_limit_reset_credits_error
+                    })
+                  : null,
+                !account && Number.isFinite(resetCount) && resetCount > 0
+                  ? el(
+                      "div",
+                      { class: "auth-quota-actions" },
+                      el(
+                        "button",
+                        {
+                          type: "button",
+                          class: "auth-quota-reset-button",
+                          disabled: !canResetAuthQuota(file),
+                          title: "Use banked reset",
+                          onclick: () => guard(() => resetAuthQuota(file))
+                        },
+                        actionIcon("refresh"),
+                        "Use Banked Reset"
+                      )
+                    )
+                  : null
+              )
             : null;
 
         return el(
           "div",
           { class: "auth-file-quota auth-quota-section auth-codex-quota" },
-          planItems.length ? el("div", { class: "auth-codex-plan" }, ...planItems) : null,
           resetCreditPanel,
           rows.length
             ? el("div", { class: "auth-quota-list" }, rows.map(renderQuotaRow))
-            : el("div", { class: "muted small", text: "No quota information returned by the upstream service" }),
-          !account && Number.isFinite(resetCount) && resetCount > 0
-            ? el(
-                "div",
-                { class: "auth-quota-actions" },
-                el(
-                  "button",
-                  {
-                    type: "button",
-                    class: "auth-quota-reset-button",
-                    disabled: !canResetAuthQuota(file),
-                    title: "Reset quota",
-                    onclick: () => guard(() => resetAuthQuota(file))
-                  },
-                  actionIcon("refresh"),
-                  "Reset quota"
-                )
-              )
-            : null
+            : el("div", { class: "muted small", text: "No quota information returned by the upstream service" })
         );
       }
 
@@ -5788,7 +6114,6 @@
         if (Number.isFinite(Number(result.rate_limit_reset_credits_available_count))) {
           summary.push(el("span", { text: "Manual resets available: " + int(result.rate_limit_reset_credits_available_count) }));
         }
-        if (result.fetched_at) summary.push(el("span", { class: "muted", text: "Last checked: " + when(result.fetched_at) }));
         return el(
           "div",
           { class: "auth-file-quota auth-quota-section" },
@@ -5801,23 +6126,165 @@
 
       let codexRoutingSaving = false;
 
+      const CODEX_ROUTING_POOL_LABELS = {
+        primary: "Primary (Plus)",
+        other: "Other plan",
+        reserve: "Reserve (Pro / Pro 20x)",
+        waiting: "Waiting"
+      };
+
+      function renderCodexRoutingChecks(checks, fallbackState = "warn", fallbackSummary = "Readiness checks are unavailable.") {
+        const target = $("codex-routing-checks");
+        const rows =
+          Array.isArray(checks) && checks.length
+            ? checks
+            : [{ id: "unavailable", label: "Readiness checks", state: fallbackState, summary: fallbackSummary }];
+        target.replaceChildren(
+          ...rows.map((check) => {
+            const state = ["pass", "warn", "fail", "info"].includes(check.state) ? check.state : "warn";
+            return el(
+              "div",
+              { class: "codex-routing-check", "data-state": state, "data-check": check.id || "unknown" },
+              el("span", { class: "codex-routing-check-dot", "aria-hidden": "true" }),
+              el("span", { class: "codex-routing-check-label", text: check.label || "Readiness check" }),
+              el("span", { class: "codex-routing-check-summary", text: check.summary || "No details reported." })
+            );
+          })
+        );
+      }
+
+      function setCodexRoutingReport(state, title, badge, summary, hook, pool, guidance, hookTitle, poolTitle) {
+        const report = $("codex-routing-status");
+        report.dataset.state = state;
+        $("codex-routing-status-title").textContent = title;
+        $("codex-routing-status-badge").textContent = badge;
+        $("codex-routing-status-summary").textContent = summary;
+        const hookEvidence = $("codex-routing-hook-evidence");
+        const poolEvidence = $("codex-routing-pool-evidence");
+        hookEvidence.textContent = hook;
+        hookEvidence.title = hookTitle || "";
+        poolEvidence.textContent = pool;
+        poolEvidence.title = poolTitle || "";
+        $("codex-routing-status-guidance").textContent = guidance;
+      }
+
       function renderCodexRouting() {
         const entry = resources.admin.codexRouting;
         const toggle = $("codex-routing-enabled");
         toggle.disabled = codexRoutingSaving || !entry.value || !!entry.error;
         toggle.checked = !!entry.value?.settings?.enabled;
-        const hook = entry.value?.last_hook_at;
-        $("codex-routing-status").textContent =
-          entry.error ||
-          (codexRoutingSaving
-            ? "Saving…"
-            : !entry.value
-              ? "Loading routing settings…"
-              : !toggle.checked
-                ? "Disabled — CPA selects accounts normally."
-                : hook && !hook.startsWith("0001-")
-                  ? "Last hook: " + when(hook) + " · Pool: " + (entry.value.last_pool || "none") + "."
-                  : "Enabled — awaiting Codex traffic. Hook not yet confirmed.");
+        if (entry.error) {
+          renderCodexRoutingChecks(null, "fail", "The management API did not return routing readiness evidence.");
+          setCodexRoutingReport(
+            "error",
+            "Routing status unavailable",
+            "Error",
+            entry.error,
+            "Unavailable",
+            "Unavailable",
+            "Restore the management connection, then refresh this page before trusting the routing state."
+          );
+          return;
+        }
+        if (codexRoutingSaving || !entry.value) {
+          renderCodexRoutingChecks(
+            null,
+            "info",
+            codexRoutingSaving ? "Waiting for updated readiness evidence." : "Loading readiness evidence…"
+          );
+          setCodexRoutingReport(
+            "pending",
+            codexRoutingSaving ? "Saving routing settings…" : "Checking routing evidence…",
+            codexRoutingSaving ? "Saving" : "Checking",
+            codexRoutingSaving
+              ? "Waiting for CPA to confirm the updated settings."
+              : "Loading the scheduler evidence reported by the plugin process.",
+            "Checking…",
+            "Checking…",
+            ""
+          );
+          return;
+        }
+        const checks = Array.isArray(entry.value.checks) ? entry.value.checks : [];
+        renderCodexRoutingChecks(checks);
+        if (!toggle.checked) {
+          setCodexRoutingReport(
+            "idle",
+            "Tiered routing disabled",
+            "Disabled",
+            "CPA selects eligible Codex accounts without Plus-first / reserve protection.",
+            "Not required",
+            "No decision",
+            "Enable Plus first, Pro reserve, send one real Codex request, then refresh this page to verify the scheduler hook."
+          );
+          return;
+        }
+
+        const rawHook = typeof entry.value.last_hook_at === "string" ? entry.value.last_hook_at.trim() : "";
+        const hookObserved = rawHook !== "" && !rawHook.startsWith("0001-");
+        const hookTimestamp = hookObserved ? Date.parse(rawHook) : NaN;
+        const hookValid = hookObserved && Number.isFinite(hookTimestamp);
+        const rawPool = typeof entry.value.last_pool === "string" ? entry.value.last_pool.trim().toLocaleLowerCase() : "";
+        const poolLabel = CODEX_ROUTING_POOL_LABELS[rawPool];
+        const failedChecks = checks.filter((check) => check?.state === "fail").length;
+        const warningChecks = checks.filter((check) => check?.state === "warn").length;
+        const operatorChecks =
+          "Operator checks: this plugin must have the highest plugin priority; participating accounts must be enabled, support the requested model, share one CPA priority, and have positive weights.";
+
+        if (!hookObserved) {
+          setCodexRoutingReport(
+            "warning",
+            "Scheduler hook unconfirmed",
+            "Unverified",
+            "The setting is enabled, but CPA has not called this plugin's Codex scheduler in the current process.",
+            "Not observed",
+            "No decision",
+            "Send one real Codex request, then refresh. If this remains unconfirmed, check plugin priority, avoid a Home execution path, and use a Codex auth-file-only candidate pool."
+          );
+          return;
+        }
+        if (!hookValid || !poolLabel) {
+          setCodexRoutingReport(
+            "error",
+            "Invalid scheduler evidence",
+            "Failed check",
+            !hookValid
+              ? "CPA returned a non-zero last_hook_at value that is not a valid timestamp."
+              : "CPA returned an unsupported last_pool value: " + (rawPool || "empty") + ".",
+            hookValid ? when(rawHook) : "Invalid timestamp",
+            poolLabel || rawPool || "Invalid value",
+            "Do not treat the routing toggle as proof. Check the service log and refresh after another real Codex request.",
+            rawHook,
+            rawPool
+          );
+          return;
+        }
+
+        const waiting = rawPool === "waiting";
+        const checksFailed = failedChecks > 0;
+        const checksNeedReview = warningChecks > 0;
+        setCodexRoutingReport(
+          checksFailed ? "error" : waiting || checksNeedReview ? "warning" : "verified",
+          checksFailed
+            ? "Hook confirmed; readiness checks failed"
+            : waiting
+              ? "Hook confirmed; no account eligible"
+              : checksNeedReview ? "Hook confirmed; review required" : "Scheduler hook confirmed",
+          checksFailed ? "Action required" : waiting ? "Waiting" : checksNeedReview ? "Review" : "Verified",
+          waiting
+            ? "CPA called the scheduler, but every offered Codex credential was unavailable, exhausted, or waiting for a bounded recovery probe."
+            : "CPA called the scheduler and the last decision used the " + poolLabel.toLocaleLowerCase() + " pool. " +
+                (checksFailed
+                  ? failedChecks + " readiness check" + (failedChecks === 1 ? " requires" : "s require") + " correction."
+                  : checksNeedReview
+                    ? warningChecks + " readiness check" + (warningChecks === 1 ? " needs" : "s need") + " review."
+                    : "All machine-verifiable readiness checks passed."),
+          when(rawHook),
+          poolLabel,
+          operatorChecks,
+          rawHook,
+          rawPool
+        );
       }
 
       async function saveCodexRouting(change) {
@@ -5871,17 +6338,17 @@
         );
         return el(
           "div",
-          { class: "auth-file-quota" },
+          { class: "auth-file-footer" },
           el(
             "div",
-            { class: "row" },
-            el("span", { class: "small muted", text: "Routing pool" }),
+            { class: "auth-routing-row" },
+            el("span", { class: "auth-routing-label" }, actionIcon("arrow-right-left"), "Routing Pool"),
             el("span", { class: "native-select" }, select)
           ),
           el(
             "label",
             {
-              class: "toggle-filter",
+              class: "toggle-filter auth-autostart-toggle",
               title:
                 "Watch for regular or gifted Codex resets and start fresh 5-hour and weekly windows with one tiny gpt-5.6-luna request."
             },
@@ -5900,14 +6367,15 @@
                 );
               }
             }),
-            el("span", { text: "Auto-start 5h / weekly windows" })
-          ),
-          autoStart
-            ? el("div", {
-                class: "small muted",
-                text: autoState?.message || "Enabled — the first host activity captures a quota baseline."
-              })
-            : null
+            el(
+              "div",
+              { class: "auth-autostart-content" },
+              el("span", { text: "Auto-start 5h / weekly windows" }),
+              autoStart
+                ? el("p", { class: "auth-autostart-status", text: autoState?.message || "First host activity captures baseline quota" })
+                : null
+            )
+          )
         );
       }
 
@@ -5926,17 +6394,12 @@
           empty: "No matching auth files",
           render: (file) => {
             const statusText = file.disabled ? "Disabled" : file.unavailable ? "Unavailable" : "Enabled";
-            const statusClass = file.disabled ? "plain" : file.unavailable ? "bad" : "ok";
+            const statusDot = file.disabled ? "status-off" : file.unavailable ? "status-bad" : "";
             const category = AUTH_CATEGORY_LABELS[file.category] || file.category || "Unknown";
             const plan = authPlanLabel(file.category, ui.owner.authQuotas.get(file.auth_index)?.plan);
+            const normalizedPlan = String(ui.owner.authQuotas.get(file.auth_index)?.plan || "").trim().toLocaleLowerCase();
+            const planBadgeClass = normalizedPlan === "pro-20x" || normalizedPlan === "pro" ? " plan-elite" : "";
             const email = displayLabel(file.email || "No email provided");
-            const seenMeta = new Set();
-            const meta = [category, plan].filter((value) => {
-              const key = String(value || "").trim().toLocaleLowerCase();
-              if (!key || seenMeta.has(key)) return false;
-              seenMeta.add(key);
-              return true;
-            });
             const loading = ui.owner.authQuotaLoading.has(file.auth_index);
             const refreshButton = el(
               "button",
@@ -5961,15 +6424,45 @@
                 el(
                   "div",
                   { class: "auth-file-main" },
-                  authProviderIcon(file.category),
+                  el(
+                    "div",
+                    { class: "auth-provider-icon-wrap" },
+                    authProviderIcon(file.category),
+                    el("span", {
+                      class: "auth-status-dot" + (statusDot ? " " + statusDot : ""),
+                      role: "img",
+                      "aria-label": statusText,
+                      title: statusText
+                    })
+                  ),
                   el(
                     "div",
                     { class: "auth-file-identity" },
-                    el("div", { class: "auth-file-email-title", title: email, text: email }),
-                    el("div", { class: "auth-file-meta" }, meta.map((value) => el("span", { title: value, text: value })))
+                    el(
+                      "div",
+                      { class: "auth-file-email-line" },
+                      el("div", { class: "auth-file-email-title", title: email, text: email }),
+                      el(
+                        "button",
+                        {
+                          class: "auth-email-copy",
+                          type: "button",
+                          title: "Copy address",
+                          "aria-label": "Copy address",
+                          onclick: (event) => guard(() => copyAuthEmail(event.currentTarget, email))
+                        },
+                        actionIcon("copy")
+                      )
+                    ),
+                    el(
+                      "div",
+                      { class: "auth-file-meta" },
+                      el("span", { title: category, text: category }),
+                      plan ? el("span", { class: "auth-plan-badge" + planBadgeClass, text: plan }) : null
+                    )
                   )
                 ),
-                el("div", { class: "auth-file-actions" }, el("span", { class: "tag " + statusClass, text: statusText }), refreshButton)
+                el("div", { class: "auth-file-actions" }, refreshButton)
               ),
               renderAuthFileQuota(file, account),
               account ? null : codexRoleControl(file)
@@ -6203,6 +6696,20 @@
           input.remove();
           previousFocus?.focus({ preventScroll: true });
         }
+      }
+
+      async function copyAuthEmail(button, email) {
+        button.disabled = true;
+        try {
+          await copyText(email);
+          button.classList.add("copied");
+          setActionIcon(button, "check", "Copied");
+          setTimeout(() => {
+            if (!button.isConnected) return;
+            button.classList.remove("copied");
+            setActionIcon(button, "copy", "Copy address");
+          }, 2000);
+        } finally { button.disabled = false; }
       }
 
       async function copyAPIKey(button, view) {
@@ -9114,6 +9621,7 @@
       // @license Lucide Icons - ISC; SVG assets are embedded locally.
       const LUCIDE_ICONS = {
         "route": `<svg class="lucide lucide-route" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></svg>`,
+        "arrow-right-left": `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right-left"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>`,
         "astroid": `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-astroid"><path d="M12.983 21.186a1 1 0 0 1-1.966 0 10 10 0 0 0-8.203-8.203 1 1 0 0 1 0-1.966 10 10 0 0 0 8.203-8.203 1 1 0 0 1 1.966 0 10 10 0 0 0 8.203 8.203 1 1 0 0 1 0 1.966 10 10 0 0 0-8.203 8.203"/></svg>`,
         x: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18M6 6l12 12"/></svg>`,
         refresh: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-cw"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>`,
@@ -9150,6 +9658,15 @@
         button.replaceChildren(actionIcon(name), document.createTextNode(label));
         button.setAttribute("aria-label", label);
       }
+
+      const codexRoutingReportToggle = $("codex-routing-report-toggle");
+      setActionIcon(codexRoutingReportToggle, "chevron", "Collapse scheduler report");
+      codexRoutingReportToggle.onclick = () => {
+        const expanded = codexRoutingReportToggle.getAttribute("aria-expanded") !== "false";
+        codexRoutingReportToggle.setAttribute("aria-expanded", String(!expanded));
+        $("codex-routing-report-body").classList.toggle("hidden", expanded);
+        setActionIcon(codexRoutingReportToggle, "chevron", expanded ? "Expand scheduler report" : "Collapse scheduler report");
+      };
 
       function updateThemeButtons() {
         const dark = window.billingTheme?.current() === "dark";

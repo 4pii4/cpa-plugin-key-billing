@@ -964,6 +964,15 @@ func credentialString(credential map[string]any, keys ...string) string {
 	return ""
 }
 
+func credentialInt(credential map[string]any, keys ...string) (int64, bool) {
+	for _, record := range credentialRecords(credential) {
+		if value, ok := intValue(record, keys...); ok {
+			return value, true
+		}
+	}
+	return 0, false
+}
+
 func credentialToken(credential map[string]any) string {
 	return credentialString(credential, "access_token", "accessToken", "token", "id_token", "idToken", "cookie")
 }
