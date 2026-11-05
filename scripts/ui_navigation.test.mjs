@@ -74,7 +74,7 @@ test("Global email privacy and cyber cooldown controls live outside the auth tab
   assert.match(html, /<section id="tab-cyber-policy" class="hidden">/);
   assert.match(html, /id="cyber-policy-enabled"/);
   assert.match(html, /id="cyber-policy-delay"/);
-  assert.match(html, /text: "Clear cooldown"/);
+  assert.match(html, /text: t\("Clear cooldown"\)/);
 });
 
 test("Global email privacy masks email-bearing labels without changing source values", () => {

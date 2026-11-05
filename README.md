@@ -296,6 +296,15 @@ Administrator API:
 - `PUT /v0/management/plugins/cpa-key-billing/cyber-policy` saves `{ "enabled": true, "base_delay_seconds": 900 }`.
 - `DELETE /v0/management/plugins/cpa-key-billing/cyber-policy?scope=<hashed-scope>` clears one key.
 
+## UI language
+
+Use **Follow CPA / English / 简体中文** under **Settings → Interface preferences**
+in the admin or API-key usage view, or on the sign-in page before login.
+The choice persists locally. Follow mode responds to the same-origin CPA host's
+language; standalone pages use the saved CPA preference or browser language.
+Switching reloads the plugin page, so save edits first. Custom names and keys
+remain unchanged. See [language behavior and host compatibility](docs/ui-language.md).
+
 ## Build from source
 
 Native builds require Go 1.24+, CGO, and a working C compiler. Build from the repository root.
