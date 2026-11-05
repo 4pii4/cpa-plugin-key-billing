@@ -784,6 +784,10 @@
       .remember-row { display: flex; align-items: center; gap: 8px; margin: 12px 0; color: var(--text-secondary); cursor: pointer; }
       .gate-submit { width: 100%; min-height: 42px; margin-top: 4px; font-size: 14px; font-weight: 600; }
       .app-header { justify-content: space-between; padding-right: 0; }
+      @media (min-width: 769px) {
+        /* Preserve CPAMC's action-bar clearance; CPAMP has its own host layout. */
+        :root:not([data-cpamp-plugin-host="true"]) body.embedded .app-header { padding-right: 200px; }
+      }
       .app-title { display: flex; align-items: center; gap: 10px; min-width: 0; flex-wrap: wrap; }
       .app-header-controls { display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; }
       .global-email-mask { background: var(--bg-primary); }
@@ -2224,7 +2228,7 @@
         body:not(.embedded) .app-header, body:not(.embedded) .app-header .app-title { gap: 7px; }
         body:not(.embedded) .standalone-actions .icon-action { width: 34px; height: 34px; min-width: 34px; min-height: 34px; }
         .global-email-mask { padding-inline: 8px; }
-        .global-email-mask span { display: none; }
+        .global-email-mask > span:not(.switch-control) { display: none; }
       }
       .shared-time-filter { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex: 0 1 auto; min-width: 0; }
       .shared-time-filter > .native-select { flex: 0 1 auto; max-width: 320px; }
