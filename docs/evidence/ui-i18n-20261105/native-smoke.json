@@ -1,0 +1,39 @@
+{
+  "image": "sha256:853f508d798beef680430f8fa04e7a05af4a847a8c325144a88ffbd4f9140ee1",
+  "library_sha256": "72816ab546cc4ddcab96f0e1c25b24e7278bc623d3643a7a4e052b853f20a328",
+  "ui_sha256": "e69fd42466b050e0917320767c0780d96ba9a1113ed31bfa521cf9891d49f8eb",
+  "results": [
+    {
+      "name": "native plugin serves exact modified UI",
+      "passed": true
+    },
+    {
+      "name": "keys authenticated management endpoint",
+      "passed": true
+    },
+    {
+      "name": "plans authenticated management endpoint",
+      "passed": true
+    },
+    {
+      "name": "routes authenticated management endpoint",
+      "passed": true
+    },
+    {
+      "name": "codex-routing authenticated management endpoint",
+      "passed": true
+    },
+    {
+      "name": "cyber-policy authenticated management endpoint",
+      "passed": true
+    },
+    {
+      "name": "isolated ledger created",
+      "passed": true
+    },
+    {
+      "name": "production container identity and start time unchanged",
+      "passed": true
+    }
+  ]
+}

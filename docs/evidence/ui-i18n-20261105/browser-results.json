@@ -1,0 +1,177 @@
+{
+  "results": [
+    {
+      "name": "same-origin iframe uses host en before browser zh",
+      "passed": true
+    },
+    {
+      "name": "follow reacts to host lang mutation",
+      "passed": true
+    },
+    {
+      "name": "manual English overrides Chinese host",
+      "passed": true
+    },
+    {
+      "name": "manual choice survives refresh",
+      "passed": true
+    },
+    {
+      "name": "host mutation leaves manual mode intact",
+      "passed": true
+    },
+    {
+      "name": "return to follow mode",
+      "passed": true
+    },
+    {
+      "name": "Chinese analysis loaded",
+      "passed": true
+    },
+    {
+      "name": "Chinese keys loaded",
+      "passed": true
+    },
+    {
+      "name": "Chinese request-events loaded",
+      "passed": true
+    },
+    {
+      "name": "Chinese errors loaded",
+      "passed": true
+    },
+    {
+      "name": "Chinese auth-files loaded",
+      "passed": true
+    },
+    {
+      "name": "Chinese settings loaded",
+      "passed": true
+    },
+    {
+      "name": "custom plan name stays raw",
+      "passed": true
+    },
+    {
+      "name": "key note stays raw",
+      "passed": true
+    },
+    {
+      "name": "business names matching English UI messages stay raw",
+      "passed": true
+    },
+    {
+      "name": "plan validation is Chinese",
+      "passed": true
+    },
+    {
+      "name": "pricing validation is Chinese",
+      "passed": true
+    },
+    {
+      "name": "routing validation is Chinese",
+      "passed": true
+    },
+    {
+      "name": "model IDs stay raw",
+      "passed": true
+    },
+    {
+      "name": "time picker translated",
+      "passed": true
+    },
+    {
+      "name": "standalone follows saved CPA preference",
+      "passed": true
+    },
+    {
+      "name": "standalone responds to CPA preference in another tab",
+      "passed": true
+    },
+    {
+      "name": "mobile title has space",
+      "passed": true
+    },
+    {
+      "name": "mobile language control fits",
+      "passed": true
+    },
+    {
+      "name": "mobile English settings loaded",
+      "passed": true
+    },
+    {
+      "name": "account Chinese analysis navigation",
+      "passed": true
+    },
+    {
+      "name": "account Chinese subscription navigation",
+      "passed": true
+    },
+    {
+      "name": "account Chinese request-events navigation",
+      "passed": true
+    },
+    {
+      "name": "account Chinese errors navigation",
+      "passed": true
+    },
+    {
+      "name": "account Chinese auth-files navigation",
+      "passed": true
+    },
+    {
+      "name": "independent page with no CPA preference uses browser Chinese",
+      "passed": true
+    },
+    {
+      "name": "no browser script errors",
+      "passed": true
+    },
+    {
+      "name": "English sign-in page",
+      "passed": true
+    },
+    {
+      "name": "English analysis loaded",
+      "passed": true
+    },
+    {
+      "name": "English keys loaded",
+      "passed": true
+    },
+    {
+      "name": "English request-events loaded",
+      "passed": true
+    },
+    {
+      "name": "English errors loaded",
+      "passed": true
+    },
+    {
+      "name": "English auth-files loaded",
+      "passed": true
+    },
+    {
+      "name": "English settings loaded",
+      "passed": true
+    },
+    {
+      "name": "English self-service subscription loaded",
+      "passed": true
+    },
+    {
+      "name": "cross-origin parent safely falls back to browser Chinese",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "environment": {
+    "tool": "Playwright",
+    "browser": "Google Chrome headless",
+    "desktop": "1440x1000",
+    "narrow": "390x844",
+    "backend": "scripts/frontend_dummy_backend.py --port 18765 --host cpamc",
+    "data": "synthetic only"
+  }
+}
