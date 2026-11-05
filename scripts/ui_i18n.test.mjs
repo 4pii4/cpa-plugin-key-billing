@@ -144,3 +144,22 @@ test("host language reload waits until the existing sign-in has saved its sessio
   assert.equal(reloads, 1);
   assert.equal(control.disabled, false);
 });
+
+
+test("language preferences live in Settings while email masking stays in the header", () => {
+  const locations = [];
+  function scan(node, sections = [], inHeader = false) {
+    const attrs = Object.fromEntries((node.attrs || []).map(({ name, value }) => [name, value]));
+    if (node.tagName === "section") sections = [...sections, attrs.id];
+    inHeader ||= node.tagName === "header";
+    if (Object.hasOwn(attrs, "data-language-select")) {
+      assert.equal(inHeader, false);
+      locations.push(sections.at(-1));
+    }
+    if (Object.hasOwn(attrs, "data-email-mask-toggle")) assert.equal(inHeader, true);
+    for (const child of node.childNodes || []) scan(child, sections, inHeader);
+  }
+  scan(parse5.parse(html));
+  assert.deepEqual(locations, ["gate", "tab-preferences", "account-tab-settings"]);
+  assert.match(html, /result\.settings = \{ sections: \[\] \}/);
+});

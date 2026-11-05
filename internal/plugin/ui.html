@@ -3046,6 +3046,7 @@
         "Reference prices updated": "参考价格已更新",
         "Reference prices are already current.": "参考价格已是最新。",
         "Language": "语言",
+        "Interface preferences": "界面偏好",
         "Follow CPA": "跟随 CPA",
         "Language changes reload this page. Save edits first.": "切换语言会重新加载此页，请先保存编辑内容。",
         " has an invalid paginated response": "的分页响应无效",
@@ -3428,7 +3429,6 @@
         <header class="head app-header">
           <div class="app-title"><h1>API Key Billing</h1></div>
           <div class="app-header-controls">
-            <label class="language-control" title="Language changes reload this page. Save edits first."><span>Language</span><span class="native-select"><select data-language-select aria-label="Language"><option value="auto">Follow CPA</option><option value="en" lang="en">English</option><option value="zh-CN" lang="zh-CN">简体中文</option></select></span></label>
             <label class="toggle-filter global-email-mask" title="Mask email addresses everywhere in this console">
               <input type="checkbox" role="switch" data-email-mask-toggle />
               <span>Mask emails</span>
@@ -3497,6 +3497,8 @@
         </section>
 
         <section id="tab-analysis"><div id="analysis-body"></div></section>
+
+        <section id="tab-preferences" class="hidden"><div class="card"><h2>Interface preferences</h2><div class="row"><label class="language-control" title="Language changes reload this page. Save edits first."><span>Language</span><span class="native-select"><select data-language-select aria-label="Language"><option value="auto">Follow CPA</option><option value="en" lang="en">English</option><option value="zh-CN" lang="zh-CN">简体中文</option></select></span></label></div><p class="muted small">Language changes reload this page. Save edits first.</p></div></section>
 
         <section id="tab-cyber-policy" class="hidden">
           <div class="card">
@@ -3743,7 +3745,6 @@
         <header class="head app-header">
           <div class="app-title"> <h1>API key usage</h1> <span id="account-identity" class="muted mono"></span> </div>
           <div class="app-header-controls">
-            <label class="language-control" title="Language changes reload this page. Save edits first."><span>Language</span><span class="native-select"><select data-language-select aria-label="Language"><option value="auto">Follow CPA</option><option value="en" lang="en">English</option><option value="zh-CN" lang="zh-CN">简体中文</option></select></span></label>
             <label class="toggle-filter global-email-mask" title="Mask email addresses everywhere in this console">
               <input type="checkbox" role="switch" data-email-mask-toggle />
               <span>Mask emails</span>
@@ -3769,6 +3770,7 @@
                 <button type="button" data-account-tab="request-events">Requests</button>
                 <button type="button" data-account-tab="errors">Errors</button>
                 <button type="button" data-account-tab="auth-files">Auth file</button>
+                <button type="button" data-account-tab="settings">Settings</button>
               </nav>
             </div>
             <div class="page-tab-actions hidden">
@@ -3798,6 +3800,7 @@
             <button type="button" class="icon-action tab-refresh" data-page-action="refresh" aria-label="Refresh"></button>
           </div>
           <div id="account-shared-time-backdrop" class="time-range-backdrop hidden"></div>
+          <section id="account-tab-settings" class="hidden"><div class="card"><h2>Interface preferences</h2><div class="row"><label class="language-control" title="Language changes reload this page. Save edits first."><span>Language</span><span class="native-select"><select data-language-select aria-label="Language"><option value="auto">Follow CPA</option><option value="en" lang="en">English</option><option value="zh-CN" lang="zh-CN">简体中文</option></select></span></label></div><p class="muted small">Language changes reload this page. Save edits first.</p></div></section>
           <section id="account-tab-subscription" class="hidden">
             <div class="stats account-subscription-stats">
               <div class="card account-plan">
@@ -4009,7 +4012,7 @@
       const embedded = window.parent !== window;
       document.body.classList.toggle("embedded", embedded);
       const ADMIN_TAB_IDS = ["analysis", "keys", "request-events", "errors", "auth-files", "settings"];
-      const ACCOUNT_TAB_IDS = ["analysis", "subscription", "request-events", "errors", "auth-files"];
+      const ACCOUNT_TAB_IDS = ["analysis", "subscription", "request-events", "errors", "auth-files", "settings"];
       const PAGE_ROUTE_KEY = "cpa-key-billing.route.v1." + (embedded ? "embedded" : "standalone");
 
       function parsePageRoute(value) {
@@ -5674,6 +5677,7 @@
           "auth-files": { sections: [section(account ? ["authFiles"] : ["authFiles", "codexRouting"], () => renderAuthFiles(account))] }
         };
         if (account) {
+          result.settings = { sections: [] };
           result.subscription = {
             sections: [
               section(["subscription"], renderAccountSubscription),
@@ -10801,10 +10805,13 @@
           tab.setAttribute("aria-selected", String(active));
         }
         const visible =
-          selected === "settings" ? new Set(["cyber-policy", "plans", "routes", "prices", "plugin-logs"]) : new Set([selected]);
+          selected === "settings"
+            ? new Set(["preferences", "cyber-policy", "plans", "routes", "prices", "plugin-logs"])
+            : new Set([selected]);
         for (const section of [
           "keys",
           "analysis",
+          "preferences",
           "cyber-policy",
           "plans",
           "routes",

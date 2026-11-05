@@ -298,7 +298,8 @@ Administrator API:
 
 ## UI language
 
-Use **Follow CPA / English / 简体中文** on the sign-in, admin, or API-key usage page.
+Use **Follow CPA / English / 简体中文** under **Settings → Interface preferences**
+in the admin or API-key usage view, or on the sign-in page before login.
 The choice persists locally. Follow mode responds to the same-origin CPA host's
 language; standalone pages use the saved CPA preference or browser language.
 Switching reloads the plugin page, so save edits first. Custom names and keys

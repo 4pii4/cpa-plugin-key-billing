@@ -1,7 +1,10 @@
 # UI language
 
-The language selector is available on the sign-in, administrator, and API-key
-self-service pages, including when the plugin is embedded in CPA.
+The language selector lives under **Settings → Interface preferences** in both
+the administrator and API-key self-service views, including embedded CPA pages.
+The self-service Settings page contains only browser preferences, with no admin
+configuration access. A selector remains on the sign-in page for use before login.
+The global email-mask shortcut stays in the authenticated page header.
 
 - **Follow CPA** (default): use the same-origin host document's standard HTML
   `lang` attribute. When opened independently, read CPA's saved language on the
