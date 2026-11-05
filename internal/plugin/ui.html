@@ -2402,10 +2402,12 @@
         try {
           let raw = localStorage.getItem(name);
           if (!raw) return null;
-          const prefix = "enc::v1::";
-          if (raw.startsWith(prefix)) {
-            const secret = new TextEncoder().encode("cli-proxy-api-webui::secure-storage|" + location.host + "|" + navigator.userAgent);
-            const binary = atob(raw.slice(prefix.length));
+          const legacy = raw.startsWith("enc::v1::");
+          if (legacy || raw.startsWith("enc::v2::")) {
+            // CPAMC v2 binds storage to the host; only legacy v1 also uses UA.
+            const salt = "cli-proxy-api-webui::secure-storage|" + location.host + (legacy ? "|" + navigator.userAgent : "");
+            const secret = new TextEncoder().encode(salt);
+            const binary = atob(raw.slice(9));
             const bytes = new Uint8Array(binary.length);
             for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i) ^ secret[i % secret.length];
             raw = new TextDecoder().decode(bytes);
